@@ -18,25 +18,40 @@ const Gallery = () => {
   ];
 
   return (
-    <section className="py-16 px-4 bg-gradient-dark">
-      <div className="max-w-6xl mx-auto">
-        <h2 className="text-3xl md:text-5xl font-graffiti font-bold text-center mb-12 text-led-blue">
-          🖼️ Gallery
-        </h2>
+    <section className="py-24 px-6 bg-gradient-dark relative overflow-hidden">
+      {/* Background effects */}
+      <div className="absolute inset-0 bg-gradient-mesh opacity-30"></div>
+      
+      <div className="max-w-7xl mx-auto relative z-10">
+        <div className="text-center mb-16 animate-fade-in">
+          <h2 className="text-4xl md:text-6xl lg:text-7xl font-graffiti font-bold mb-6">
+            <span className="bg-gradient-neon bg-clip-text text-transparent">🖼️ Gallery</span>
+          </h2>
+          <div className="w-24 h-1 bg-gradient-fire mx-auto rounded-full"></div>
+        </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
           {images.map((image, index) => (
-            <Card 
+            <div 
               key={index}
-              className="overflow-hidden cursor-pointer hover:shadow-glow transition-all duration-300 border-glow-yellow/30"
-              onClick={() => setSelectedImage(image.src)}
+              className="animate-scale-in group"
+              style={{animationDelay: `${0.1 * index}s`}}
             >
-              <img 
-                src={image.src} 
-                alt={image.alt}
-                className="w-full h-48 md:h-64 object-cover hover:scale-110 transition-transform duration-300"
-              />
-            </Card>
+              <Card 
+                className="overflow-hidden cursor-pointer border border-white/10 bg-card/10 backdrop-blur-lg hover:border-glow-yellow/50 transition-all duration-500 hover:shadow-glow group-hover:scale-105"
+                onClick={() => setSelectedImage(image.src)}
+              >
+                <div className="relative overflow-hidden">
+                  <img 
+                    src={image.src} 
+                    alt={image.alt}
+                    className="w-full h-48 md:h-64 object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className="absolute inset-0 bg-gradient-fire opacity-0 group-hover:opacity-20 transition-opacity duration-500"></div>
+                </div>
+              </Card>
+            </div>
           ))}
         </div>
       </div>

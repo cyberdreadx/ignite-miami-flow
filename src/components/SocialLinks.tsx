@@ -50,36 +50,45 @@ const SocialLinks = () => {
   ];
 
   return (
-    <section className="py-16 px-4 bg-gradient-dark">
-      <div className="max-w-4xl mx-auto">
-        <h2 className="text-3xl md:text-5xl font-graffiti font-bold text-center mb-12 text-neon-orange">
-          📲 Connect & Join
-        </h2>
+    <section className="py-24 px-6 bg-gradient-dark relative overflow-hidden">
+      {/* Background mesh */}
+      <div className="absolute inset-0 bg-gradient-mesh opacity-40"></div>
+      
+      <div className="max-w-5xl mx-auto relative z-10">
+        <div className="text-center mb-16 animate-fade-in">
+          <h2 className="text-4xl md:text-6xl lg:text-7xl font-graffiti font-bold mb-6">
+            <span className="bg-gradient-fire bg-clip-text text-transparent">📲 Connect & Join</span>
+          </h2>
+          <div className="w-24 h-1 bg-gradient-neon mx-auto rounded-full"></div>
+        </div>
         
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {links.map((link, index) => (
-            <Card 
+            <div 
               key={index}
-              className="bg-card/80 backdrop-blur-sm border-glow-yellow/30 hover:shadow-glow transition-all duration-300 hover:scale-105"
+              className="animate-scale-in group"
+              style={{animationDelay: `${0.1 * index}s`}}
             >
-              <CardContent className="p-6">
-                <Button 
-                  variant={link.variant} 
-                  className="w-full h-auto py-4 flex-col gap-3"
-                  asChild
-                >
-                  <a 
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-center"
+              <Card className="bg-card/10 backdrop-blur-lg border border-white/10 hover:border-white/20 shadow-elevated hover:shadow-glow transition-all duration-500 overflow-hidden group-hover:scale-105">
+                <CardContent className="p-8">
+                  <Button 
+                    variant={link.variant} 
+                    className="w-full h-auto py-6 flex-col gap-4 text-lg rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500"
+                    asChild
                   >
-                    <link.icon className="w-8 h-8" />
-                    <span className="text-sm leading-tight">{link.title}</span>
-                  </a>
-                </Button>
-              </CardContent>
-            </Card>
+                    <a 
+                      href={link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-center group-hover:scale-105 transition-transform duration-300"
+                    >
+                      <link.icon className="w-10 h-10" />
+                      <span className="leading-tight font-street font-semibold">{link.title}</span>
+                    </a>
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
           ))}
         </div>
       </div>
