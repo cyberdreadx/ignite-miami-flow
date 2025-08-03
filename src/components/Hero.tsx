@@ -9,13 +9,8 @@ const Hero = () => {
       {/* Mesh Background */}
       <div className="absolute inset-0 bg-gradient-mesh"></div>
       
-      {/* Main Background Image */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${heroBg})` }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/50 to-background/90 backdrop-blur-xs"></div>
-      </div>
+      {/* Gradient Background Only */}
+      <div className="absolute inset-0 bg-gradient-to-br from-background via-background/95 to-background"></div>
       
       {/* Floating Logo */}
       <div className="absolute top-8 left-8 z-20 animate-float">
