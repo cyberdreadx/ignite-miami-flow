@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Upload, Save, LogOut, Loader2 } from "lucide-react";
+import NavBar from "@/components/NavBar";
 
 const Admin = () => {
   const { toast } = useToast();
@@ -141,8 +142,10 @@ const Admin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-dark p-6">
-      <div className="max-w-4xl mx-auto">
+    <>
+      <NavBar />
+      <div className="min-h-screen bg-gradient-dark p-6 pt-24">
+        <div className="max-w-4xl mx-auto">
         <div className="mb-8 flex justify-between items-start">
           <div>
             <h1 className="text-4xl font-graffiti font-bold bg-gradient-fire bg-clip-text text-transparent mb-4">
@@ -291,8 +294,9 @@ const Admin = () => {
             </CardContent>
           </Card>
         </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

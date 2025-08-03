@@ -1,5 +1,4 @@
-import { Instagram, Send, Mail, Settings } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Instagram, Send, Mail } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -46,14 +45,7 @@ const Footer = () => {
             </a>
           </div>
           
-          <div className="space-y-4">
-            <Button asChild variant="outline" className="mb-4">
-              <a href="/auth">
-                <Settings className="w-4 h-4 mr-2" />
-                Admin Login
-              </a>
-            </Button>
-            
+          <div className="space-y-2">
             <p className="text-foreground/60 font-street text-lg">
               Powered by Flow Angels.ent
             </p>

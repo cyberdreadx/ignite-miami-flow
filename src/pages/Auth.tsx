@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { Loader2, ArrowLeft } from "lucide-react";
+import NavBar from "@/components/NavBar";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -90,8 +91,10 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-dark flex items-center justify-center p-6">
-      <div className="w-full max-w-md">
+    <>
+      <NavBar />
+      <div className="min-h-screen bg-gradient-dark flex items-center justify-center p-6 pt-24">
+        <div className="w-full max-w-md">
         <Button 
           variant="outline" 
           onClick={() => navigate("/")}
@@ -175,8 +178,9 @@ const Auth = () => {
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

@@ -1,3 +1,4 @@
+import NavBar from "@/components/NavBar";
 import Hero from "@/components/Hero";
 import EventDetails from "@/components/EventDetails";
 import ReelsVideo from "@/components/ReelsVideo";
@@ -9,13 +10,24 @@ import Footer from "@/components/Footer";
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
-      <Hero />
-      <EventDetails />
-      <ReelsVideo />
-      <Gallery />
-      <CommunityVibe />
-      <SocialLinks />
-      <Footer />
+      <NavBar />
+      <div className="pt-16"> {/* Add padding top to account for fixed navbar */}
+        <Hero />
+        <div id="event-details">
+          <EventDetails />
+        </div>
+        <ReelsVideo />
+        <div id="gallery">
+          <Gallery />
+        </div>
+        <div id="community">
+          <CommunityVibe />
+        </div>
+        <div id="social">
+          <SocialLinks />
+        </div>
+        <Footer />
+      </div>
     </div>
   );
 };
