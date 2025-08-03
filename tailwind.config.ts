@@ -61,7 +61,31 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				// SkateBurn custom colors
+				'flame-red': 'hsl(var(--flame-red))',
+				'neon-orange': 'hsl(var(--neon-orange))',
+				'led-blue': 'hsl(var(--led-blue))',
+				'street-gray': 'hsl(var(--street-gray))',
+				'glow-yellow': 'hsl(var(--glow-yellow))'
+			},
+			backgroundImage: {
+				'gradient-fire': 'var(--gradient-fire)',
+				'gradient-neon': 'var(--gradient-neon)',
+				'gradient-dark': 'var(--gradient-dark)'
+			},
+			boxShadow: {
+				'fire': 'var(--shadow-fire)',
+				'neon': 'var(--shadow-neon)',
+				'glow': 'var(--shadow-glow)'
+			},
+			fontFamily: {
+				'graffiti': ['Impact', 'Arial Black', 'sans-serif'],
+				'street': ['Oswald', 'Arial', 'sans-serif']
+			},
+			transitionTimingFunction: {
+				'smooth': 'var(--transition-smooth)',
+				'bounce': 'var(--transition-bounce)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

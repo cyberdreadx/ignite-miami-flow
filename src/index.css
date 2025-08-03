@@ -2,41 +2,69 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+/* SkateBurn Miami Design System - Underground street culture aesthetic
 All colors MUST be HSL.
 */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Dark underground base */
+    --background: 220 8% 8%;
+    --foreground: 0 0% 95%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    /* Cards with subtle glow */
+    --card: 220 8% 12%;
+    --card-foreground: 0 0% 95%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 220 8% 10%;
+    --popover-foreground: 0 0% 95%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Fire orange primary */
+    --primary: 15 100% 55%;
+    --primary-foreground: 220 8% 8%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Neon blue secondary */
+    --secondary: 200 100% 55%;
+    --secondary-foreground: 220 8% 8%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Muted grays */
+    --muted: 220 8% 18%;
+    --muted-foreground: 0 0% 65%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* LED blue accent */
+    --accent: 200 100% 55%;
+    --accent-foreground: 220 8% 8%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Flame red destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 95%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 220 8% 20%;
+    --input: 220 8% 15%;
+    --ring: 15 100% 55%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
+
+    /* Custom SkateBurn colors */
+    --flame-red: 0 100% 60%;
+    --neon-orange: 15 100% 55%;
+    --led-blue: 200 100% 55%;
+    --street-gray: 220 8% 25%;
+    --glow-yellow: 45 100% 60%;
+
+    /* Gradients */
+    --gradient-fire: linear-gradient(135deg, hsl(var(--flame-red)), hsl(var(--neon-orange)));
+    --gradient-neon: linear-gradient(135deg, hsl(var(--led-blue)), hsl(var(--glow-yellow)));
+    --gradient-dark: linear-gradient(180deg, hsl(var(--background)), hsl(220 8% 5%));
+
+    /* Shadows and glows */
+    --shadow-fire: 0 0 30px hsl(var(--neon-orange) / 0.3);
+    --shadow-neon: 0 0 30px hsl(var(--led-blue) / 0.3);
+    --shadow-glow: 0 0 60px hsl(var(--glow-yellow) / 0.2);
+
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
     --sidebar-background: 0 0% 98%;
 
