@@ -51,6 +51,8 @@ export const useUserRole = () => {
   const isAdmin = role === 'admin';
   const isModerator = role === 'moderator' || isAdmin;
 
+  console.log('useUserRole final state:', { role, loading, isAdmin, isModerator });
+
   return {
     role,
     loading,
