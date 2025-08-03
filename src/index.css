@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Smooth scrolling and performance optimizations */
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+body {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  font-family: 'Inter', sans-serif;
+}
+
 /* SkateBurn Miami Design System - Underground street culture aesthetic
 All colors MUST be HSL.
 */

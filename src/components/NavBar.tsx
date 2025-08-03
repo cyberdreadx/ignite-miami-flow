@@ -1,15 +1,21 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { Menu, X, Settings, LogOut, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { motion, useScroll, useTransform } from "framer-motion";
 
 const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { scrollY } = useScroll();
+  
+  // Background opacity based on scroll
+  const backgroundOpacity = useTransform(scrollY, [0, 100], [0.8, 0.95]);
+  const backdropBlur = useTransform(scrollY, [0, 100], [8, 16]);
 
   const handleSignOut = async () => {
     const { error } = await signOut();
@@ -41,7 +47,16 @@ const NavBar = () => {
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-white/10">
+    <motion.nav 
+      className="fixed top-0 left-0 right-0 z-50 border-b border-white/10"
+      style={{ 
+        backgroundColor: useTransform(backgroundOpacity, (value) => `rgba(0, 0, 0, ${value})`),
+        backdropFilter: useTransform(backdropBlur, (value) => `blur(${value}px)`)
+      }}
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -170,7 +185,7 @@ const NavBar = () => {
           </div>
         </div>
       )}
-    </nav>
+    </motion.nav>
   );
 };
 

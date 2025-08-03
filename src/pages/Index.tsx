@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import NavBar from "@/components/NavBar";
 import Hero from "@/components/Hero";
 import EventDetails from "@/components/EventDetails";
@@ -6,29 +7,71 @@ import Gallery from "@/components/Gallery";
 import CommunityVibe from "@/components/CommunityVibe";
 import SocialLinks from "@/components/SocialLinks";
 import Footer from "@/components/Footer";
+import { AnimatedSection } from "@/components/animations/AnimatedSection";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <motion.div 
+      className="min-h-screen bg-background overflow-x-hidden"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       <NavBar />
-      <div className="pt-16"> {/* Add padding top to account for fixed navbar */}
-        <Hero />
-        <div id="event-details">
-          <EventDetails />
-        </div>
+      
+      {/* Hero - No wrapper needed, already has its own animations */}
+      <Hero />
+      
+      {/* Animated Sections with staggered entrance */}
+      <AnimatedSection 
+        id="event-details" 
+        delay={0.2}
+        className="relative"
+      >
+        <EventDetails />
+      </AnimatedSection>
+
+      <AnimatedSection 
+        delay={0.3}
+        direction="left"
+        className="relative"
+      >
         <ReelsVideo />
-        <div id="gallery">
-          <Gallery />
-        </div>
-        <div id="community">
-          <CommunityVibe />
-        </div>
-        <div id="social">
-          <SocialLinks />
-        </div>
+      </AnimatedSection>
+
+      <AnimatedSection 
+        id="gallery" 
+        delay={0.4}
+        direction="right"
+        className="relative"
+      >
+        <Gallery />
+      </AnimatedSection>
+
+      <AnimatedSection 
+        id="community" 
+        delay={0.5}
+        className="relative"
+      >
+        <CommunityVibe />
+      </AnimatedSection>
+
+      <AnimatedSection 
+        id="social" 
+        delay={0.6}
+        direction="up"
+        className="relative"
+      >
+        <SocialLinks />
+      </AnimatedSection>
+
+      <AnimatedSection 
+        delay={0.7}
+        className="relative"
+      >
         <Footer />
-      </div>
-    </div>
+      </AnimatedSection>
+    </motion.div>
   );
 };
 
