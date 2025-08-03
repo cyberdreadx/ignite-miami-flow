@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Upload, Save, LogOut, Loader2 } from "lucide-react";
@@ -13,7 +14,8 @@ import NavBar from "@/components/NavBar";
 
 const Admin = () => {
   const { toast } = useToast();
-  const { user, loading, signOut } = useAuth();
+  const { user, loading: authLoading, signOut } = useAuth();
+  const { isAdmin, loading: roleLoading } = useUserRole();
   const navigate = useNavigate();
   const [eventData, setEventData] = useState({
     id: "",
@@ -24,14 +26,25 @@ const Admin = () => {
     description: ""
   });
   const [isLoading, setIsLoading] = useState(false);
+  const loading = authLoading || roleLoading;
+
   const [isSaving, setIsSaving] = useState(false);
 
-  // Redirect if not authenticated
+  // Redirect if not authenticated or not admin
   useEffect(() => {
-    if (!loading && !user) {
-      navigate("/auth");
+    if (!authLoading && !roleLoading) {
+      if (!user) {
+        navigate("/auth");
+      } else if (!isAdmin) {
+        toast({
+          title: "Access Denied",
+          description: "You don't have admin privileges to access this page.",
+          variant: "destructive",
+        });
+        navigate("/");
+      }
     }
-  }, [user, loading, navigate]);
+  }, [user, isAdmin, authLoading, roleLoading, navigate, toast]);
 
   // Load event data
   useEffect(() => {
@@ -131,13 +144,19 @@ const Admin = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-dark flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
+      <>
+        <NavBar />
+        <div className="min-h-screen bg-gradient-dark flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
+            <p className="text-foreground/60">Checking permissions...</p>
+          </div>
+        </div>
+      </>
     );
   }
 
-  if (!user) {
+  if (!user || !isAdmin) {
     return null;
   }
 
