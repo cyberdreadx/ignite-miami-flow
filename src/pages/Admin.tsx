@@ -1,47 +1,160 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, Save } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+import { Upload, Save, LogOut, Loader2 } from "lucide-react";
 
 const Admin = () => {
   const { toast } = useToast();
+  const { user, loading, signOut } = useAuth();
+  const navigate = useNavigate();
   const [eventData, setEventData] = useState({
-    title: "🔥 SkateBurn Tuesdays",
-    subtitle: "Miami's Fire, Flow, & Skate Jam",
-    time: "8PM–Midnight",
-    location: "SkateBird Miami (NW 83rd & Biscayne Blvd, El Portal)",
-    description: "Live DJs, open skating, LED flow props, fire spinning & flow arts showcase, local vendors, community hangout"
+    id: "",
+    title: "",
+    subtitle: "",
+    time: "",
+    location: "",
+    description: ""
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSave = () => {
-    // Here you would integrate with Supabase to save the data
-    toast({
-      title: "Event Updated",
-      description: "Event information has been saved successfully.",
-    });
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate("/auth");
+    }
+  }, [user, loading, navigate]);
+
+  // Load event data
+  useEffect(() => {
+    const loadEventData = async () => {
+      if (!user) return;
+      
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('events')
+          .select('*')
+          .eq('is_active', true)
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error loading event:', error);
+          toast({
+            title: "Error",
+            description: "Failed to load event data.",
+            variant: "destructive",
+          });
+        } else if (data) {
+          setEventData(data);
+        }
+      } catch (error) {
+        console.error('Unexpected error:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadEventData();
+  }, [user, toast]);
+
+  const handleSave = async () => {
+    if (!user) return;
+
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from('events')
+        .upsert({
+          id: eventData.id || undefined,
+          title: eventData.title,
+          subtitle: eventData.subtitle,
+          time: eventData.time,
+          location: eventData.location,
+          description: eventData.description,
+          is_active: true
+        }, {
+          onConflict: eventData.id ? 'id' : undefined
+        });
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to save event data.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Event Updated",
+          description: "Event information has been saved successfully.",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleImageUpload = (type: string) => {
-    // Here you would handle image uploads to Supabase storage
+    // Future implementation for image uploads
     toast({
       title: "Image Upload",
-      description: `${type} image upload functionality would go here.`,
+      description: `${type} image upload functionality coming soon!`,
     });
   };
+
+  const handleSignOut = async () => {
+    const { error } = await signOut();
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to sign out.",
+        variant: "destructive",
+      });
+    } else {
+      navigate("/");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-dark flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-dark p-6">
       <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-4xl font-graffiti font-bold bg-gradient-fire bg-clip-text text-transparent mb-4">
-            🔧 Admin Dashboard
-          </h1>
-          <Button asChild variant="outline" className="mb-6">
-            <a href="/">← Back to Site</a>
+        <div className="mb-8 flex justify-between items-start">
+          <div>
+            <h1 className="text-4xl font-graffiti font-bold bg-gradient-fire bg-clip-text text-transparent mb-4">
+              🔧 Admin Dashboard
+            </h1>
+            <Button asChild variant="outline" className="mb-6">
+              <a href="/">← Back to Site</a>
+            </Button>
+          </div>
+          <Button onClick={handleSignOut} variant="outline">
+            <LogOut className="w-4 h-4 mr-2" />
+            Sign Out
           </Button>
         </div>
 
@@ -103,9 +216,9 @@ const Admin = () => {
                 />
               </div>
               
-              <Button onClick={handleSave} className="w-full">
-                <Save className="w-4 h-4 mr-2" />
-                Save Event Info
+              <Button onClick={handleSave} className="w-full" disabled={isSaving || isLoading}>
+                {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+                {isSaving ? "Saving..." : "Save Event Info"}
               </Button>
             </CardContent>
           </Card>
