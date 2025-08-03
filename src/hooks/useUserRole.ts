@@ -17,24 +17,25 @@ export const useUserRole = () => {
 
       try {
         console.log('Fetching role for user:', user.id, user.email);
+        console.log('About to query profiles table with user_id:', user.id);
         
         const { data, error } = await supabase
           .from('profiles')
-          .select('role, email')
+          .select('role, email, user_id')
           .eq('user_id', user.id)
           .maybeSingle();
 
-        console.log('Profile data:', data);
-        console.log('Profile error:', error);
+        console.log('Raw query result - data:', data);
+        console.log('Raw query result - error:', error);
 
         if (error) {
-          console.error('Error fetching user role:', error);
+          console.error('Database error fetching user role:', error);
           setRole('user'); // Default to user role
         } else if (data) {
-          console.log('User role from database:', data.role);
+          console.log('Found profile! Role:', data.role, 'Email:', data.email);
           setRole(data.role || 'user');
         } else {
-          console.log('No profile found for user, defaulting to user role');
+          console.log('No profile found for user_id:', user.id);
           setRole('user');
         }
       } catch (error) {
