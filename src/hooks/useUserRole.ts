@@ -16,17 +16,26 @@ export const useUserRole = () => {
       }
 
       try {
+        console.log('Fetching role for user:', user.id, user.email);
+        
         const { data, error } = await supabase
           .from('profiles')
-          .select('role')
+          .select('role, email')
           .eq('user_id', user.id)
           .maybeSingle();
+
+        console.log('Profile data:', data);
+        console.log('Profile error:', error);
 
         if (error) {
           console.error('Error fetching user role:', error);
           setRole('user'); // Default to user role
+        } else if (data) {
+          console.log('User role from database:', data.role);
+          setRole(data.role || 'user');
         } else {
-          setRole(data?.role || 'user');
+          console.log('No profile found for user, defaulting to user role');
+          setRole('user');
         }
       } catch (error) {
         console.error('Unexpected error:', error);

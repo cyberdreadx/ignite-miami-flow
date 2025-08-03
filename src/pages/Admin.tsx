@@ -32,16 +32,28 @@ const Admin = () => {
 
   // Redirect if not authenticated or not admin
   useEffect(() => {
+    console.log('Admin page check:', { 
+      user: user?.email, 
+      isAdmin, 
+      authLoading, 
+      roleLoading,
+      userRole: isAdmin ? 'admin' : 'not admin'
+    });
+    
     if (!authLoading && !roleLoading) {
       if (!user) {
+        console.log('No user found, redirecting to auth');
         navigate("/auth");
       } else if (!isAdmin) {
+        console.log('User is not admin, showing access denied');
         toast({
           title: "Access Denied",
           description: "You don't have admin privileges to access this page.",
           variant: "destructive",
         });
         navigate("/");
+      } else {
+        console.log('User has admin access');
       }
     }
   }, [user, isAdmin, authLoading, roleLoading, navigate, toast]);
