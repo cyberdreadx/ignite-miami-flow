@@ -1,19 +1,24 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
 export const useUserRole = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   console.log('useUserRole hook - received user:', user);
   const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log('useUserRole useEffect triggered with user:', user);
-    
+    // Only run when auth is done loading
+    if (authLoading) {
+      setLoading(true);
+      return;
+    }
+
     const fetchUserRole = async () => {
       console.log('fetchUserRole called, user is:', user);
-      
+
       if (!user) {
         console.log('No user found, setting role to null');
         setRole(null);
@@ -24,7 +29,7 @@ export const useUserRole = () => {
       try {
         console.log('Fetching role for user:', user.id, user.email);
         console.log('About to query profiles table with email:', user.email);
-        
+
         // Try querying by email as backup since auth.uid() context issues
         const { data, error } = await supabase
           .from('profiles')
@@ -55,7 +60,7 @@ export const useUserRole = () => {
     };
 
     fetchUserRole();
-  }, [user?.id, user?.email]); // Watch for changes in user id AND email
+  }, [authLoading, user?.id, user?.email]); // Watch for changes in auth loading, user id AND email
 
   const isAdmin = role === 'admin';
   const isModerator = role === 'moderator' || isAdmin;
