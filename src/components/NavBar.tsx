@@ -40,10 +40,8 @@ const NavBar = () => {
   };
 
   const navItems = [
-    { label: "Event Details", id: "event-details" },
-    { label: "Gallery", id: "gallery" },
-    { label: "Community", id: "community" },
-    { label: "Connect", id: "social" },
+    { label: "Feed", id: "feed", path: "/" },
+    { label: "About", id: "about", path: "/about" },
   ];
 
   return (
@@ -73,13 +71,14 @@ const NavBar = () => {
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-8">
               {navItems.map((item) => (
-                <button
+                <Button
                   key={item.id}
-                  onClick={() => scrollToSection(item.id)}
+                  variant="ghost"
+                  onClick={() => item.path ? navigate(item.path) : scrollToSection(item.id)}
                   className="text-foreground/80 hover:text-glow-yellow px-3 py-2 text-sm font-medium transition-colors"
                 >
                   {item.label}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -136,13 +135,21 @@ const NavBar = () => {
         <div className="md:hidden bg-background/95 backdrop-blur-lg border-b border-white/10">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             {navItems.map((item) => (
-              <button
+              <Button
                 key={item.id}
-                onClick={() => scrollToSection(item.id)}
-                className="text-foreground/80 hover:text-glow-yellow block px-3 py-2 text-base font-medium w-full text-left transition-colors"
+                variant="ghost"
+                onClick={() => {
+                  if (item.path) {
+                    navigate(item.path);
+                  } else {
+                    scrollToSection(item.id);
+                  }
+                  setIsOpen(false);
+                }}
+                className="text-foreground/80 hover:text-glow-yellow w-full justify-start px-3 py-2 text-base font-medium transition-colors"
               >
                 {item.label}
-              </button>
+              </Button>
             ))}
             
             <div className="border-t border-white/10 pt-4 mt-4">

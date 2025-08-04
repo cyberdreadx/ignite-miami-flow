@@ -1,194 +1,170 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
-import { useUserRole } from "@/hooks/useUserRole";
-import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
-import { Upload, Save, LogOut, Loader2, ImageIcon, X } from "lucide-react";
-import NavBar from "@/components/NavBar";
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { formatDistanceToNow } from 'date-fns';
+import { 
+  Users, 
+  MessageSquare, 
+  Heart, 
+  Pin, 
+  Trash2, 
+  Shield, 
+  TrendingUp,
+  ArrowLeft 
+} from 'lucide-react';
 
-// Import current static assets for preview
-import promoFlyer from "@/assets/promo-flyer.jpg";
-import galleryImage1 from "@/assets/gallery-1.jpg";
-import galleryImage2 from "@/assets/gallery-2.jpg";
-import galleryImage3 from "@/assets/gallery-3.jpg";
-import logo from "@/assets/skateburn-logo.png";
-import heroBackground from "@/assets/hero-bg.jpg";
+interface Post {
+  id: string;
+  content: string;
+  created_at: string;
+  pinned: boolean;
+  like_count: number;
+  comment_count: number;
+  author_name: string;
+  author_role: string;
+}
+
+interface UserStats {
+  total_users: number;
+  admin_count: number;
+  moderator_count: number;
+  total_posts: number;
+  total_likes: number;
+  total_comments: number;
+}
 
 const Admin = () => {
-  const { toast } = useToast();
-  const { user, loading: authLoading, signOut } = useAuth();
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [stats, setStats] = useState<UserStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { user, signOut } = useAuth();
   const { isAdmin, loading: roleLoading } = useUserRole();
   const navigate = useNavigate();
-  const [eventData, setEventData] = useState({
-    id: "",
-    title: "",
-    subtitle: "",
-    time: "",
-    location: "",
-    description: ""
-  });
-  const [isLoading, setIsLoading] = useState(false);
-  const loading = authLoading || roleLoading;
+  const { toast } = useToast();
 
-  const [isSaving, setIsSaving] = useState(false);
-  
-  // Current images state for preview
-  const currentImages = {
-    promoFlyer, // This could be video or image
-    gallery: [galleryImage1, galleryImage2, galleryImage3],
-    logo,
-    heroBackground
-  };
-
-  // Check if flyer is video or image
-  const isVideoFlyer = (filename: string) => {
-    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi'];
-    return videoExtensions.some(ext => filename.toLowerCase().includes(ext));
-  };
-
-  // Redirect if not authenticated or not admin
+  // Redirect if not authenticated
   useEffect(() => {
-    console.log('Admin page check:', { 
-      user: user?.email, 
-      isAdmin, 
-      authLoading, 
-      roleLoading,
-      userRole: isAdmin ? 'admin' : 'not admin'
-    });
-    
-    if (!authLoading && !roleLoading) {
-      if (!user) {
-        console.log('No user found, redirecting to auth');
-        navigate("/auth");
-      } else if (!isAdmin) {
-        console.log('User is not admin, showing access denied');
-        toast({
-          title: "Access Denied",
-          description: "You don't have admin privileges to access this page.",
-          variant: "destructive",
-        });
-        navigate("/");
-      } else {
-        console.log('User has admin access');
-      }
+    if (!roleLoading && !user) {
+      navigate('/auth');
     }
-  }, [user, isAdmin, authLoading, roleLoading, navigate, toast]);
+  }, [user, roleLoading, navigate]);
 
-  // Load event data
+  // Redirect if not admin
   useEffect(() => {
-    const loadEventData = async () => {
-      if (!user) return;
-      
-      setIsLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from('events')
-          .select('*')
-          .eq('is_active', true)
-          .maybeSingle();
+    if (!roleLoading && user && !isAdmin) {
+      navigate('/');
+    }
+  }, [isAdmin, roleLoading, user, navigate]);
 
-        if (error) {
-          console.error('Error loading event:', error);
-          toast({
-            title: "Error",
-            description: "Failed to load event data.",
-            variant: "destructive",
-          });
-        } else if (data) {
-          setEventData(data);
-        }
-      } catch (error) {
-        console.error('Unexpected error:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadEventData();
-  }, [user, toast]);
-
-  const handleSave = async () => {
-    if (!user) return;
-
-    setIsSaving(true);
+  const fetchStats = async () => {
     try {
-      const { error } = await supabase
-        .from('events')
-        .upsert({
-          id: eventData.id || undefined,
-          title: eventData.title,
-          subtitle: eventData.subtitle,
-          time: eventData.time,
-          location: eventData.location,
-          description: eventData.description,
-          is_active: true
-        }, {
-          onConflict: eventData.id ? 'id' : undefined
-        });
+      // Get basic stats from existing tables only
+      const [usersResult, postsResult] = await Promise.all([
+        supabase.from('profiles').select('role', { count: 'exact' }),
+        supabase.rpc('get_posts_with_counts')
+      ]);
+
+      const adminCount = usersResult.data?.filter(u => u.role === 'admin').length || 0;
+      const moderatorCount = usersResult.data?.filter(u => u.role === 'moderator').length || 0;
+
+      // Count likes and comments from posts data
+      const totalLikes = postsResult.data?.reduce((sum: number, post: any) => sum + (post.like_count || 0), 0) || 0;
+      const totalComments = postsResult.data?.reduce((sum: number, post: any) => sum + (post.comment_count || 0), 0) || 0;
+
+      setStats({
+        total_users: usersResult.count || 0,
+        admin_count: adminCount,
+        moderator_count: moderatorCount,
+        total_posts: postsResult.data?.length || 0,
+        total_likes: totalLikes,
+        total_comments: totalComments
+      });
+    } catch (error) {
+      console.error('Error in fetchStats:', error);
+      // Set default stats on error
+      setStats({
+        total_users: 0,
+        admin_count: 0,
+        moderator_count: 0,
+        total_posts: 0,
+        total_likes: 0,
+        total_comments: 0
+      });
+    }
+  };
+
+  const fetchPosts = async () => {
+    try {
+      const { data: postsData, error: postsError } = await supabase
+        .rpc('get_posts_with_counts');
+
+      if (postsError) {
+        console.error('Error fetching posts:', postsError);
+      } else {
+        setPosts(postsData || []);
+      }
+    } catch (error) {
+      console.error('Error in fetchPosts:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user && isAdmin) {
+      fetchStats();
+      fetchPosts();
+    }
+  }, [user, isAdmin]);
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
+
+  const handleTogglePin = async (postId: string, currentlyPinned: boolean) => {
+    try {
+      const { error } = await supabase.rpc('toggle_pin', {
+        post_id: postId
+      });
 
       if (error) {
         toast({
-          title: "Error",
-          description: "Failed to save event data.",
-          variant: "destructive",
+          title: 'Error updating post',
+          description: error.message,
+          variant: 'destructive',
         });
       } else {
+        fetchPosts();
         toast({
-          title: "Event Updated",
-          description: "Event information has been saved successfully.",
+          title: currentlyPinned ? 'Post unpinned' : 'Post pinned',
+          description: currentlyPinned ? 'Post removed from top of feed.' : 'Post pinned to top of feed.',
         });
       }
     } catch (error) {
       toast({
-        title: "Error",
-        description: "An unexpected error occurred.",
-        variant: "destructive",
+        title: 'Error updating post',
+        description: 'An unexpected error occurred.',
+        variant: 'destructive',
       });
-    } finally {
-      setIsSaving(false);
     }
   };
 
-  const handleImageUpload = (type: string) => {
-    // Future implementation for image/video uploads
-    const isVideo = type.includes('video');
-    const mediaType = isVideo ? 'video' : 'image';
-    toast({
-      title: `${mediaType.charAt(0).toUpperCase() + mediaType.slice(1)} Upload`,
-      description: `${type} ${mediaType} upload functionality coming soon!`,
-    });
-  };
-
-  const handleSignOut = async () => {
-    const { error } = await signOut();
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to sign out.",
-        variant: "destructive",
-      });
-    } else {
-      navigate("/");
-    }
-  };
-
-  if (loading) {
+  if (roleLoading || loading) {
     return (
-      <>
-        <NavBar />
-        <div className="min-h-screen bg-gradient-dark flex items-center justify-center">
-          <div className="text-center">
-            <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-            <p className="text-foreground/60">Checking permissions...</p>
-          </div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading admin panel...</p>
         </div>
-      </>
+      </div>
     );
   }
 
@@ -197,275 +173,166 @@ const Admin = () => {
   }
 
   return (
-    <>
-      <NavBar />
-      <div className="min-h-screen bg-gradient-dark p-6 pt-24">
-        <div className="max-w-4xl mx-auto">
-        <div className="mb-8 flex justify-between items-start">
-          <div>
-            <h1 className="text-4xl font-graffiti font-bold bg-gradient-fire bg-clip-text text-transparent mb-4">
-              🔧 Admin Dashboard
-            </h1>
-            <Button asChild variant="outline" className="mb-6">
-              <a href="/">← Back to Site</a>
+    <div className="min-h-screen bg-background">
+      <div className="border-b border-border bg-card">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Button variant="ghost" onClick={() => navigate('/')}>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Feed
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+                <p className="text-muted-foreground">Manage your SkateBurn community</p>
+              </div>
+            </div>
+            <Button variant="outline" onClick={handleSignOut}>
+              Sign Out
             </Button>
           </div>
-          <Button onClick={handleSignOut} variant="outline">
-            <LogOut className="w-4 h-4 mr-2" />
-            Sign Out
-          </Button>
-        </div>
-
-        <div className="grid gap-6">
-          {/* Event Info Card */}
-          <Card className="bg-card/10 backdrop-blur-lg border border-white/10">
-            <CardHeader>
-              <CardTitle className="text-glow-yellow">Event Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="title">Event Title</Label>
-                <Input
-                  id="title"
-                  value={eventData.title}
-                  onChange={(e) => setEventData({...eventData, title: e.target.value})}
-                  className="bg-background/50"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="subtitle">Subtitle</Label>
-                <Input
-                  id="subtitle"
-                  value={eventData.subtitle}
-                  onChange={(e) => setEventData({...eventData, subtitle: e.target.value})}
-                  className="bg-background/50"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="time">Time</Label>
-                <Input
-                  id="time"
-                  value={eventData.time}
-                  onChange={(e) => setEventData({...eventData, time: e.target.value})}
-                  className="bg-background/50"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="location">Location</Label>
-                <Input
-                  id="location"
-                  value={eventData.location}
-                  onChange={(e) => setEventData({...eventData, location: e.target.value})}
-                  className="bg-background/50"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={eventData.description}
-                  onChange={(e) => setEventData({...eventData, description: e.target.value})}
-                  className="bg-background/50"
-                  rows={3}
-                />
-              </div>
-              
-              <Button onClick={handleSave} className="w-full" disabled={isSaving || isLoading}>
-                {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-                {isSaving ? "Saving..." : "Save Event Info"}
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Image Management */}
-          <Card className="bg-card/10 backdrop-blur-lg border border-white/10">
-            <CardHeader>
-              <CardTitle className="text-glow-yellow">Image Management</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              
-              {/* Logo Section */}
-              <div className="space-y-3">
-                <Label className="text-sm font-semibold">Logo</Label>
-                <div className="flex items-center gap-4 p-4 bg-background/20 rounded-lg border border-white/10">
-                  <div className="relative w-20 h-20 bg-background/50 rounded-lg flex items-center justify-center overflow-hidden">
-                    <img 
-                      src={currentImages.logo} 
-                      alt="Current logo" 
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-foreground/80 mb-2">Current logo</p>
-                    <Button 
-                      onClick={() => handleImageUpload('logo')}
-                      variant="outline"
-                      size="sm"
-                    >
-                      <Upload className="w-4 h-4 mr-2" />
-                      Replace Logo
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Promo Flyer Section - Video/Image Support */}
-              <div className="space-y-3">
-                <Label className="text-sm font-semibold">Promo Flyer (Video/Image)</Label>
-                <div className="flex items-center gap-4 p-4 bg-background/20 rounded-lg border border-white/10">
-                  <div className="relative w-24 h-32 bg-background/50 rounded-lg flex items-center justify-center overflow-hidden">
-                    {isVideoFlyer(currentImages.promoFlyer) ? (
-                      <video 
-                        src={currentImages.promoFlyer}
-                        className="w-full h-full object-cover"
-                        muted
-                        loop
-                        playsInline
-                        controls={false}
-                        onMouseEnter={(e) => e.currentTarget.play()}
-                        onMouseLeave={(e) => e.currentTarget.pause()}
-                      />
-                    ) : (
-                      <img 
-                        src={currentImages.promoFlyer} 
-                        alt="Current promo flyer" 
-                        className="w-full h-full object-cover"
-                      />
-                    )}
-                    <div className="absolute top-1 right-1 bg-black/60 text-white text-xs px-1 rounded">
-                      {isVideoFlyer(currentImages.promoFlyer) ? 'VIDEO' : 'IMAGE'}
-                    </div>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-foreground/80 mb-3">
-                      Current: {isVideoFlyer(currentImages.promoFlyer) ? 'Video flyer' : 'Image flyer'}
-                    </p>
-                    <div className="flex flex-col gap-2">
-                      <Button 
-                        onClick={() => handleImageUpload('promo-flyer-image')}
-                        variant="outline"
-                        size="sm"
-                      >
-                        <Upload className="w-4 h-4 mr-2" />
-                        Replace with Image
-                      </Button>
-                      <Button 
-                        onClick={() => handleImageUpload('promo-flyer-video')}
-                        variant="outline"
-                        size="sm"
-                      >
-                        <Upload className="w-4 h-4 mr-2" />
-                        Replace with Video
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Hero Background Section */}
-              <div className="space-y-3">
-                <Label className="text-sm font-semibold">Hero Background</Label>
-                <div className="flex items-center gap-4 p-4 bg-background/20 rounded-lg border border-white/10">
-                  <div className="relative w-32 h-20 bg-background/50 rounded-lg flex items-center justify-center overflow-hidden">
-                    <img 
-                      src={currentImages.heroBackground} 
-                      alt="Current hero background" 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-foreground/80 mb-2">Current hero background</p>
-                    <Button 
-                      onClick={() => handleImageUpload('hero-background')}
-                      variant="outline"
-                      size="sm"
-                    >
-                      <Upload className="w-4 h-4 mr-2" />
-                      Replace Background
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Gallery Section */}
-              <div className="space-y-3">
-                <Label className="text-sm font-semibold">Gallery Images</Label>
-                <div className="space-y-3">
-                  {currentImages.gallery.map((image, index) => (
-                    <div key={index} className="flex items-center gap-4 p-4 bg-background/20 rounded-lg border border-white/10">
-                      <div className="relative w-24 h-16 bg-background/50 rounded-lg flex items-center justify-center overflow-hidden">
-                        <img 
-                          src={image} 
-                          alt={`Gallery image ${index + 1}`} 
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm text-foreground/80 mb-2">Gallery image {index + 1}</p>
-                        <div className="flex gap-2">
-                          <Button 
-                            onClick={() => handleImageUpload(`gallery-${index + 1}`)}
-                            variant="outline"
-                            size="sm"
-                          >
-                            <Upload className="w-4 h-4 mr-2" />
-                            Replace
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  <Button 
-                    onClick={() => handleImageUpload('gallery-add')}
-                    variant="outline"
-                    className="w-full"
-                  >
-                    <Upload className="w-4 h-4 mr-2" />
-                    Add New Gallery Image
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Social Links */}
-          <Card className="bg-card/10 backdrop-blur-lg border border-white/10">
-            <CardHeader>
-              <CardTitle className="text-glow-yellow">Social Links</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="instagram">Instagram URL</Label>
-                <Input
-                  id="instagram"
-                  placeholder="https://instagram.com/skateburnmiami"
-                  className="bg-background/50"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="telegram">Telegram Group URL</Label>
-                <Input
-                  id="telegram"
-                  placeholder="https://t.me/skateburnmiami"
-                  className="bg-background/50"
-                />
-              </div>
-              
-              <Button className="w-full">
-                <Save className="w-4 h-4 mr-2" />
-                Save Social Links
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
         </div>
       </div>
-    </>
+
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid gap-6">
+          {/* Stats Overview */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats?.total_users || 0}</div>
+                <p className="text-xs text-muted-foreground">
+                  {stats?.admin_count || 0} admins, {stats?.moderator_count || 0} moderators
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
+                <MessageSquare className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats?.total_posts || 0}</div>
+                <p className="text-xs text-muted-foreground">
+                  {stats?.total_likes || 0} likes, {stats?.total_comments || 0} comments
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Engagement</CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {stats?.total_posts ? Math.round(((stats?.total_likes || 0) + (stats?.total_comments || 0)) / stats.total_posts * 10) / 10 : 0}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Average interactions per post
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Recent Posts Management */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                Post Management
+              </CardTitle>
+              <CardDescription>
+                Manage community posts, pin important announcements, and moderate content
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {posts.map((post) => (
+                  <div
+                    key={post.id}
+                    className="flex items-start space-x-4 p-4 border rounded-lg"
+                  >
+                    <Avatar className="h-10 w-10">
+                      <AvatarFallback>
+                        {post.author_name?.charAt(0) || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2">
+                        <p className="font-medium">{post.author_name}</p>
+                        {post.author_role === 'admin' && (
+                          <Badge variant="destructive" className="text-xs">Admin</Badge>
+                        )}
+                        {post.author_role === 'moderator' && (
+                          <Badge variant="outline" className="text-xs">Mod</Badge>
+                        )}
+                        {post.pinned && (
+                          <Badge variant="secondary" className="text-xs">
+                            <Pin className="h-3 w-3 mr-1" />
+                            Pinned
+                          </Badge>
+                        )}
+                        <span className="text-sm text-muted-foreground">
+                          {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                        </span>
+                      </div>
+                      
+                      <p className="text-sm text-foreground mb-2 line-clamp-3">
+                        {post.content}
+                      </p>
+                      
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Heart className="h-4 w-4" />
+                          {post.like_count}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <MessageSquare className="h-4 w-4" />
+                          {post.comment_count}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleTogglePin(post.id, post.pinned)}
+                        className="flex items-center gap-1"
+                      >
+                        <Pin className={`h-4 w-4 ${post.pinned ? 'fill-current' : ''}`} />
+                        {post.pinned ? 'Unpin' : 'Pin'}
+                      </Button>
+                      
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+                
+                {posts.length === 0 && (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">No posts to manage yet.</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
   );
 };
 
