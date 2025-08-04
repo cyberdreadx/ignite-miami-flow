@@ -88,6 +88,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_post: {
+        Args: { post_content: string }
+        Returns: string
+      }
       debug_auth_uid: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -96,8 +100,31 @@ export type Database = {
           profile_data: Json
         }[]
       }
+      get_posts_with_counts: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          content: string
+          created_at: string
+          updated_at: string
+          pinned: boolean
+          like_count: number
+          comment_count: number
+          user_liked: boolean
+          author_name: string
+          author_role: string
+        }[]
+      }
       promote_user_to_admin: {
         Args: { user_email: string }
+        Returns: boolean
+      }
+      toggle_like: {
+        Args: { post_id: string }
+        Returns: boolean
+      }
+      toggle_pin: {
+        Args: { post_id: string }
         Returns: boolean
       }
     }
