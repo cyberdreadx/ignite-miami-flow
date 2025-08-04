@@ -27,11 +27,18 @@ const Profile = () => {
   const [saving, setSaving] = useState(false);
   
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log('Profile page useEffect - user:', user);
+    console.log('Profile page useEffect - user:', user, 'authLoading:', authLoading);
+    
+    // Don't redirect while auth is still loading
+    if (authLoading) {
+      console.log('Auth still loading, waiting...');
+      return;
+    }
+    
     if (user) {
       console.log('User is authenticated, fetching profile');
       fetchProfile();
@@ -39,7 +46,7 @@ const Profile = () => {
       console.log('User not authenticated, redirecting to auth');
       navigate('/auth');
     }
-  }, [user, navigate]);
+  }, [user, authLoading, navigate]);
 
   const fetchProfile = async () => {
     if (!user) return;
@@ -106,7 +113,7 @@ const Profile = () => {
     setProfile(prev => ({ ...prev, avatar_url: avatarUrl }));
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <>
         <NavBar />
