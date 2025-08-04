@@ -88,7 +88,10 @@ const NavBar = () => {
             {user ? (
               <>
                 <Button
-                  onClick={() => navigate("/profile")}
+                  onClick={() => {
+                    console.log('Profile button clicked, navigating to /profile');
+                    navigate("/profile");
+                  }}
                   variant="ghost"
                   size="sm"
                 >
@@ -165,6 +168,7 @@ const NavBar = () => {
                 <div className="space-y-2">
                   <Button
                     onClick={() => {
+                      console.log('Mobile profile button clicked, navigating to /profile');
                       navigate("/profile");
                       setIsOpen(false);
                     }}
