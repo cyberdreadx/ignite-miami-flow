@@ -19,10 +19,11 @@ export const useUserRole = () => {
         console.log('Fetching role for user:', user.id, user.email);
         console.log('About to query profiles table with user_id:', user.id);
         
+        // Try querying by email as backup since auth.uid() context issues
         const { data, error } = await supabase
           .from('profiles')
           .select('role, email, user_id')
-          .eq('user_id', user.id)
+          .eq('email', user.email)
           .maybeSingle();
 
         console.log('Raw query result - data:', data);
