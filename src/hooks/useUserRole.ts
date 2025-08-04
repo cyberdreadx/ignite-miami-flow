@@ -49,7 +49,7 @@ export const useUserRole = () => {
     };
 
     fetchUserRole();
-  }, [user]);
+  }, [user?.id, user?.email]); // Watch for changes in user id AND email
 
   const isAdmin = role === 'admin';
   const isModerator = role === 'moderator' || isAdmin;
