@@ -6,7 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Heart, MessageCircle, Pin } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { formatDistanceToNow } from 'date-fns';
@@ -22,6 +22,7 @@ interface Post {
   user_liked: boolean;
   author_name: string;
   author_role: string;
+  author_avatar: string | null;
 }
 
 export const SocialFeed = () => {
@@ -193,8 +194,11 @@ export const SocialFeed = () => {
                 <div className="flex items-start justify-between">
                   <div className="flex items-center space-x-3">
                     <Avatar>
+                      {post.author_avatar && (
+                        <AvatarImage src={post.author_avatar} alt={post.author_name} />
+                      )}
                       <AvatarFallback>
-                        {post.author_name?.charAt(0) || 'U'}
+                        {post.author_name?.charAt(0)?.toUpperCase() || 'U'}
                       </AvatarFallback>
                     </Avatar>
                     <div>

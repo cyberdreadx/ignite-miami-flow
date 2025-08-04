@@ -195,11 +195,13 @@ export type Database = {
           content: string
           created_at: string
           updated_at: string
-          is_pinned: boolean
-          user_id: string
+          pinned: boolean
           like_count: number
           comment_count: number
-          user_has_liked: boolean
+          user_liked: boolean
+          author_name: string
+          author_role: string
+          author_avatar: string
         }[]
       }
       promote_user_to_admin: {
