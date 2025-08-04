@@ -50,20 +50,20 @@ const Index = () => {
       </AnimatedSection>
 
       <AnimatedSection 
-        id="community" 
-        delay={0.5}
-        className="relative"
-      >
-        <CommunityVibe />
-      </AnimatedSection>
-
-      <AnimatedSection 
         id="instagram" 
-        delay={0.6}
+        delay={0.5}
         direction="left"
         className="relative"
       >
         <InstagramFeed />
+      </AnimatedSection>
+
+      <AnimatedSection 
+        id="community" 
+        delay={0.6}
+        className="relative"
+      >
+        <CommunityVibe />
       </AnimatedSection>
 
       <AnimatedSection 
