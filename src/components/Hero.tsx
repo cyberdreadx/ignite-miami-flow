@@ -26,7 +26,7 @@ const Hero = () => {
       
       {/* Animated Logo */}
       <motion.div 
-        className="absolute top-20 left-8 z-10"
+        className="absolute top-24 left-8 z-10"
         style={{ y: logoY }}
         initial={{ opacity: 0, x: -50 }}
         animate={{ opacity: 1, x: 0 }}
