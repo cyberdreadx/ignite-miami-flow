@@ -40,10 +40,16 @@ const Admin = () => {
   
   // Current images state for preview
   const currentImages = {
-    promoFlyer,
+    promoFlyer, // This could be video or image
     gallery: [galleryImage1, galleryImage2, galleryImage3],
     logo,
     heroBackground
+  };
+
+  // Check if flyer is video or image
+  const isVideoFlyer = (filename: string) => {
+    const videoExtensions = ['.mp4', '.webm', '.ogg', '.mov', '.avi'];
+    return videoExtensions.some(ext => filename.toLowerCase().includes(ext));
   };
 
   // Redirect if not authenticated or not admin
@@ -150,10 +156,12 @@ const Admin = () => {
   };
 
   const handleImageUpload = (type: string) => {
-    // Future implementation for image uploads
+    // Future implementation for image/video uploads
+    const isVideo = type.includes('video');
+    const mediaType = isVideo ? 'video' : 'image';
     toast({
-      title: "Image Upload",
-      description: `${type} image upload functionality coming soon!`,
+      title: `${mediaType.charAt(0).toUpperCase() + mediaType.slice(1)} Upload`,
+      description: `${type} ${mediaType} upload functionality coming soon!`,
     });
   };
 
@@ -305,27 +313,55 @@ const Admin = () => {
                 </div>
               </div>
 
-              {/* Promo Flyer Section */}
+              {/* Promo Flyer Section - Video/Image Support */}
               <div className="space-y-3">
-                <Label className="text-sm font-semibold">Promo Flyer</Label>
+                <Label className="text-sm font-semibold">Promo Flyer (Video/Image)</Label>
                 <div className="flex items-center gap-4 p-4 bg-background/20 rounded-lg border border-white/10">
                   <div className="relative w-24 h-32 bg-background/50 rounded-lg flex items-center justify-center overflow-hidden">
-                    <img 
-                      src={currentImages.promoFlyer} 
-                      alt="Current promo flyer" 
-                      className="w-full h-full object-cover"
-                    />
+                    {isVideoFlyer(currentImages.promoFlyer) ? (
+                      <video 
+                        src={currentImages.promoFlyer}
+                        className="w-full h-full object-cover"
+                        muted
+                        loop
+                        playsInline
+                        controls={false}
+                        onMouseEnter={(e) => e.currentTarget.play()}
+                        onMouseLeave={(e) => e.currentTarget.pause()}
+                      />
+                    ) : (
+                      <img 
+                        src={currentImages.promoFlyer} 
+                        alt="Current promo flyer" 
+                        className="w-full h-full object-cover"
+                      />
+                    )}
+                    <div className="absolute top-1 right-1 bg-black/60 text-white text-xs px-1 rounded">
+                      {isVideoFlyer(currentImages.promoFlyer) ? 'VIDEO' : 'IMAGE'}
+                    </div>
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm text-foreground/80 mb-2">Current promo flyer</p>
-                    <Button 
-                      onClick={() => handleImageUpload('promo-flyer')}
-                      variant="outline"
-                      size="sm"
-                    >
-                      <Upload className="w-4 h-4 mr-2" />
-                      Replace Flyer
-                    </Button>
+                    <p className="text-sm text-foreground/80 mb-3">
+                      Current: {isVideoFlyer(currentImages.promoFlyer) ? 'Video flyer' : 'Image flyer'}
+                    </p>
+                    <div className="flex flex-col gap-2">
+                      <Button 
+                        onClick={() => handleImageUpload('promo-flyer-image')}
+                        variant="outline"
+                        size="sm"
+                      >
+                        <Upload className="w-4 h-4 mr-2" />
+                        Replace with Image
+                      </Button>
+                      <Button 
+                        onClick={() => handleImageUpload('promo-flyer-video')}
+                        variant="outline"
+                        size="sm"
+                      >
+                        <Upload className="w-4 h-4 mr-2" />
+                        Replace with Video
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
