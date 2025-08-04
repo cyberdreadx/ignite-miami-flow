@@ -88,6 +88,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      debug_auth_uid: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          current_uid: string
+          profile_exists: boolean
+          profile_data: Json
+        }[]
+      }
       promote_user_to_admin: {
         Args: { user_email: string }
         Returns: boolean
