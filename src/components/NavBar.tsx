@@ -88,6 +88,14 @@ const NavBar = () => {
             {user ? (
               <>
                 <Button
+                  onClick={() => navigate("/profile")}
+                  variant="ghost"
+                  size="sm"
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  Profile
+                </Button>
+                <Button
                   onClick={() => navigate("/admin")}
                   variant="outline"
                   size="sm"
@@ -155,6 +163,17 @@ const NavBar = () => {
             <div className="border-t border-white/10 pt-4 mt-4">
               {user ? (
                 <div className="space-y-2">
+                  <Button
+                    onClick={() => {
+                      navigate("/profile");
+                      setIsOpen(false);
+                    }}
+                    variant="ghost"
+                    className="w-full justify-start"
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    Profile
+                  </Button>
                   <Button
                     onClick={() => {
                       navigate("/admin");

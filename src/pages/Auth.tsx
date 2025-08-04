@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { Loader2, ArrowLeft } from "lucide-react";
 import NavBar from "@/components/NavBar";
+import { AvatarUpload } from "@/components/AvatarUpload";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -113,18 +114,26 @@ const Auth = () => {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {!isLogin && (
-                <div>
-                  <Label htmlFor="fullName">Full Name</Label>
-                  <Input
-                    id="fullName"
-                    type="text"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    required={!isLogin}
-                    className="bg-background/50"
-                    placeholder="Enter your full name"
-                  />
-                </div>
+                <>
+                  <div className="flex justify-center mb-6">
+                    <AvatarUpload 
+                      userName={fullName || email || "User"} 
+                      size="lg"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="fullName">Full Name</Label>
+                    <Input
+                      id="fullName"
+                      type="text"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      required={!isLogin}
+                      className="bg-background/50"
+                      placeholder="Enter your full name"
+                    />
+                  </div>
+                </>
               )}
               
               <div>
