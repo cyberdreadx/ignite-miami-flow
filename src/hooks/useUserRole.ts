@@ -17,7 +17,7 @@ export const useUserRole = () => {
 
       try {
         console.log('Fetching role for user:', user.id, user.email);
-        console.log('About to query profiles table with user_id:', user.id);
+        console.log('About to query profiles table with email:', user.email);
         
         // Try querying by email as backup since auth.uid() context issues
         const { data, error } = await supabase
@@ -28,6 +28,7 @@ export const useUserRole = () => {
 
         console.log('Raw query result - data:', data);
         console.log('Raw query result - error:', error);
+        console.log('User email used in query:', user.email);
 
         if (error) {
           console.error('Database error fetching user role:', error);
