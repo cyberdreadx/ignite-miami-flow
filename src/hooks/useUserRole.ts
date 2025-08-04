@@ -4,6 +4,7 @@ import { useAuth } from './useAuth';
 
 export const useUserRole = () => {
   const { user } = useAuth();
+  console.log('useUserRole hook - received user:', user);
   const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
