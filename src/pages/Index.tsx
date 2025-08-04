@@ -26,14 +26,14 @@ const Index = () => {
       {/* Animated Sections with staggered entrance */}
       <AnimatedSection 
         id="event-details" 
-        delay={0.2}
+        delay={0.1}
         className="relative"
       >
         <EventDetails />
       </AnimatedSection>
 
       <AnimatedSection 
-        delay={0.3}
+        delay={0.2}
         direction="left"
         className="relative"
       >
