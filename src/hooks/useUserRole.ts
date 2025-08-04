@@ -8,8 +8,13 @@ export const useUserRole = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('useUserRole useEffect triggered with user:', user);
+    
     const fetchUserRole = async () => {
+      console.log('fetchUserRole called, user is:', user);
+      
       if (!user) {
+        console.log('No user found, setting role to null');
         setRole(null);
         setLoading(false);
         return;
