@@ -194,16 +194,16 @@ export const SocialFeed = () => {
                   <div className="flex items-center space-x-3">
                     <Avatar>
                       <AvatarFallback>
-                        {post.profiles?.full_name?.charAt(0) || 'U'}
+                        {post.author_name?.charAt(0) || 'U'}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="font-medium">{post.profiles?.full_name}</p>
+                      <p className="font-medium">{post.author_name}</p>
                       <div className="flex items-center gap-2">
-                        {post.profiles?.role === 'admin' && (
+                        {post.author_role === 'admin' && (
                           <Badge variant="destructive" className="text-xs">Admin</Badge>
                         )}
-                        {post.profiles?.role === 'moderator' && (
+                        {post.author_role === 'moderator' && (
                           <Badge variant="outline" className="text-xs">Mod</Badge>
                         )}
                         <span className="text-sm text-muted-foreground">
@@ -243,6 +243,11 @@ export const SocialFeed = () => {
               </CardContent>
             </Card>
           ))}
+          {posts.length === 0 && (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">No posts yet. Be the first to share something!</p>
+            </div>
+          )}
         </div>
       )}
     </div>
