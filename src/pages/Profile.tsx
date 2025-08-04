@@ -31,9 +31,12 @@ const Profile = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log('Profile page useEffect - user:', user);
     if (user) {
+      console.log('User is authenticated, fetching profile');
       fetchProfile();
     } else {
+      console.log('User not authenticated, redirecting to auth');
       navigate('/auth');
     }
   }, [user, navigate]);
