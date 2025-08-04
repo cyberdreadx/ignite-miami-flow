@@ -9,8 +9,16 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Upload, Save, LogOut, Loader2 } from "lucide-react";
+import { Upload, Save, LogOut, Loader2, ImageIcon, X } from "lucide-react";
 import NavBar from "@/components/NavBar";
+
+// Import current static assets for preview
+import promoFlyer from "@/assets/promo-flyer.jpg";
+import galleryImage1 from "@/assets/gallery-1.jpg";
+import galleryImage2 from "@/assets/gallery-2.jpg";
+import galleryImage3 from "@/assets/gallery-3.jpg";
+import logo from "@/assets/skateburn-logo.png";
+import heroBackground from "@/assets/hero-bg.jpg";
 
 const Admin = () => {
   const { toast } = useToast();
@@ -29,6 +37,14 @@ const Admin = () => {
   const loading = authLoading || roleLoading;
 
   const [isSaving, setIsSaving] = useState(false);
+  
+  // Current images state for preview
+  const currentImages = {
+    promoFlyer,
+    gallery: [galleryImage1, galleryImage2, galleryImage3],
+    logo,
+    heroBackground
+  };
 
   // Redirect if not authenticated or not admin
   useEffect(() => {
@@ -262,34 +278,120 @@ const Admin = () => {
             <CardHeader>
               <CardTitle className="text-glow-yellow">Image Management</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4">
-                <Button 
-                  onClick={() => handleImageUpload('promo-flyer')}
-                  variant="outline"
-                  className="w-full"
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  Upload New Promo Flyer
-                </Button>
-                
-                <Button 
-                  onClick={() => handleImageUpload('gallery')}
-                  variant="outline"
-                  className="w-full"
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  Add Gallery Images
-                </Button>
-                
-                <Button 
-                  onClick={() => handleImageUpload('logo')}
-                  variant="outline"
-                  className="w-full"
-                >
-                  <Upload className="w-4 h-4 mr-2" />
-                  Update Logo
-                </Button>
+            <CardContent className="space-y-6">
+              
+              {/* Logo Section */}
+              <div className="space-y-3">
+                <Label className="text-sm font-semibold">Logo</Label>
+                <div className="flex items-center gap-4 p-4 bg-background/20 rounded-lg border border-white/10">
+                  <div className="relative w-20 h-20 bg-background/50 rounded-lg flex items-center justify-center overflow-hidden">
+                    <img 
+                      src={currentImages.logo} 
+                      alt="Current logo" 
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-foreground/80 mb-2">Current logo</p>
+                    <Button 
+                      onClick={() => handleImageUpload('logo')}
+                      variant="outline"
+                      size="sm"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Replace Logo
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Promo Flyer Section */}
+              <div className="space-y-3">
+                <Label className="text-sm font-semibold">Promo Flyer</Label>
+                <div className="flex items-center gap-4 p-4 bg-background/20 rounded-lg border border-white/10">
+                  <div className="relative w-24 h-32 bg-background/50 rounded-lg flex items-center justify-center overflow-hidden">
+                    <img 
+                      src={currentImages.promoFlyer} 
+                      alt="Current promo flyer" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-foreground/80 mb-2">Current promo flyer</p>
+                    <Button 
+                      onClick={() => handleImageUpload('promo-flyer')}
+                      variant="outline"
+                      size="sm"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Replace Flyer
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Hero Background Section */}
+              <div className="space-y-3">
+                <Label className="text-sm font-semibold">Hero Background</Label>
+                <div className="flex items-center gap-4 p-4 bg-background/20 rounded-lg border border-white/10">
+                  <div className="relative w-32 h-20 bg-background/50 rounded-lg flex items-center justify-center overflow-hidden">
+                    <img 
+                      src={currentImages.heroBackground} 
+                      alt="Current hero background" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-foreground/80 mb-2">Current hero background</p>
+                    <Button 
+                      onClick={() => handleImageUpload('hero-background')}
+                      variant="outline"
+                      size="sm"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Replace Background
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Gallery Section */}
+              <div className="space-y-3">
+                <Label className="text-sm font-semibold">Gallery Images</Label>
+                <div className="space-y-3">
+                  {currentImages.gallery.map((image, index) => (
+                    <div key={index} className="flex items-center gap-4 p-4 bg-background/20 rounded-lg border border-white/10">
+                      <div className="relative w-24 h-16 bg-background/50 rounded-lg flex items-center justify-center overflow-hidden">
+                        <img 
+                          src={image} 
+                          alt={`Gallery image ${index + 1}`} 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm text-foreground/80 mb-2">Gallery image {index + 1}</p>
+                        <div className="flex gap-2">
+                          <Button 
+                            onClick={() => handleImageUpload(`gallery-${index + 1}`)}
+                            variant="outline"
+                            size="sm"
+                          >
+                            <Upload className="w-4 h-4 mr-2" />
+                            Replace
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <Button 
+                    onClick={() => handleImageUpload('gallery-add')}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Add New Gallery Image
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
