@@ -227,51 +227,51 @@ export const SocialFeed = () => {
         {pinnedPosts.length > 0 && (
           <div className="space-y-4">
             {pinnedPosts.map((post) => (
-              <div key={post.id} className="space-y-4">
-                <Card className="relative border-primary/20 bg-primary/5 max-w-2xl mx-auto">
-                  <div className="absolute top-4 right-4">
-                    <Badge variant="secondary" className="flex items-center gap-1">
-                      <Pin className="h-3 w-3" />
-                      Pinned
-                    </Badge>
-                  </div>
-                  <CardHeader className="pb-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center space-x-3">
-                        <Avatar>
-                          {post.author_avatar && (
-                            <AvatarImage src={post.author_avatar} alt={post.author_name} />
-                          )}
-                          <AvatarFallback>
-                            {post.author_name?.charAt(0)?.toUpperCase() || 'U'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{post.author_name}</p>
-                          <div className="flex items-center gap-2">
-                            {post.author_role === 'admin' && (
-                              <Badge variant="destructive" className="text-xs">Admin</Badge>
-                            )}
-                            {post.author_role === 'moderator' && (
-                              <Badge variant="outline" className="text-xs">Mod</Badge>
-                            )}
-                            <span className="text-sm text-muted-foreground">
-                              {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
-                            </span>
-                          </div>
-                        </div>
+              <div key={post.id} className="space-y-0 bg-background border-b border-border/20">
+                {/* Header */}
+                <div className="max-w-2xl mx-auto px-4 py-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <Avatar className="h-8 w-8">
+                        {post.author_avatar && (
+                          <AvatarImage src={post.author_avatar} alt={post.author_name} />
+                        )}
+                        <AvatarFallback className="text-xs">
+                          {post.author_name?.charAt(0)?.toUpperCase() || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-sm">{post.author_name}</p>
+                        {post.author_role === 'admin' && (
+                          <Badge variant="destructive" className="text-xs h-4">Admin</Badge>
+                        )}
+                        {post.author_role === 'moderator' && (
+                          <Badge variant="outline" className="text-xs h-4">Mod</Badge>
+                        )}
+                        <span className="text-xs text-muted-foreground">•</span>
+                        <span className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                        </span>
                       </div>
                     </div>
-                  </CardHeader>
-                  <CardContent className="pt-0 pb-0">
-                    {post.content && (
-                      <LinkifyText 
-                        text={post.content}
-                        className="whitespace-pre-wrap mb-4 block"
-                      />
-                    )}
-                  </CardContent>
-                </Card>
+                    <div className="flex items-center gap-1">
+                      <Badge variant="secondary" className="text-xs h-5">
+                        <Pin className="h-3 w-3 mr-1" />
+                        Pinned
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Content */}
+                {post.content && (
+                  <div className="max-w-2xl mx-auto px-4 pb-3">
+                    <LinkifyText 
+                      text={post.content}
+                      className="whitespace-pre-wrap text-sm"
+                    />
+                  </div>
+                )}
                 
                 {/* Media Display - Full Width */}
                 <MediaDisplay 
@@ -280,16 +280,18 @@ export const SocialFeed = () => {
                   className="w-full"
                 />
                 
-                {/* Interaction buttons - Contained */}
-                <div className="max-w-2xl mx-auto px-4">
-                  <div className="flex items-center space-x-6">
-                    <div className="flex items-center space-x-2 text-muted-foreground">
-                      <Heart className="h-4 w-4" />
-                      <span>{post.like_count}</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-muted-foreground">
-                      <MessageCircle className="h-4 w-4" />
-                      <span>{post.comment_count}</span>
+                {/* Interaction buttons */}
+                <div className="max-w-2xl mx-auto px-4 py-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-1 text-muted-foreground">
+                        <Heart className="h-5 w-5" />
+                        <span className="text-sm font-medium">{post.like_count}</span>
+                      </div>
+                      <div className="flex items-center space-x-1 text-muted-foreground">
+                        <MessageCircle className="h-5 w-5" />
+                        <span className="text-sm font-medium">{post.comment_count}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -321,51 +323,47 @@ export const SocialFeed = () => {
       
       {/* Pinned Posts */}
       {pinnedPosts.length > 0 && (
-        <div className="space-y-4">
+        <div className="space-y-0">
           {pinnedPosts.map((post) => (
-            <div key={post.id} className="space-y-4">
-              <Card className="relative border-primary/20 bg-primary/5 max-w-2xl mx-auto">
-                {post.pinned && (
-                  <div className="absolute top-4 right-4">
-                    <Badge variant="secondary" className="flex items-center gap-1">
-                      <Pin className="h-3 w-3" />
+            <div key={post.id} className="bg-background border-b border-border/20">
+              {/* Header */}
+              <div className="max-w-2xl mx-auto px-4 py-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <Avatar className="h-8 w-8">
+                      {post.author_avatar && (
+                        <AvatarImage src={post.author_avatar} alt={post.author_name} />
+                      )}
+                      <AvatarFallback className="text-xs">
+                        {post.author_name?.charAt(0)?.toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-sm">{post.author_name}</p>
+                      {post.author_role === 'admin' && (
+                        <Badge variant="destructive" className="text-xs h-4">Admin</Badge>
+                      )}
+                      {post.author_role === 'moderator' && (
+                        <Badge variant="outline" className="text-xs h-4">Mod</Badge>
+                      )}
+                      <span className="text-xs text-muted-foreground">•</span>
+                      <span className="text-xs text-muted-foreground">
+                        {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Badge variant="secondary" className="text-xs h-5">
+                      <Pin className="h-3 w-3 mr-1" />
                       Pinned
                     </Badge>
-                  </div>
-                )}
-                <CardHeader className="pb-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center space-x-3">
-                      <Avatar>
-                        {post.author_avatar && (
-                          <AvatarImage src={post.author_avatar} alt={post.author_name} />
-                        )}
-                        <AvatarFallback>
-                          {post.author_name?.charAt(0)?.toUpperCase() || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">{post.author_name}</p>
-                        <div className="flex items-center gap-2">
-                          {post.author_role === 'admin' && (
-                            <Badge variant="destructive" className="text-xs">Admin</Badge>
-                          )}
-                          {post.author_role === 'moderator' && (
-                            <Badge variant="outline" className="text-xs">Mod</Badge>
-                          )}
-                          <span className="text-sm text-muted-foreground">
-                            {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-1 ml-2">
                       {user?.id === post.user_id && (
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDeletePost(post.id)}
-                          className="text-destructive hover:text-destructive"
+                          className="text-destructive hover:text-destructive h-8 w-8 p-0"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -375,22 +373,25 @@ export const SocialFeed = () => {
                           variant="ghost"
                           size="sm"
                           onClick={() => handlePin(post.id, post.pinned)}
+                          className="h-8 w-8 p-0"
                         >
                           <Pin className={`h-4 w-4 ${post.pinned ? 'fill-current' : ''}`} />
                         </Button>
                       )}
                     </div>
                   </div>
-                </CardHeader>
-                <CardContent className="pt-0 pb-0">
-                  {post.content && (
-                    <LinkifyText 
-                      text={post.content}
-                      className="whitespace-pre-wrap mb-4 block"
-                    />
-                  )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
+
+              {/* Content */}
+              {post.content && (
+                <div className="max-w-2xl mx-auto px-4 pb-3">
+                  <LinkifyText 
+                    text={post.content}
+                    className="whitespace-pre-wrap text-sm"
+                  />
+                </div>
+              )}
               
               {/* Media Display - Full Width */}
               <MediaDisplay 
@@ -399,22 +400,24 @@ export const SocialFeed = () => {
                 className="w-full"
               />
               
-              {/* Interaction buttons - Contained */}
-              <div className="max-w-2xl mx-auto px-4">
-                <div className="flex items-center space-x-6">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleLike(post.id, post.user_liked)}
-                    className="flex items-center space-x-2"
-                  >
-                    <Heart className={`h-4 w-4 ${post.user_liked ? 'fill-red-500 text-red-500' : ''}`} />
-                    <span>{post.like_count}</span>
-                  </Button>
-                  <Button variant="ghost" size="sm" className="flex items-center space-x-2">
-                    <MessageCircle className="h-4 w-4" />
-                    <span>{post.comment_count}</span>
-                  </Button>
+              {/* Interaction buttons */}
+              <div className="max-w-2xl mx-auto px-4 py-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleLike(post.id, post.user_liked)}
+                      className="flex items-center space-x-1 h-auto p-0 hover:bg-transparent"
+                    >
+                      <Heart className={`h-5 w-5 ${post.user_liked ? 'fill-red-500 text-red-500' : ''}`} />
+                      <span className="text-sm font-medium">{post.like_count}</span>
+                    </Button>
+                    <Button variant="ghost" size="sm" className="flex items-center space-x-1 h-auto p-0 hover:bg-transparent">
+                      <MessageCircle className="h-5 w-5" />
+                      <span className="text-sm font-medium">{post.comment_count}</span>
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -471,68 +474,69 @@ export const SocialFeed = () => {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-0">
           {regularPosts.map((post) => (
-            <div key={post.id} className="space-y-4">
-              <Card className="relative max-w-2xl mx-auto">
-                <CardHeader className="pb-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center space-x-3">
-                      <Avatar>
-                        {post.author_avatar && (
-                          <AvatarImage src={post.author_avatar} alt={post.author_name} />
-                        )}
-                        <AvatarFallback>
-                          {post.author_name?.charAt(0)?.toUpperCase() || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">{post.author_name}</p>
-                        <div className="flex items-center gap-2">
-                          {post.author_role === 'admin' && (
-                            <Badge variant="destructive" className="text-xs">Admin</Badge>
-                          )}
-                          {post.author_role === 'moderator' && (
-                            <Badge variant="outline" className="text-xs">Mod</Badge>
-                          )}
-                          <span className="text-sm text-muted-foreground">
-                            {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      {user?.id === post.user_id && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeletePost(post.id)}
-                          className="text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+            <div key={post.id} className="bg-background border-b border-border/20">
+              {/* Header */}
+              <div className="max-w-2xl mx-auto px-4 py-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <Avatar className="h-8 w-8">
+                      {post.author_avatar && (
+                        <AvatarImage src={post.author_avatar} alt={post.author_name} />
                       )}
-                      {isAdmin && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handlePin(post.id, post.pinned)}
-                        >
-                          <Pin className={`h-4 w-4 ${post.pinned ? 'fill-current' : ''}`} />
-                        </Button>
+                      <AvatarFallback className="text-xs">
+                        {post.author_name?.charAt(0)?.toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-sm">{post.author_name}</p>
+                      {post.author_role === 'admin' && (
+                        <Badge variant="destructive" className="text-xs h-4">Admin</Badge>
                       )}
+                      {post.author_role === 'moderator' && (
+                        <Badge variant="outline" className="text-xs h-4">Mod</Badge>
+                      )}
+                      <span className="text-xs text-muted-foreground">•</span>
+                      <span className="text-xs text-muted-foreground">
+                        {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                      </span>
                     </div>
                   </div>
-                </CardHeader>
-                <CardContent className="pt-0 pb-0">
-                  {post.content && (
-                    <LinkifyText 
-                      text={post.content}
-                      className="whitespace-pre-wrap mb-4 block"
-                    />
-                  )}
-                </CardContent>
-              </Card>
+                  <div className="flex gap-1">
+                    {user?.id === post.user_id && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeletePost(post.id)}
+                        className="text-destructive hover:text-destructive h-8 w-8 p-0"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {isAdmin && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handlePin(post.id, post.pinned)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Pin className={`h-4 w-4 ${post.pinned ? 'fill-current' : ''}`} />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Content */}
+              {post.content && (
+                <div className="max-w-2xl mx-auto px-4 pb-3">
+                  <LinkifyText 
+                    text={post.content}
+                    className="whitespace-pre-wrap text-sm"
+                  />
+                </div>
+              )}
               
               {/* Media Display - Full Width */}
               <MediaDisplay 
@@ -541,22 +545,24 @@ export const SocialFeed = () => {
                 className="w-full"
               />
               
-              {/* Interaction buttons - Contained */}
-              <div className="max-w-2xl mx-auto px-4">
-                <div className="flex items-center space-x-6">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleLike(post.id, post.user_liked)}
-                    className="flex items-center space-x-2"
-                  >
-                    <Heart className={`h-4 w-4 ${post.user_liked ? 'fill-red-500 text-red-500' : ''}`} />
-                    <span>{post.like_count}</span>
-                  </Button>
-                  <Button variant="ghost" size="sm" className="flex items-center space-x-2">
-                    <MessageCircle className="h-4 w-4" />
-                    <span>{post.comment_count}</span>
-                  </Button>
+              {/* Interaction buttons */}
+              <div className="max-w-2xl mx-auto px-4 py-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleLike(post.id, post.user_liked)}
+                      className="flex items-center space-x-1 h-auto p-0 hover:bg-transparent"
+                    >
+                      <Heart className={`h-5 w-5 ${post.user_liked ? 'fill-red-500 text-red-500' : ''}`} />
+                      <span className="text-sm font-medium">{post.like_count}</span>
+                    </Button>
+                    <Button variant="ghost" size="sm" className="flex items-center space-x-1 h-auto p-0 hover:bg-transparent">
+                      <MessageCircle className="h-5 w-5" />
+                      <span className="text-sm font-medium">{post.comment_count}</span>
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
