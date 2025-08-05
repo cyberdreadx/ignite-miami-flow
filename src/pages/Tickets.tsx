@@ -185,8 +185,17 @@ const Tickets = () => {
 
       if (error) throw error;
 
-      // Redirect to Stripe checkout (mobile-friendly)
-      window.location.href = data.url;
+      // Try to open in new tab, fallback to redirect if blocked
+      try {
+        const newWindow = window.open(data.url, '_blank');
+        if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+          // Popup was blocked, use redirect instead
+          window.location.href = data.url;
+        }
+      } catch (error) {
+        // Fallback to redirect if window.open fails
+        window.location.href = data.url;
+      }
     } catch (error) {
       console.error('Error creating ticket payment:', error);
       toast({
@@ -208,8 +217,17 @@ const Tickets = () => {
 
       if (error) throw error;
 
-      // Redirect to Stripe checkout (mobile-friendly)
-      window.location.href = data.url;
+      // Try to open in new tab, fallback to redirect if blocked
+      try {
+        const newWindow = window.open(data.url, '_blank');
+        if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+          // Popup was blocked, use redirect instead
+          window.location.href = data.url;
+        }
+      } catch (error) {
+        // Fallback to redirect if window.open fails
+        window.location.href = data.url;
+      }
     } catch (error) {
       console.error('Error creating subscription:', error);
       toast({
