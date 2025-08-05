@@ -183,6 +183,8 @@ export type Database = {
           current_period_end: string | null
           current_period_start: string | null
           id: string
+          qr_code_data: string | null
+          qr_code_token: string | null
           status: string | null
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
@@ -194,6 +196,8 @@ export type Database = {
           current_period_end?: string | null
           current_period_start?: string | null
           id?: string
+          qr_code_data?: string | null
+          qr_code_token?: string | null
           status?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
@@ -205,6 +209,8 @@ export type Database = {
           current_period_end?: string | null
           current_period_start?: string | null
           id?: string
+          qr_code_data?: string | null
+          qr_code_token?: string | null
           status?: string | null
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
@@ -220,10 +226,14 @@ export type Database = {
           currency: string | null
           event_id: string | null
           id: string
+          qr_code_data: string | null
+          qr_code_token: string | null
           status: string | null
           stripe_payment_intent_id: string | null
           stripe_session_id: string | null
           updated_at: string
+          used_at: string | null
+          used_by: string | null
           user_id: string
           valid_until: string | null
         }
@@ -233,10 +243,14 @@ export type Database = {
           currency?: string | null
           event_id?: string | null
           id?: string
+          qr_code_data?: string | null
+          qr_code_token?: string | null
           status?: string | null
           stripe_payment_intent_id?: string | null
           stripe_session_id?: string | null
           updated_at?: string
+          used_at?: string | null
+          used_by?: string | null
           user_id: string
           valid_until?: string | null
         }
@@ -246,10 +260,14 @@ export type Database = {
           currency?: string | null
           event_id?: string | null
           id?: string
+          qr_code_data?: string | null
+          qr_code_token?: string | null
           status?: string | null
           stripe_payment_intent_id?: string | null
           stripe_session_id?: string | null
           updated_at?: string
+          used_at?: string | null
+          used_by?: string | null
           user_id?: string
           valid_until?: string | null
         }
@@ -275,6 +293,10 @@ export type Database = {
           profile_exists: boolean
           profile_data: Json
         }[]
+      }
+      generate_qr_token: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       get_posts_with_counts: {
         Args: Record<PropertyKey, never>
