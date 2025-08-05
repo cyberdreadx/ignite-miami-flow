@@ -221,8 +221,15 @@ export const SocialFeed = () => {
     );
   }
 
+  // Sort posts to show pinned posts first
+  const sortedPosts = [...posts].sort((a, b) => {
+    if (a.pinned && !b.pinned) return -1;
+    if (!a.pinned && b.pinned) return 1;
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="max-w-2xl mx-auto space-y-6 overflow-hidden">
       {/* Countdown to Next Event */}
       <EventCountdown />
       
@@ -274,7 +281,7 @@ export const SocialFeed = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          {posts.map((post) => (
+          {sortedPosts.map((post) => (
             <Card key={post.id} className="relative">
               {post.pinned && (
                 <div className="absolute top-4 right-4">
@@ -366,7 +373,7 @@ export const SocialFeed = () => {
               </CardContent>
             </Card>
           ))}
-          {posts.length === 0 && (
+          {sortedPosts.length === 0 && (
             <div className="text-center py-8">
               <p className="text-muted-foreground">No posts yet. Be the first to share something!</p>
             </div>
