@@ -13,43 +13,57 @@ export const EventCountdown = () => {
   const [isEventHappening, setIsEventHappening] = useState(false);
   const [timeUntilEventEnds, setTimeUntilEventEnds] = useState<TimeLeft>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
-  // Get the current/next event date
-  const getCurrentEventDate = () => {
+  // Get current time in EST
+  const getCurrentEST = () => {
     const now = new Date();
+    // Convert to EST (UTC-5 or UTC-4 during DST)
+    const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const estOffset = -5; // EST is UTC-5 (adjust to -4 during DST if needed)
+    const estTime = new Date(utcTime + (estOffset * 3600000));
+    return estTime;
+  };
+
+  // Get the current/next event date in EST
+  const getCurrentEventDate = () => {
+    const nowEST = getCurrentEST();
     
-    // For debugging - let's check if we're on a Tuesday around event time
-    const isTuesday = now.getDay() === 2;
-    const currentHour = now.getHours();
+    // For debugging - let's check if we're on a Tuesday around event time in EST
+    const isTuesday = nowEST.getDay() === 2;
+    const currentHour = nowEST.getHours();
     
-    console.log('Current time check:', {
-      day: now.getDay(),
+    console.log('EST time check:', {
+      day: nowEST.getDay(),
       isTuesday,
       hour: currentHour,
-      fullDate: now.toString()
+      estDate: nowEST.toString(),
+      localDate: new Date().toString()
     });
     
-    // If it's Tuesday and between 7 PM and 11 PM (7 PM + 4 hours), event is happening now
+    // If it's Tuesday and between 7 PM and 11 PM EST (7 PM + 4 hours), event is happening now
     if (isTuesday && currentHour >= 19 && currentHour < 23) {
-      console.log('Event should be happening now!');
-      const todayEvent = new Date();
+      console.log('Event should be happening now in EST!');
+      const todayEvent = new Date(nowEST);
       todayEvent.setHours(19, 0, 0, 0);
       return todayEvent;
     }
     
-    // Check for Aug 19th, 2025 event
-    const aug19Event = new Date(2025, 7, 19, 19, 0, 0, 0); // Aug 19, 2025, 7:00 PM
-    if (now < aug19Event) {
-      console.log('Next event is Aug 19th');
-      return aug19Event;
+    // Check for Aug 19th, 2025 event at 7 PM EST
+    const aug19Event = new Date(2025, 7, 19, 19, 0, 0, 0); // This will be in local time
+    // Convert to EST
+    const aug19EST = new Date(aug19Event.getTime() - (aug19Event.getTimezoneOffset() * 60000) + (-5 * 3600000));
+    
+    if (nowEST < aug19EST) {
+      console.log('Next event is Aug 19th EST');
+      return aug19EST;
     }
     
-    // Calculate next Tuesday at 7:00 PM
-    const nextTuesday = new Date();
-    const currentDay = now.getDay();
+    // Calculate next Tuesday at 7:00 PM EST
+    const nextTuesday = new Date(nowEST);
+    const currentDay = nowEST.getDay();
     
     let daysUntilTuesday;
     if (currentDay === 2) {
-      // It's Tuesday - if past 11 PM (event ended), next event is next Tuesday
+      // It's Tuesday - if past 11 PM EST (event ended), next event is next Tuesday
       if (currentHour >= 23) {
         daysUntilTuesday = 7;
       } else {
@@ -62,10 +76,10 @@ export const EventCountdown = () => {
       if (daysUntilTuesday === 0) daysUntilTuesday = 7;
     }
     
-    nextTuesday.setDate(now.getDate() + daysUntilTuesday);
-    nextTuesday.setHours(19, 0, 0, 0); // 7:00 PM
+    nextTuesday.setDate(nowEST.getDate() + daysUntilTuesday);
+    nextTuesday.setHours(19, 0, 0, 0); // 7:00 PM EST
     
-    console.log('Next Tuesday event:', nextTuesday.toString());
+    console.log('Next Tuesday event in EST:', nextTuesday.toString());
     return nextTuesday;
   };
 
