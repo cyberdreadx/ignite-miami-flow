@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Heart, MessageCircle, Pin } from 'lucide-react';
+import { Heart, MessageCircle, Pin, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { formatDistanceToNow } from 'date-fns';
 import { MediaUpload, MediaFile, uploadMediaFiles } from '@/components/MediaUpload';
@@ -28,6 +28,7 @@ interface Post {
   author_avatar: string | null;
   media_urls: string[] | null;
   media_types: string[] | null;
+  user_id: string;
 }
 
 export const SocialFeed = () => {
@@ -36,6 +37,7 @@ export const SocialFeed = () => {
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<MediaFile[]>([]);
+  const [clearMediaFiles, setClearMediaFiles] = useState(false);
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
   const { toast } = useToast();
@@ -97,8 +99,8 @@ export const SocialFeed = () => {
       } else {
         setNewPost('');
         setSelectedMedia([]);
-        // Clean up object URLs
-        selectedMedia.forEach(file => URL.revokeObjectURL(file.url));
+        setClearMediaFiles(true);
+        setTimeout(() => setClearMediaFiles(false), 100); // Reset after clearing
         fetchPosts();
         toast({
           title: 'Post created!',
@@ -165,6 +167,40 @@ export const SocialFeed = () => {
     }
   };
 
+  const handleDeletePost = async (postId: string) => {
+    if (!user) return;
+
+    if (!confirm('Are you sure you want to delete this post?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .delete()
+        .eq('id', postId)
+        .eq('user_id', user.id);
+
+      if (error) {
+        toast({
+          title: 'Error deleting post',
+          description: error.message,
+          variant: 'destructive',
+        });
+      } else {
+        fetchPosts();
+        toast({
+          title: 'Post deleted',
+          description: 'Your post has been deleted successfully.',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error deleting post',
+        description: 'An unexpected error occurred.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   if (!user) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
@@ -194,6 +230,7 @@ export const SocialFeed = () => {
             <MediaUpload 
               onMediaChange={handleMediaChange}
               maxFiles={4}
+              clearFiles={clearMediaFiles}
             />
             
             <div className="flex justify-end">
@@ -248,18 +285,30 @@ export const SocialFeed = () => {
                         <span className="text-sm text-muted-foreground">
                           {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
                         </span>
-                      </div>
-                    </div>
                   </div>
-                  {isAdmin && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handlePin(post.id, post.pinned)}
-                    >
-                      <Pin className={`h-4 w-4 ${post.pinned ? 'fill-current' : ''}`} />
-                    </Button>
-                  )}
+                </div>
+              </div>
+              <div className="flex gap-2">
+                {user?.id === post.user_id && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDeletePost(post.id)}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+                {isAdmin && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handlePin(post.id, post.pinned)}
+                  >
+                    <Pin className={`h-4 w-4 ${post.pinned ? 'fill-current' : ''}`} />
+                  </Button>
+                )}
+              </div>
                 </div>
               </CardHeader>
               <CardContent className="pt-0">

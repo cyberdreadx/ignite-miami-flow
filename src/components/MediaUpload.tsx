@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 interface MediaUploadProps {
   onMediaChange: (files: MediaFile[]) => void;
   maxFiles?: number;
+  clearFiles?: boolean;
 }
 
 export interface MediaFile {
@@ -19,11 +20,21 @@ export interface MediaFile {
 
 export const MediaUpload = ({ 
   onMediaChange, 
-  maxFiles = 4
+  maxFiles = 4,
+  clearFiles = false
 }: MediaUploadProps) => {
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  // Clear files when clearFiles prop changes to true
+  React.useEffect(() => {
+    if (clearFiles && mediaFiles.length > 0) {
+      mediaFiles.forEach(file => URL.revokeObjectURL(file.url));
+      setMediaFiles([]);
+      onMediaChange([]);
+    }
+  }, [clearFiles, mediaFiles, onMediaChange]);
 
   const validateFile = (file: File): { valid: boolean; error?: string } => {
     // Check file type
