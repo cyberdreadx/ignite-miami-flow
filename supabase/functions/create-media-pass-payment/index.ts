@@ -45,7 +45,7 @@ serve(async (req) => {
     // Determine price ID based on pass type
     const priceId = passType === "30" 
       ? "prod_SoEFJCpfgiULre" // $30 Media Pass
-      : "PRICE_ID_150"; // TODO: Replace with actual $150 pass price ID
+      : "prod_SoEFbMB170Fk0M"; // $150 Media Pass
     
     const passName = passType === "30" ? "SkateBurn Media Pass - Standard ($30)" : "SkateBurn Media Pass - Premium ($150)";
     const passDescription = passType === "30" 
