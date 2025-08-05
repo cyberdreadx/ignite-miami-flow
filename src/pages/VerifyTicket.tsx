@@ -104,7 +104,14 @@ export const VerifyTicket: React.FC = () => {
         console.log('Found valid ticket:', data.ticket);
         setVerificationType('ticket');
         setTicket(data.ticket);
-        setIsValid(true);
+        
+        // Set validity based on ticket status, payment, expiry, and usage
+        const isTicketCurrentlyValid = 
+          data.ticket.status === 'paid' && 
+          !data.ticket.used_at && 
+          (!data.ticket.valid_until || new Date(data.ticket.valid_until) > new Date());
+        
+        setIsValid(isTicketCurrentlyValid);
       }
       // Handle subscription verification
       else if (data.type === 'subscription') {
@@ -155,6 +162,9 @@ export const VerifyTicket: React.FC = () => {
         used_at: new Date().toISOString(),
         used_by: user.email || user.id
       } : null);
+
+      // Update validity state since ticket is now used
+      setIsValid(false);
 
       toast({
         title: "Ticket Marked as Used ✅",
