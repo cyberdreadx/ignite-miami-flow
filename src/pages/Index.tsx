@@ -2,12 +2,15 @@ import { motion } from "framer-motion";
 import NavBar from "@/components/NavBar";
 import { SocialFeed } from "@/components/SocialFeed";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 import { useApprovalStatus } from "@/hooks/useApprovalStatus";
 import ApprovalStatus from "@/components/ApprovalStatus";
 import { WaiverBanner } from "@/components/WaiverBanner";
+import { PendingUsersCard } from "@/components/PendingUsersCard";
 
 const Index = () => {
   const { user } = useAuth();
+  const { isAdmin } = useUserRole();
   const { isApproved, isPending, isRejected } = useApprovalStatus();
 
   // Show approval status for logged in users who aren't approved
@@ -26,6 +29,7 @@ const Index = () => {
       <div className="pt-20 pb-8">
         <div className="container mx-auto px-4">
           <WaiverBanner />
+          {user && isAdmin && <PendingUsersCard />}
           <SocialFeed />
         </div>
       </div>
