@@ -183,7 +183,11 @@ export type Database = {
     }
     Functions: {
       create_post: {
-        Args: { post_content: string }
+        Args: {
+          post_content: string
+          media_urls?: string[]
+          media_types?: string[]
+        }
         Returns: string
       }
       debug_auth_uid: {

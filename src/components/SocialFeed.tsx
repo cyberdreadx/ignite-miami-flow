@@ -10,6 +10,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Heart, MessageCircle, Pin } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { formatDistanceToNow } from 'date-fns';
+import { MediaUpload } from '@/components/MediaUpload';
+import { MediaDisplay } from '@/components/MediaDisplay';
+import { LinkifyText } from '@/components/LinkifyText';
 
 interface Post {
   id: string;
@@ -23,6 +26,8 @@ interface Post {
   author_name: string;
   author_role: string;
   author_avatar: string | null;
+  media_urls: string[] | null;
+  media_types: string[] | null;
 }
 
 export const SocialFeed = () => {
@@ -30,6 +35,8 @@ export const SocialFeed = () => {
   const [newPost, setNewPost] = useState('');
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
+  const [uploadedMediaUrls, setUploadedMediaUrls] = useState<string[]>([]);
+  const [uploadedMediaTypes, setUploadedMediaTypes] = useState<string[]>([]);
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
   const { toast } = useToast();
@@ -62,12 +69,14 @@ export const SocialFeed = () => {
 
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newPost.trim() || !user) return;
+    if ((!newPost.trim() && uploadedMediaUrls.length === 0) || !user) return;
 
     setPosting(true);
     try {
       const { error } = await supabase.rpc('create_post', {
-        post_content: newPost.trim()
+        post_content: newPost.trim(),
+        media_urls: uploadedMediaUrls.length > 0 ? uploadedMediaUrls : null,
+        media_types: uploadedMediaTypes.length > 0 ? uploadedMediaTypes : null
       });
 
       if (error) {
@@ -78,6 +87,8 @@ export const SocialFeed = () => {
         });
       } else {
         setNewPost('');
+        setUploadedMediaUrls([]);
+        setUploadedMediaTypes([]);
         fetchPosts();
         toast({
           title: 'Post created!',
@@ -92,6 +103,11 @@ export const SocialFeed = () => {
       });
     }
     setPosting(false);
+  };
+
+  const handleMediaUpload = (urls: string[], types: string[]) => {
+    setUploadedMediaUrls(urls);
+    setUploadedMediaTypes(types);
   };
 
   const handleLike = async (postId: string, currentlyLiked: boolean) => {
@@ -164,8 +180,18 @@ export const SocialFeed = () => {
               onChange={(e) => setNewPost(e.target.value)}
               className="min-h-[100px] resize-none"
             />
+            
+            {/* Media Upload */}
+            <MediaUpload 
+              onMediaUpload={handleMediaUpload}
+              maxFiles={4}
+            />
+            
             <div className="flex justify-end">
-              <Button type="submit" disabled={posting || !newPost.trim()}>
+              <Button 
+                type="submit" 
+                disabled={posting || (!newPost.trim() && uploadedMediaUrls.length === 0)}
+              >
                 {posting ? 'Posting...' : 'Post'}
               </Button>
             </div>
@@ -228,7 +254,20 @@ export const SocialFeed = () => {
                 </div>
               </CardHeader>
               <CardContent className="pt-0">
-                <p className="whitespace-pre-wrap mb-4">{post.content}</p>
+                {post.content && (
+                  <LinkifyText 
+                    text={post.content}
+                    className="whitespace-pre-wrap mb-4 block"
+                  />
+                )}
+                
+                {/* Media Display */}
+                <MediaDisplay 
+                  mediaUrls={post.media_urls}
+                  mediaTypes={post.media_types}
+                  className="mb-4"
+                />
+                
                 <div className="flex items-center space-x-6">
                   <Button
                     variant="ghost"
