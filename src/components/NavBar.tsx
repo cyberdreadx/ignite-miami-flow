@@ -126,7 +126,14 @@ const NavBar = () => {
                 >
                   <Button
                     variant="ghost"
-                    onClick={() => item.path ? navigate(item.path) : scrollToSection(item.id)}
+                    onClick={() => {
+                      if (item.path) {
+                        // Force page reload for PWA compatibility
+                        window.location.href = item.path;
+                      } else {
+                        scrollToSection(item.id);
+                      }
+                    }}
                     className="text-primary/90 hover:text-primary hover:bg-primary/10 px-2 xl:px-3 py-2 text-xs xl:text-sm font-medium transition-all duration-200 backdrop-blur-sm whitespace-nowrap hover:shadow-[0_0_20px_rgba(var(--primary),0.3)]"
                   >
                     {item.label}
@@ -277,7 +284,8 @@ const NavBar = () => {
                 variant="ghost"
                 onClick={() => {
                   if (item.path) {
-                    navigate(item.path);
+                    // Force page reload for PWA compatibility
+                    window.location.href = item.path;
                   } else {
                     scrollToSection(item.id);
                   }
