@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import About from "./pages/About";
 import Tickets from "./pages/Tickets";
+import Photographers from "./pages/Photographers";
 import { MyTickets } from "./pages/MyTickets";
 import { ValidateTicket } from "./pages/ValidateTicket";
 import { PublicTicketView } from "./pages/PublicTicketView";
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/profile" element={<Profile />} />
           <Route path="/about" element={<About />} />
           <Route path="/tickets" element={<Tickets />} />
+          <Route path="/photographers" element={<Photographers />} />
           <Route path="/my-tickets" element={<MyTickets />} />
           <Route path="/validate" element={<ValidateTicket />} />
           <Route path="/ticket" element={<PublicTicketView />} />
