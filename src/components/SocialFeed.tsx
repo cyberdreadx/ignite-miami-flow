@@ -17,6 +17,7 @@ import { MediaDisplay } from '@/components/MediaDisplay';
 import { LinkifyText } from '@/components/LinkifyText';
 import { CommentsSection } from '@/components/CommentsSection';
 import { EventCountdown } from '@/components/EventCountdown';
+import { UserRoleBadges } from '@/components/UserRoleBadges';
 
 interface Post {
   id: string;
@@ -243,12 +244,7 @@ export const SocialFeed = () => {
                     </Avatar>
                     <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
                       <p className="font-semibold text-sm truncate">{post.author_name}</p>
-                      {post.author_role === 'admin' && (
-                        <Badge variant="destructive" className="text-xs h-4 flex-shrink-0">Admin</Badge>
-                      )}
-                      {post.author_role === 'moderator' && (
-                        <Badge variant="outline" className="text-xs h-4 flex-shrink-0">Mod</Badge>
-                      )}
+                      <UserRoleBadges userId={post.user_id} className="flex-shrink-0" />
                       <span className="text-xs text-muted-foreground hidden sm:inline">•</span>
                       <span className="text-xs text-muted-foreground hidden sm:inline">
                         {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
@@ -347,12 +343,7 @@ export const SocialFeed = () => {
                     </Avatar>
                     <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
                       <p className="font-semibold text-sm truncate">{post.author_name}</p>
-                      {post.author_role === 'admin' && (
-                        <Badge variant="destructive" className="text-xs h-4 flex-shrink-0">Admin</Badge>
-                      )}
-                      {post.author_role === 'moderator' && (
-                        <Badge variant="outline" className="text-xs h-4 flex-shrink-0">Mod</Badge>
-                      )}
+                      <UserRoleBadges userId={post.user_id} className="flex-shrink-0" />
                       <span className="text-xs text-muted-foreground hidden sm:inline">•</span>
                       <span className="text-xs text-muted-foreground hidden sm:inline">
                         {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
@@ -504,12 +495,7 @@ export const SocialFeed = () => {
                     </Avatar>
                     <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
                       <p className="font-semibold text-sm truncate">{post.author_name}</p>
-                      {post.author_role === 'admin' && (
-                        <Badge variant="destructive" className="text-xs h-4 flex-shrink-0">Admin</Badge>
-                      )}
-                      {post.author_role === 'moderator' && (
-                        <Badge variant="outline" className="text-xs h-4 flex-shrink-0">Mod</Badge>
-                      )}
+                      <UserRoleBadges userId={post.user_id} className="flex-shrink-0" />
                       <span className="text-xs text-muted-foreground hidden sm:inline">•</span>
                       <span className="text-xs text-muted-foreground hidden sm:inline">
                         {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
