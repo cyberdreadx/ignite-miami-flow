@@ -31,6 +31,7 @@ const Tickets = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [slidingAmount, setSlidingAmount] = useState(10);
+  const [inputValue, setInputValue] = useState('10');
   const [processingTicket, setProcessingTicket] = useState(false);
   const [processingPass, setProcessingPass] = useState(false);
   const [showWaiverModal, setShowWaiverModal] = useState(false);
@@ -323,14 +324,19 @@ const Tickets = () => {
                       <Input
                         id="amount"
                         type="number"
-                        value={slidingAmount}
+                        value={inputValue}
                         onChange={(e) => {
+                          setInputValue(e.target.value);
+                        }}
+                        onBlur={(e) => {
                           const value = e.target.value;
-                          if (value === '') {
+                          const numValue = parseInt(value);
+                          if (value === '' || isNaN(numValue) || numValue < 10) {
                             setSlidingAmount(10);
+                            setInputValue('10');
                           } else {
-                            const numValue = parseInt(value);
-                            setSlidingAmount(isNaN(numValue) ? 10 : Math.max(10, numValue));
+                            setSlidingAmount(numValue);
+                            setInputValue(value);
                           }
                         }}
                         min="10"
