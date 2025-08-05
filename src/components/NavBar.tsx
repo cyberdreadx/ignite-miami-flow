@@ -17,9 +17,10 @@ const NavBar = () => {
   const { toast } = useToast();
   const { scrollY } = useScroll();
   
-  // Background opacity based on scroll
-  const backgroundOpacity = useTransform(scrollY, [0, 100], [0.8, 0.95]);
-  const backdropBlur = useTransform(scrollY, [0, 100], [8, 16]);
+  // Glassmorphism effect values based on scroll
+  const backgroundOpacity = useTransform(scrollY, [0, 100], [0.1, 0.2]);
+  const backdropBlur = useTransform(scrollY, [0, 100], [12, 20]);
+  const borderOpacity = useTransform(scrollY, [0, 100], [0.1, 0.3]);
 
   // Handle scroll direction for navbar visibility
   useEffect(() => {
@@ -80,10 +81,15 @@ const NavBar = () => {
 
   return (
     <motion.nav 
-      className="fixed top-0 left-0 right-0 z-50 border-b border-white/10"
+      className="fixed top-0 left-0 right-0 z-50 border-b"
       style={{ 
-        backgroundColor: useTransform(backgroundOpacity, (value) => `rgba(0, 0, 0, ${value})`),
-        backdropFilter: useTransform(backdropBlur, (value) => `blur(${value}px)`)
+        background: useTransform(backgroundOpacity, (value) => 
+          `linear-gradient(135deg, rgba(255, 255, 255, ${value * 0.1}), rgba(255, 255, 255, ${value * 0.05}))`
+        ),
+        backdropFilter: useTransform(backdropBlur, (value) => `blur(${value}px) saturate(180%)`),
+        borderColor: useTransform(borderOpacity, (value) => `rgba(255, 255, 255, ${value})`),
+        boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.1)',
+        WebkitBackdropFilter: useTransform(backdropBlur, (value) => `blur(${value}px) saturate(180%)`)
       }}
       initial={{ y: -100 }}
       animate={{ 
@@ -99,26 +105,33 @@ const NavBar = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <a 
+            <motion.a 
               href="/" 
-              className="text-xl font-graffiti font-bold bg-gradient-fire bg-clip-text text-transparent"
+              className="text-xl font-graffiti font-bold bg-gradient-fire bg-clip-text text-transparent drop-shadow-sm"
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 400, damping: 10 }}
             >
               🔥 SkateBurn
-            </a>
+            </motion.a>
           </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-8">
               {navItems.map((item) => (
-                <Button
+                <motion.div
                   key={item.id}
-                  variant="ghost"
-                  onClick={() => item.path ? navigate(item.path) : scrollToSection(item.id)}
-                  className="text-foreground/80 hover:text-glow-yellow px-3 py-2 text-sm font-medium transition-colors"
+                  whileHover={{ y: -2 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 >
-                  {item.label}
-                </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => item.path ? navigate(item.path) : scrollToSection(item.id)}
+                    className="text-foreground/90 hover:text-foreground hover:bg-white/10 px-3 py-2 text-sm font-medium transition-all duration-200 backdrop-blur-sm"
+                  >
+                    {item.label}
+                  </Button>
+                </motion.div>
               ))}
             </div>
           </div>
@@ -127,84 +140,133 @@ const NavBar = () => {
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <>
-                 <Button
-                   onClick={() => {
-                     console.log('Profile button clicked, navigating to /profile');
-                     navigate("/profile");
-                   }}
-                   variant="ghost"
-                   size="sm"
-                 >
-                   <User className="w-4 h-4 mr-2" />
-                   Profile
-                 </Button>
-                 {isModerator && (
-                   <Button
-                     onClick={() => navigate("/validate")}
-                     variant="outline"
-                     size="sm"
-                   >
-                     <Scan className="w-4 h-4 mr-2" />
-                     Validate
-                   </Button>
-                 )}
-                 {isAdmin && (
-                   <Button
-                     onClick={() => navigate("/admin")}
-                     variant="outline"
-                     size="sm"
-                   >
-                     <Settings className="w-4 h-4 mr-2" />
-                     Admin
-                   </Button>
-                 )}
-                <Button
-                  onClick={handleSignOut}
-                  variant="ghost"
-                  size="sm"
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
                 >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Sign Out
-                </Button>
+                  <Button
+                    onClick={() => {
+                      console.log('Profile button clicked, navigating to /profile');
+                      navigate("/profile");
+                    }}
+                    variant="ghost"
+                    size="sm"
+                    className="hover:bg-white/10 backdrop-blur-sm transition-all duration-200"
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    Profile
+                  </Button>
+                </motion.div>
+                {isModerator && (
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                  >
+                    <Button
+                      onClick={() => navigate("/validate")}
+                      variant="outline"
+                      size="sm"
+                      className="border-white/20 hover:bg-white/10 backdrop-blur-sm transition-all duration-200"
+                    >
+                      <Scan className="w-4 h-4 mr-2" />
+                      Validate
+                    </Button>
+                  </motion.div>
+                )}
+                {isAdmin && (
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                  >
+                    <Button
+                      onClick={() => navigate("/admin")}
+                      variant="outline"
+                      size="sm"
+                      className="border-white/20 hover:bg-white/10 backdrop-blur-sm transition-all duration-200"
+                    >
+                      <Settings className="w-4 h-4 mr-2" />
+                      Admin
+                    </Button>
+                  </motion.div>
+                )}
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                >
+                  <Button
+                    onClick={handleSignOut}
+                    variant="ghost"
+                    size="sm"
+                    className="hover:bg-white/10 backdrop-blur-sm transition-all duration-200"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </motion.div>
               </>
             ) : (
               <div className="flex items-center space-x-2">
-                <Button
-                  onClick={() => navigate("/auth")}
-                  variant="ghost"
-                  size="sm"
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
                 >
-                  <User className="w-4 h-4 mr-2" />
-                  Sign In
-                </Button>
-                <Button
-                  onClick={() => navigate("/auth")}
-                  variant="outline"
-                  size="sm"
+                  <Button
+                    onClick={() => navigate("/auth")}
+                    variant="ghost"
+                    size="sm"
+                    className="hover:bg-white/10 backdrop-blur-sm transition-all duration-200"
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    Sign In
+                  </Button>
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
                 >
-                  Sign Up
-                </Button>
+                  <Button
+                    onClick={() => navigate("/auth")}
+                    variant="outline"
+                    size="sm"
+                    className="border-white/20 hover:bg-white/10 backdrop-blur-sm transition-all duration-200"
+                  >
+                    Sign Up
+                  </Button>
+                </motion.div>
               </div>
             )}
           </div>
 
           {/* Mobile menu button */}
           <div className="md:hidden">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsOpen(!isOpen)}
-              aria-label="Toggle menu"
+            <motion.div
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 10 }}
             >
-              {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsOpen(!isOpen)}
+                aria-label="Toggle menu"
+                className="hover:bg-white/10 backdrop-blur-sm transition-all duration-200"
+              >
+                {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </Button>
+            </motion.div>
           </div>
         </div>
       </div>
 
       {/* Mobile Navigation */}
       {isOpen && (
-        <div className="md:hidden bg-background/95 backdrop-blur-lg border-b border-white/10">
+        <motion.div 
+          className="md:hidden backdrop-blur-xl bg-black/10 border-b border-white/10"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.2 }}
+        >
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             {navItems.map((item) => (
               <Button
@@ -301,7 +363,7 @@ const NavBar = () => {
               )}
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
     </motion.nav>
   );
