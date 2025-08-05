@@ -8,36 +8,10 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Clear ALL auth-related localStorage on component mount to fix corruption
-    const clearAllAuthStorage = () => {
-      console.log('Clearing all auth storage to fix corruption...');
-      const keysToRemove = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.includes('supabase') || key && key.includes('sb-')) {
-          keysToRemove.push(key);
-        }
-      }
-      keysToRemove.forEach(key => localStorage.removeItem(key));
-    };
-
-    // Clear corrupted storage first
-    clearAllAuthStorage();
-
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('Auth state change event:', event, 'session:', session?.user?.email);
-        console.log('Session exists:', !!session);
-        
-        // Handle different auth events
-        if (event === 'SIGNED_IN') {
-          console.log('User signed in successfully');
-        } else if (event === 'TOKEN_REFRESHED') {
-          console.log('Token refreshed');
-        } else if (event === 'SIGNED_OUT') {
-          console.log('User signed out');
-        }
+        console.log('Auth state change event:', event, 'session exists:', !!session);
         
         setSession(session);
         setUser(session?.user ?? null);
@@ -47,7 +21,7 @@ export const useAuth = () => {
 
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session }, error }) => {
-      console.log('Initial session check result:', {
+      console.log('Initial session check:', {
         hasSession: !!session,
         userEmail: session?.user?.email,
         error: error?.message
