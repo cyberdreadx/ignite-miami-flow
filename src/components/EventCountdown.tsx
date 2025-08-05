@@ -13,28 +13,47 @@ export const EventCountdown = () => {
   const [isEventHappening, setIsEventHappening] = useState(false);
   const [timeUntilEventEnds, setTimeUntilEventEnds] = useState<TimeLeft>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
-  // Get the next event date - Aug 19th, 2025 at 7:00 PM
-  const getNextEventDate = () => {
+  // Get the current/next event date
+  const getCurrentEventDate = () => {
     const now = new Date();
-    const nextEvent = new Date(2025, 7, 19, 19, 0, 0, 0); // Aug 19, 2025, 7:00 PM
     
-    // If the Aug 19th event hasn't happened yet, return it
-    if (now < nextEvent) {
-      return nextEvent;
+    // For debugging - let's check if we're on a Tuesday around event time
+    const isTuesday = now.getDay() === 2;
+    const currentHour = now.getHours();
+    
+    console.log('Current time check:', {
+      day: now.getDay(),
+      isTuesday,
+      hour: currentHour,
+      fullDate: now.toString()
+    });
+    
+    // If it's Tuesday and between 7 PM and 11 PM (7 PM + 4 hours), event is happening now
+    if (isTuesday && currentHour >= 19 && currentHour < 23) {
+      console.log('Event should be happening now!');
+      const todayEvent = new Date();
+      todayEvent.setHours(19, 0, 0, 0);
+      return todayEvent;
     }
     
-    // If Aug 19th has passed, calculate next Tuesday at 7:00 PM
+    // Check for Aug 19th, 2025 event
+    const aug19Event = new Date(2025, 7, 19, 19, 0, 0, 0); // Aug 19, 2025, 7:00 PM
+    if (now < aug19Event) {
+      console.log('Next event is Aug 19th');
+      return aug19Event;
+    }
+    
+    // Calculate next Tuesday at 7:00 PM
     const nextTuesday = new Date();
     const currentDay = now.getDay();
     
     let daysUntilTuesday;
     if (currentDay === 2) {
-      // It's Tuesday - check if event time has passed
-      if (now.getHours() >= 19) {
-        // Past 7 PM, so next Tuesday is in 7 days
+      // It's Tuesday - if past 11 PM (event ended), next event is next Tuesday
+      if (currentHour >= 23) {
         daysUntilTuesday = 7;
       } else {
-        // Before 7 PM, so today is the event day
+        // Event should be happening or about to happen today
         daysUntilTuesday = 0;
       }
     } else {
@@ -46,13 +65,14 @@ export const EventCountdown = () => {
     nextTuesday.setDate(now.getDate() + daysUntilTuesday);
     nextTuesday.setHours(19, 0, 0, 0); // 7:00 PM
     
+    console.log('Next Tuesday event:', nextTuesday.toString());
     return nextTuesday;
   };
 
   useEffect(() => {
     const calculateTimeLeft = () => {
       const now = new Date();
-      const nextEventDate = getNextEventDate();
+      const nextEventDate = getCurrentEventDate();
       const eventEndTime = new Date(nextEventDate.getTime() + (4 * 60 * 60 * 1000)); // Event + 4 hours
       
       const currentTime = now.getTime();
@@ -99,7 +119,7 @@ export const EventCountdown = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const nextEventDate = getNextEventDate();
+  const nextEventDate = getCurrentEventDate();
 
   const formatEventDate = () => {
     return nextEventDate.toLocaleDateString('en-US', {
