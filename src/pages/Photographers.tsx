@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Camera, Flame, Users, Shield, CheckCircle, XCircle } from "lucide-react";
+import { Camera, Flame, Users, Shield, CheckCircle, XCircle, Download } from "lucide-react";
 import NavBar from "@/components/NavBar";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -250,6 +250,65 @@ const Photographers = () => {
                   <li>• Respect others—communicate, rotate, and share space</li>
                   <li>• Do not crowd performance space or block others</li>
                 </ul>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Branding Assets */}
+          <Card className="bg-card/10 backdrop-blur-lg border border-white/10 my-8">
+            <CardHeader>
+              <CardTitle className="text-2xl font-normal text-glow-yellow">
+                Branding Assets for Photographers
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                <p className="text-muted-foreground">
+                  Use these official SkateBurn assets in your content and watermarks. Right-click to save or use the download button.
+                </p>
+                
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="border border-white/20 rounded-lg p-6 bg-white/5">
+                    <h3 className="text-lg font-semibold text-primary mb-4">Official SkateBurn Logo</h3>
+                    <div className="flex flex-col items-center space-y-4">
+                      <div className="bg-white/10 rounded-lg p-4 w-full flex justify-center">
+                        <img 
+                          src="/lovable-uploads/7ae4542c-245a-41d9-8301-b991fcffdffa.png"
+                          alt="SkateBurn Official Logo"
+                          className="max-w-full h-auto max-h-32 object-contain"
+                        />
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full"
+                        onClick={() => {
+                          const link = document.createElement('a');
+                          link.href = '/lovable-uploads/7ae4542c-245a-41d9-8301-b991fcffdffa.png';
+                          link.download = 'skateburn-logo.png';
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                        }}
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Download Logo
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="border border-white/20 rounded-lg p-6 bg-white/5">
+                    <h3 className="text-lg font-semibold text-primary mb-4">Usage Guidelines</h3>
+                    <ul className="space-y-2 text-sm text-muted-foreground">
+                      <li>• Use on dark backgrounds for best visibility</li>
+                      <li>• Maintain logo proportions - do not stretch</li>
+                      <li>• Place in corner or non-intrusive area</li>
+                      <li>• For $30 pass holders: required watermark</li>
+                      <li>• For $150 pass holders: optional branding</li>
+                      <li>• Always tag @SkateburnMiami when posting</li>
+                    </ul>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
