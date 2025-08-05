@@ -357,6 +357,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       waiver_completions: {
         Row: {
           created_at: string
@@ -434,8 +458,21 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_user_roles: {
+        Args: { _user_id: string }
+        Returns: {
+          role: Database["public"]["Enums"]["app_role"]
+        }[]
+      }
       has_completed_waiver: {
         Args: { user_id: string }
+        Returns: boolean
+      }
+      has_role: {
+        Args: {
+          _user_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+        }
         Returns: boolean
       }
       is_user_approved: {
@@ -464,7 +501,14 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      app_role:
+        | "admin"
+        | "dj"
+        | "photographer"
+        | "performer"
+        | "moderator"
+        | "vip"
+        | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -591,6 +635,16 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: [
+        "admin",
+        "dj",
+        "photographer",
+        "performer",
+        "moderator",
+        "vip",
+        "user",
+      ],
+    },
   },
 } as const
