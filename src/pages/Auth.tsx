@@ -14,7 +14,7 @@ const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
+  const [username, setUsername] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   
   const { toast } = useToast();
@@ -57,7 +57,7 @@ const Auth = () => {
           navigate("/");
         }
       } else {
-        const { error } = await signUp(email, password, fullName);
+        const { error } = await signUp(email, password, username);
         if (error) {
           if (error.message === "User already registered") {
             toast({
@@ -117,20 +117,20 @@ const Auth = () => {
                 <>
                   <div className="flex justify-center mb-6">
                     <AvatarUpload 
-                      userName={fullName || email || "User"} 
+                      userName={username || email || "User"} 
                       size="lg"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="fullName">Full Name</Label>
+                    <Label htmlFor="username">Username</Label>
                     <Input
-                      id="fullName"
+                      id="username"
                       type="text"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
                       required={!isLogin}
                       className="bg-background/50"
-                      placeholder="Enter your full name"
+                      placeholder="Enter your username"
                     />
                   </div>
                 </>
