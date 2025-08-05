@@ -45,24 +45,121 @@ serve(async (req) => {
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     
     if (customers.data.length === 0) {
-      console.log(`No Stripe customer found for ${user.email}`);
+      console.log(`No Stripe customer found for ${user.email}, searching checkout sessions by metadata`);
+      
+      // If no customer found, search checkout sessions by user metadata instead
+      const sessions = await stripe.checkout.sessions.list({
+        limit: 100,
+      });
+      
+      // Filter sessions that have the user's ID in metadata or email
+      const userSessions = sessions.data.filter(session => 
+        session.metadata?.user_id === user.id || 
+        session.customer_email === user.email ||
+        session.metadata?.user_email === user.email
+      );
+      
+      console.log(`Found ${userSessions.length} sessions by metadata/email for user ${user.email}`);
+      
+      if (userSessions.length === 0) {
+        return new Response(JSON.stringify({ 
+          success: true, 
+          message: "No payments found for your account",
+          ticketsCreated: 0 
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+      
+      // Process these sessions
+      const createdTickets = [];
+      let ticketsCreated = 0;
+
+      for (const session of userSessions) {
+        if (session.payment_status === 'paid' && session.mode === 'payment') {
+          console.log(`Checking session: ${session.id}, amount: ${session.amount_total}`);
+
+          // Check if ticket already exists
+          const { data: existingTicket } = await supabase
+            .from('tickets')
+            .select('id')
+            .eq('stripe_session_id', session.id)
+            .single();
+
+          if (!existingTicket) {
+            console.log(`Creating missing ticket for session: ${session.id}`);
+
+            // Generate QR code token
+            const qrToken = `QR_${Math.random().toString(36).substr(2, 8).toUpperCase()}_${Date.now()}`;
+            const validUntil = new Date();
+            validUntil.setDate(validUntil.getDate() + 30); // Valid for 30 days
+
+            const qrData = {
+              type: "ticket",
+              user_id: user.id,
+              token: qrToken,
+              amount: session.amount_total,
+              valid_until: validUntil.toISOString()
+            };
+
+            // Create the ticket
+            const { data: ticket, error: ticketError } = await supabase
+              .from('tickets')
+              .insert({
+                user_id: user.id,
+                stripe_session_id: session.id,
+                amount: session.amount_total,
+                currency: session.currency,
+                status: 'paid',
+                qr_code_token: qrToken,
+                qr_code_data: JSON.stringify(qrData),
+                valid_until: validUntil.toISOString(),
+                created_at: new Date(session.created * 1000).toISOString(),
+              })
+              .select()
+              .single();
+
+            if (ticketError) {
+              console.error(`Error creating ticket for session ${session.id}:`, ticketError);
+            } else {
+              console.log(`Successfully created ticket: ${ticket.id}`);
+              createdTickets.push({
+                sessionId: session.id,
+                ticketId: ticket.id,
+                amount: session.amount_total
+              });
+              ticketsCreated++;
+            }
+          } else {
+            console.log(`Ticket already exists for session: ${session.id}`);
+          }
+        }
+      }
+
+      console.log(`Recovery complete. Created ${ticketsCreated} tickets`);
+
       return new Response(JSON.stringify({ 
         success: true, 
-        message: "No Stripe customer found",
-        ticketsCreated: 0 
+        message: ticketsCreated > 0 
+          ? `Found and created ${ticketsCreated} missing ticket(s)!` 
+          : "No missing tickets found",
+        ticketsCreated,
+        createdTickets
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
     }
 
+    // Original customer-based logic continues here
     const customerId = customers.data[0].id;
     console.log(`Found Stripe customer: ${customerId}`);
 
     // Get all successful checkout sessions for this customer
     const sessions = await stripe.checkout.sessions.list({
       customer: customerId,
-      limit: 100, // Adjust as needed
+      limit: 100,
     });
 
     console.log(`Found ${sessions.data.length} checkout sessions`);
@@ -71,7 +168,6 @@ serve(async (req) => {
     let ticketsCreated = 0;
 
     for (const session of sessions.data) {
-      // Only process paid sessions that are for single payments (tickets)
       if (session.payment_status === 'paid' && session.mode === 'payment') {
         console.log(`Checking session: ${session.id}, amount: ${session.amount_total}`);
 
