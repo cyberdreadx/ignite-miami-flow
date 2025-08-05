@@ -203,7 +203,7 @@ export const CommentsSection = ({ postId, commentCount, onCommentCountChange }: 
                     placeholder="Add a comment..."
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
-                    className="min-h-[60px] resize-none text-sm text-base"
+                    className="min-h-[60px] resize-none"
                     style={{ fontSize: '16px' }}
                   />
                   <div className="flex justify-end">
