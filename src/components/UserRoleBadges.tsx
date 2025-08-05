@@ -22,12 +22,12 @@ const ROLE_COLORS: Record<AppRole, string> = {
 };
 
 const ROLE_ABBREVIATIONS: Record<AppRole, string> = {
-  admin: "A",
-  dj: "D",
+  admin: "👑",
+  dj: "🎧",
   photographer: "📷",
   performer: "🎭",
   moderator: "M",
-  vip: "V",
+  vip: "⭐",
   user: "U"
 };
 
