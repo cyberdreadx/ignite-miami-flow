@@ -38,11 +38,13 @@ serve(async (req) => {
 
     if (!ticketError && ticket) {
       // Get user profile separately
-      const { data: profile } = await supabaseClient
+      const { data: profile, error: profileError } = await supabaseClient
         .from("profiles")
         .select("full_name, email")
         .eq("user_id", ticket.user_id)
         .single();
+
+      console.log("Profile query result:", { profile, profileError, user_id: ticket.user_id });
 
       const userName = profile?.full_name || profile?.email || "Unknown";
       const userEmail = profile?.email || "Unknown";
