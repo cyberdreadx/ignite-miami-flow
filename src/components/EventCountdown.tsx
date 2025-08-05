@@ -20,15 +20,26 @@ export const EventCountdown = () => {
     
     // Get current day (0 = Sunday, 1 = Monday, 2 = Tuesday, etc.)
     const currentDay = now.getDay();
-    const daysUntilTuesday = currentDay === 2 ? 7 : (2 - currentDay + 7) % 7;
+    
+    // Calculate days until next Tuesday
+    let daysUntilTuesday;
+    if (currentDay === 2) {
+      // It's Tuesday - check if event time has passed
+      if (now.getHours() >= 19) {
+        // Past 7 PM, so next Tuesday is in 7 days
+        daysUntilTuesday = 7;
+      } else {
+        // Before 7 PM, so today is the event day
+        daysUntilTuesday = 0;
+      }
+    } else {
+      // Not Tuesday - calculate days until next Tuesday
+      daysUntilTuesday = (2 - currentDay + 7) % 7;
+      if (daysUntilTuesday === 0) daysUntilTuesday = 7; // If result is 0, next Tuesday is 7 days away
+    }
     
     nextTuesday.setDate(now.getDate() + daysUntilTuesday);
     nextTuesday.setHours(19, 0, 0, 0); // 7:00 PM
-    
-    // If it's Tuesday and past 7 PM, get next Tuesday
-    if (currentDay === 2 && now.getHours() >= 19) {
-      nextTuesday.setDate(nextTuesday.getDate() + 7);
-    }
     
     return nextTuesday;
   };
