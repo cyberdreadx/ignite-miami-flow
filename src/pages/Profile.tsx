@@ -195,6 +195,11 @@ const Profile = () => {
                   <Save className="w-4 h-4 mr-2" />
                   {saving ? 'Saving...' : 'Save Changes'}
                 </Button>
+                
+                {/* Account Deletion Section */}
+                <div className="pt-6 mt-6 border-t border-white/10">
+                  <AccountDeletion />
+                </div>
               </form>
             </CardContent>
           </Card>
@@ -202,11 +207,6 @@ const Profile = () => {
           {/* User Posts Section */}
           <div className="mt-8">
             <UserPosts />
-          </div>
-
-          {/* Account Deletion Section */}
-          <div className="mt-8">
-            <AccountDeletion />
           </div>
         </div>
       </div>
