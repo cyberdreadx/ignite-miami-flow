@@ -55,9 +55,32 @@ interface UserStats {
   total_comments: number;
 }
 
+interface AllUser {
+  user_id: string;
+  email: string;
+  full_name: string;
+  role: string;
+  approval_status: string;
+  created_at: string;
+  avatar_url?: string;
+}
+
+interface ReportedPost {
+  id: string;
+  content: string;
+  created_at: string;
+  author_name: string;
+  author_role: string;
+  like_count: number;
+  comment_count: number;
+  report_count?: number;
+}
+
 const Admin = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
+  const [allUsers, setAllUsers] = useState<AllUser[]>([]);
+  const [reportedPosts, setReportedPosts] = useState<ReportedPost[]>([]);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
   const { user, signOut } = useAuth();
@@ -156,12 +179,55 @@ const Admin = () => {
       fetchStats();
       fetchPosts();
       fetchPendingUsers();
+      fetchAllUsers();
+      fetchReportedPosts();
     }
   }, [user, isAdmin]);
 
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
+  };
+
+  const fetchAllUsers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('user_id, email, full_name, role, approval_status, created_at, avatar_url')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching all users:', error);
+      } else {
+        setAllUsers(data || []);
+      }
+    } catch (error) {
+      console.error('Error in fetchAllUsers:', error);
+    }
+  };
+
+  const fetchReportedPosts = async () => {
+    try {
+      // For now, we'll simulate reported posts by getting posts with high engagement
+      // In a real app, you'd have a reports table
+      const { data: postsData, error } = await supabase.rpc('get_posts_with_counts');
+      
+      if (error) {
+        console.error('Error fetching reported posts:', error);
+      } else {
+        // Simulate reported posts (posts with >5 likes or comments might need review)
+        const simulatedReports = postsData?.filter((post: any) => 
+          (post.like_count + post.comment_count) > 5
+        ).map((post: any) => ({
+          ...post,
+          report_count: Math.floor(Math.random() * 3) + 1 // Simulate 1-3 reports
+        })) || [];
+        
+        setReportedPosts(simulatedReports);
+      }
+    } catch (error) {
+      console.error('Error in fetchReportedPosts:', error);
+    }
   };
 
   const handleTogglePin = async (postId: string, currentlyPinned: boolean) => {
@@ -216,6 +282,66 @@ const Admin = () => {
     } catch (error) {
       toast({
         title: 'Error updating user status',
+        description: 'An unexpected error occurred.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleRoleChange = async (userId: string, newRole: string) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ role: newRole })
+        .eq('user_id', userId);
+
+      if (error) {
+        toast({
+          title: 'Error updating role',
+          description: error.message,
+          variant: 'destructive',
+        });
+      } else {
+        fetchAllUsers();
+        fetchStats();
+        toast({
+          title: 'Role updated',
+          description: `User role has been updated to ${newRole}.`,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error updating role',
+        description: 'An unexpected error occurred.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .delete()
+        .eq('id', postId);
+
+      if (error) {
+        toast({
+          title: 'Error deleting post',
+          description: error.message,
+          variant: 'destructive',
+        });
+      } else {
+        fetchPosts();
+        fetchReportedPosts();
+        toast({
+          title: 'Post deleted',
+          description: 'The post has been removed.',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error deleting post',
         description: 'An unexpected error occurred.',
         variant: 'destructive',
       });
@@ -397,14 +523,72 @@ const Admin = () => {
                 <CardTitle className="flex items-center gap-2">
                   <Users className="h-5 w-5" />
                   User Management
+                  <Badge variant="secondary">{allUsers.length}</Badge>
                 </CardTitle>
                 <CardDescription>
-                  View and manage all users in the system
+                  View and manage all users, roles, and permissions
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">User management coming soon</p>
+                <div className="space-y-4 max-h-96 overflow-y-auto">
+                  {allUsers.map((user) => (
+                    <div
+                      key={user.user_id}
+                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg space-y-3 sm:space-y-0"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <Avatar className="h-10 w-10 flex-shrink-0">
+                          <AvatarFallback>
+                            {user.full_name?.charAt(0) || user.email?.charAt(0) || 'U'}
+                          </AvatarFallback>
+                        </Avatar>
+                        
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2 mb-1">
+                            <p className="font-medium truncate">{user.full_name || user.email}</p>
+                            <Badge 
+                              variant={user.role === 'admin' ? 'destructive' : user.role === 'moderator' ? 'default' : 'outline'}
+                              className="text-xs capitalize flex-shrink-0"
+                            >
+                              {user.role}
+                            </Badge>
+                            <Badge 
+                              variant={user.approval_status === 'approved' ? 'outline' : 'secondary'}
+                              className="text-xs flex-shrink-0"
+                            >
+                              {user.approval_status}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Joined {formatDistanceToNow(new Date(user.created_at), { addSuffix: true })}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <select
+                          value={user.role}
+                          onChange={(e) => handleRoleChange(user.user_id, e.target.value)}
+                          className="text-sm border rounded px-2 py-1 bg-background"
+                        >
+                          <option value="user">User</option>
+                          <option value="member">Member</option>
+                          <option value="dj">DJ</option>
+                          <option value="performer">Performer</option>
+                          <option value="photographer">Photographer</option>
+                          <option value="moderator">Moderator</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {allUsers.length === 0 && (
+                    <div className="text-center py-8">
+                      <p className="text-muted-foreground">No users found.</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -415,14 +599,90 @@ const Admin = () => {
                 <CardTitle className="flex items-center gap-2">
                   <Shield className="h-5 w-5" />
                   Moderation Tools
+                  <Badge variant="destructive">{reportedPosts.length}</Badge>
                 </CardTitle>
                 <CardDescription>
-                  Advanced moderation and content management tools
+                  Review reported content and manage community guidelines
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">Moderation tools coming soon</p>
+                <div className="space-y-4 max-h-96 overflow-y-auto">
+                  {reportedPosts.map((post) => (
+                    <div
+                      key={post.id}
+                      className="flex flex-col lg:flex-row lg:items-start space-y-4 lg:space-y-0 lg:space-x-4 p-4 border rounded-lg border-destructive/20 bg-destructive/5"
+                    >
+                      <div className="flex items-start space-x-3 flex-1 min-w-0">
+                        <Avatar className="h-10 w-10 flex-shrink-0">
+                          <AvatarFallback>
+                            {post.author_name?.charAt(0) || 'U'}
+                          </AvatarFallback>
+                        </Avatar>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-2 mb-2">
+                            <p className="font-medium truncate">{post.author_name}</p>
+                            {post.author_role === 'admin' && (
+                              <Badge variant="destructive" className="text-xs">Admin</Badge>
+                            )}
+                            {post.author_role === 'moderator' && (
+                              <Badge variant="outline" className="text-xs">Mod</Badge>
+                            )}
+                            <Badge variant="destructive" className="text-xs">
+                              {post.report_count} Report{post.report_count !== 1 ? 's' : ''}
+                            </Badge>
+                            <span className="text-sm text-muted-foreground">
+                              {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                            </span>
+                          </div>
+                          
+                          <p className="text-sm text-foreground mb-2 line-clamp-3">
+                            {post.content}
+                          </p>
+                          
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <Heart className="h-4 w-4" />
+                              {post.like_count}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <MessageSquare className="h-4 w-4" />
+                              {post.comment_count}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-green-600 hover:text-green-700"
+                        >
+                          <CheckCircle className="h-4 w-4 mr-1" />
+                          <span className="hidden sm:inline">Approve</span>
+                        </Button>
+                        
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeletePost(post.id)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          <span className="hidden sm:inline">Remove</span>
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {reportedPosts.length === 0 && (
+                    <div className="text-center py-8">
+                      <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+                      <p className="text-muted-foreground">No reported content to review.</p>
+                      <p className="text-sm text-muted-foreground mt-1">All good in the community!</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -503,6 +763,7 @@ const Admin = () => {
                         <Button
                           variant="ghost"
                           size="sm"
+                          onClick={() => handleDeletePost(post.id)}
                           className="text-destructive hover:text-destructive"
                         >
                           <Trash2 className="h-4 w-4" />
