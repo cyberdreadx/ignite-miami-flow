@@ -1,1 +1,4 @@
 project_id = "zbggiyxzgpgvcegamuda"
+
+[functions.verify-ticket-public]
+verify_jwt = false

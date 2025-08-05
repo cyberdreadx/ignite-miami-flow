@@ -11,6 +11,7 @@ import About from "./pages/About";
 import Tickets from "./pages/Tickets";
 import { MyTickets } from "./pages/MyTickets";
 import { ValidateTicket } from "./pages/ValidateTicket";
+import { PublicTicketView } from "./pages/PublicTicketView";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/tickets" element={<Tickets />} />
           <Route path="/my-tickets" element={<MyTickets />} />
           <Route path="/validate" element={<ValidateTicket />} />
+          <Route path="/ticket" element={<PublicTicketView />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

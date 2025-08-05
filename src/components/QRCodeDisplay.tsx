@@ -37,8 +37,9 @@ export const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({
       setQrCodeData(data.qr_code_data);
       setQrCodeToken(data.qr_code_token);
 
-      // Generate QR code URL using qr-server.com API
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(data.qr_code_token)}`;
+      // Generate QR code URL that links to the public verification page
+      const publicUrl = `${window.location.origin}/ticket?token=${encodeURIComponent(data.qr_code_token)}`;
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(publicUrl)}`;
       setQrCodeUrl(qrUrl);
 
       toast({
