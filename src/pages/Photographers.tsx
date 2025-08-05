@@ -208,7 +208,7 @@ const Photographers = () => {
           {/* Application Form */}
           <Card className="bg-card/10 backdrop-blur-lg border border-white/10 mb-8">
             <CardHeader>
-              <CardTitle className="text-2xl font-graffiti text-glow-yellow">
+              <CardTitle className="text-2xl font-normal text-glow-yellow">
                 Media Pass Application
               </CardTitle>
             </CardHeader>
