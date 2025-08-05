@@ -117,6 +117,8 @@ export type Database = {
           created_at: string
           id: string
           is_pinned: boolean
+          media_types: string[] | null
+          media_urls: string[] | null
           updated_at: string
           user_id: string
         }
@@ -125,6 +127,8 @@ export type Database = {
           created_at?: string
           id?: string
           is_pinned?: boolean
+          media_types?: string[] | null
+          media_urls?: string[] | null
           updated_at?: string
           user_id: string
         }
@@ -133,6 +137,8 @@ export type Database = {
           created_at?: string
           id?: string
           is_pinned?: boolean
+          media_types?: string[] | null
+          media_urls?: string[] | null
           updated_at?: string
           user_id?: string
         }
