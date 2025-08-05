@@ -231,7 +231,7 @@ export const AvatarUpload = ({
       </div>
 
       <Dialog open={showCropDialog} onOpenChange={setShowCropDialog}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <CropIcon className="h-5 w-5" />
@@ -239,25 +239,27 @@ export const AvatarUpload = ({
             </DialogTitle>
           </DialogHeader>
           
-          <div className="space-y-4">
-            {imageToCrop && (
-              <ReactCrop
-                crop={crop}
-                onChange={(_, percentCrop) => setCrop(percentCrop)}
-                onComplete={(c) => setCompletedCrop(c)}
-                aspect={1}
-                className="max-w-full"
-              >
-                <img
-                  ref={imgRef}
-                  src={imageToCrop}
-                  alt="Crop preview"
-                  className="max-w-full h-auto"
-                />
-              </ReactCrop>
-            )}
+          <div className="flex-1 flex flex-col space-y-4 min-h-0">
+            <div className="flex-1 overflow-auto">
+              {imageToCrop && (
+                <ReactCrop
+                  crop={crop}
+                  onChange={(_, percentCrop) => setCrop(percentCrop)}
+                  onComplete={(c) => setCompletedCrop(c)}
+                  aspect={1}
+                  className="max-w-full"
+                >
+                  <img
+                    ref={imgRef}
+                    src={imageToCrop}
+                    alt="Crop preview"
+                    className="max-w-full h-auto max-h-[50vh] object-contain"
+                  />
+                </ReactCrop>
+              )}
+            </div>
             
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-2 pt-4 border-t">
               <Button
                 variant="outline"
                 onClick={() => {
