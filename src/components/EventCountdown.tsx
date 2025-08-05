@@ -146,10 +146,10 @@ export const EventCountdown = () => {
         {/* Countdown Grid */}
         <div className="grid grid-cols-4 gap-3 mb-6">
           {[
-            { value: timeLeft.days, label: 'Days' },
-            { value: timeLeft.hours, label: 'Hours' },
-            { value: timeLeft.minutes, label: 'Minutes' },
-            { value: timeLeft.seconds, label: 'Seconds' }
+            { value: timeLeft.days, label: 'D' },
+            { value: timeLeft.hours, label: 'H' },
+            { value: timeLeft.minutes, label: 'M' },
+            { value: timeLeft.seconds, label: 'S' }
           ].map((item, index) => (
             <div 
               key={item.label}
