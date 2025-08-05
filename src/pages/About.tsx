@@ -117,7 +117,7 @@ const About = () => {
             transition={{ duration: 1, type: "spring", stiffness: 100 }}
           >
             <motion.img 
-              src="/lovable-uploads/8d0a6a4f-38d5-4282-97c9-f38ba3bd0903.png" 
+              src="/skateburn-logo.png" 
               alt="SkateBurn Miami" 
               className="h-32 w-32 mb-8 drop-shadow-2xl"
               whileHover={{ scale: 1.1, rotate: 5 }}
@@ -125,7 +125,7 @@ const About = () => {
             />
             
             <motion.h1 
-              className="text-7xl md:text-9xl font-bold bg-gradient-fire bg-clip-text text-transparent leading-none mb-6"
+              className="text-4xl sm:text-6xl md:text-7xl lg:text-9xl font-bold bg-gradient-fire bg-clip-text text-transparent leading-none mb-6 px-4"
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.8 }}
@@ -134,7 +134,7 @@ const About = () => {
             </motion.h1>
             
             <motion.div 
-              className="text-xl md:text-2xl text-muted-foreground font-medium mb-8"
+              className="text-lg sm:text-xl md:text-2xl text-muted-foreground font-medium mb-8 px-4"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5, duration: 0.8 }}
@@ -148,11 +148,11 @@ const About = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7, duration: 0.8 }}
             >
-              <h2 className="text-4xl md:text-6xl font-bold bg-gradient-neon bg-clip-text text-transparent">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-bold bg-gradient-neon bg-clip-text text-transparent px-4">
                 🔥 Skate. Flow. Burn. Repeat. 🔥
               </h2>
               
-              <p className="text-xl md:text-2xl text-foreground/80 max-w-4xl mx-auto leading-relaxed">
+              <p className="text-lg sm:text-xl md:text-2xl text-foreground/80 max-w-4xl mx-auto leading-relaxed px-4">
                 A pulsing hub where skaters, spinners, dancers, and creatives unite through movement and expression at Miami's Skatebird.
               </p>
             </motion.div>
@@ -160,11 +160,11 @@ const About = () => {
         </motion.div>
       </section>
 
-      {/* Content Sections */}
-      <div className="relative z-10 bg-background">
-        {/* Origin Story */}
-        <section className="py-32 px-6">
-          <div className="max-w-6xl mx-auto">
+        {/* Content Sections */}
+        <div className="relative z-10 bg-background">
+          {/* Origin Story */}
+          <section className="py-16 sm:py-24 md:py-32 px-4 sm:px-6">
+            <div className="max-w-6xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 100 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -182,14 +182,14 @@ const About = () => {
                   transition={{ delay: 0.2, duration: 0.6 }}
                 >
                   <Sparkles className="h-16 w-16 text-primary mx-auto mb-6" />
-                  <h2 className="text-5xl md:text-6xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-8">
+                  <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-8">
                     The Spark That Started It All
                   </h2>
                 </motion.div>
 
-                <div className="space-y-8 text-lg md:text-xl leading-relaxed relative max-w-4xl mx-auto">
+                <div className="space-y-6 sm:space-y-8 text-base sm:text-lg md:text-xl leading-relaxed relative max-w-4xl mx-auto">
                   <motion.p 
-                    className="text-2xl font-semibold text-center text-foreground"
+                    className="text-lg sm:text-xl md:text-2xl font-semibold text-center text-foreground"
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
@@ -223,7 +223,7 @@ const About = () => {
                     viewport={{ once: true }}
                     transition={{ delay: 0.6, duration: 0.6 }}
                   >
-                    <p className="text-2xl font-semibold text-center italic">
+                    <p className="text-lg sm:text-xl md:text-2xl font-semibold text-center italic">
                       "At its core, Skateburn is about courage, connection, and transformation. Whether you're here to ignite your flow, meet your people, or simply catch the flame, you're welcome here."
                     </p>
                   </motion.div>
@@ -234,10 +234,10 @@ const About = () => {
         </section>
 
         {/* Core Values */}
-        <section className="py-32 px-6">
+        <section className="py-16 sm:py-24 md:py-32 px-4 sm:px-6">
           <div className="max-w-7xl mx-auto">
             <motion.h2 
-              className="text-5xl md:text-7xl font-bold text-center mb-20 bg-gradient-primary bg-clip-text text-transparent"
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-center mb-12 sm:mb-16 md:mb-20 bg-gradient-primary bg-clip-text text-transparent"
               initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -246,7 +246,7 @@ const About = () => {
               Our Core Values
             </motion.h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
               {coreValues.map((value, index) => (
                 <motion.div
                   key={value.title}

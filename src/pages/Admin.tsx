@@ -30,6 +30,7 @@ import {
   Camera,
   Ticket
 } from 'lucide-react';
+import { MultiRoleManager } from '@/components/MultiRoleManager';
 
 interface Post {
   id: string;
@@ -931,62 +932,22 @@ const Admin = () => {
                   <Badge variant="secondary">{allUsers.length}</Badge>
                 </CardTitle>
                 <CardDescription>
-                  View and manage all users, roles, and permissions
+                  View and manage all users and their multiple roles
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4 max-h-96 overflow-y-auto">
+                <div className="space-y-6 max-h-96 overflow-y-auto">
                   {allUsers.map((user) => (
-                    <div
+                    <MultiRoleManager
                       key={user.user_id}
-                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg space-y-3 sm:space-y-0"
-                    >
-                      <div className="flex items-center space-x-4">
-                        <Avatar className="h-10 w-10 flex-shrink-0">
-                          <AvatarFallback>
-                            {user.full_name?.charAt(0) || user.email?.charAt(0) || 'U'}
-                          </AvatarFallback>
-                        </Avatar>
-                        
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-2 mb-1">
-                            <p className="font-medium truncate">{user.full_name || user.email}</p>
-                            <Badge 
-                              variant={user.role === 'admin' ? 'destructive' : user.role === 'moderator' ? 'default' : 'outline'}
-                              className="text-xs capitalize flex-shrink-0"
-                            >
-                              {user.role}
-                            </Badge>
-                            <Badge 
-                              variant={user.approval_status === 'approved' ? 'outline' : 'secondary'}
-                              className="text-xs flex-shrink-0"
-                            >
-                              {user.approval_status}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground truncate">{user.email}</p>
-                          <p className="text-xs text-muted-foreground">
-                            Joined {formatDistanceToNow(new Date(user.created_at), { addSuffix: true })}
-                          </p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <select
-                          value={user.role}
-                          onChange={(e) => handleRoleChange(user.user_id, e.target.value)}
-                          className="text-sm border rounded px-2 py-1 bg-background"
-                        >
-                          <option value="user">User</option>
-                          <option value="member">Member</option>
-                          <option value="dj">DJ</option>
-                          <option value="performer">Performer</option>
-                          <option value="photographer">Photographer</option>
-                          <option value="moderator">Moderator</option>
-                          <option value="admin">Admin</option>
-                        </select>
-                      </div>
-                    </div>
+                      userId={user.user_id}
+                      userName={user.full_name || user.email || 'Unknown User'}
+                      userEmail={user.email || ''}
+                      onRolesChange={() => {
+                        fetchAllUsers();
+                        fetchStats();
+                      }}
+                    />
                   ))}
                   
                   {allUsers.length === 0 && (
