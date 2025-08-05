@@ -65,7 +65,7 @@ export const MediaDisplay = ({ mediaUrls, mediaTypes, className = '' }: MediaDis
       <video
         ref={videoRef}
         src={src}
-        className="w-full h-80 sm:h-96 md:h-[500px] object-cover rounded-lg"
+        className="w-full h-96 sm:h-[400px] md:h-[600px] object-cover rounded-lg"
         controls
         preload="metadata"
         muted
@@ -92,7 +92,7 @@ export const MediaDisplay = ({ mediaUrls, mediaTypes, className = '' }: MediaDis
               <img
                 src={url}
                 alt="Post media"
-                className="w-full h-80 sm:h-96 md:h-[500px] object-cover cursor-pointer transition-transform group-hover:scale-105 rounded-lg"
+                className="w-full h-96 sm:h-[400px] md:h-[600px] object-cover cursor-pointer transition-transform group-hover:scale-105 rounded-lg"
                 onClick={() => window.open(url, '_blank')}
               />
             )}

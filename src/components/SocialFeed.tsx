@@ -49,7 +49,7 @@ export const SocialFeed = () => {
 
   const fetchPosts = async () => {
     try {
-      // First get posts with basic info
+      // Fetch posts even if not authenticated, but only show pinned posts
       const { data: postsData, error: postsError } = await supabase
         .rpc('get_posts_with_counts');
 
@@ -68,10 +68,8 @@ export const SocialFeed = () => {
   };
 
   useEffect(() => {
-    if (user) {
-      fetchPosts();
-    }
-  }, [user]);
+    fetchPosts(); // Fetch posts regardless of authentication status
+  }, []);
 
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -209,23 +207,101 @@ export const SocialFeed = () => {
     }
   };
 
-  if (!user) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-        <h2 className="text-2xl font-bold">Join the SkateBurn Community</h2>
-        <p className="text-muted-foreground">Sign in to see posts and join the conversation</p>
-        <Button onClick={() => navigate('/auth')}>
-          Sign In
-        </Button>
-      </div>
-    );
-  }
 
   // Separate pinned and regular posts
   const pinnedPosts = posts.filter(post => post.pinned);
   const regularPosts = posts.filter(post => !post.pinned).sort((a, b) => 
     new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
+
+  // Show different content based on auth status
+  if (!user) {
+    return (
+      <div className="max-w-2xl mx-auto space-y-6 overflow-hidden">
+        {/* Countdown to Next Event */}
+        <EventCountdown />
+        
+        {/* Pinned Posts - Visible to everyone */}
+        {pinnedPosts.length > 0 && (
+          <div className="space-y-4">
+            {pinnedPosts.map((post) => (
+              <Card key={post.id} className="relative border-primary/20 bg-primary/5">
+                <div className="absolute top-4 right-4">
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    <Pin className="h-3 w-3" />
+                    Pinned
+                  </Badge>
+                </div>
+                <CardHeader className="pb-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center space-x-3">
+                      <Avatar>
+                        {post.author_avatar && (
+                          <AvatarImage src={post.author_avatar} alt={post.author_name} />
+                        )}
+                        <AvatarFallback>
+                          {post.author_name?.charAt(0)?.toUpperCase() || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium">{post.author_name}</p>
+                        <div className="flex items-center gap-2">
+                          {post.author_role === 'admin' && (
+                            <Badge variant="destructive" className="text-xs">Admin</Badge>
+                          )}
+                          {post.author_role === 'moderator' && (
+                            <Badge variant="outline" className="text-xs">Mod</Badge>
+                          )}
+                          <span className="text-sm text-muted-foreground">
+                            {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  {post.content && (
+                    <LinkifyText 
+                      text={post.content}
+                      className="whitespace-pre-wrap mb-4 block"
+                    />
+                  )}
+                  
+                  {/* Media Display */}
+                  <MediaDisplay 
+                    mediaUrls={post.media_urls}
+                    mediaTypes={post.media_types}
+                    className="mb-4"
+                  />
+                  
+                  <div className="flex items-center space-x-6">
+                    <div className="flex items-center space-x-2 text-muted-foreground">
+                      <Heart className="h-4 w-4" />
+                      <span>{post.like_count}</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-muted-foreground">
+                      <MessageCircle className="h-4 w-4" />
+                      <span>{post.comment_count}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+        
+        {/* Sign In Prompt */}
+        <div className="flex flex-col items-center justify-center min-h-[30vh] space-y-4">
+          <h2 className="text-2xl font-bold">Join the SkateBurn Community</h2>
+          <p className="text-muted-foreground text-center">Sign in to create posts, like content, and join the conversation</p>
+          <Button onClick={() => navigate('/auth')}>
+            Sign In
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 overflow-hidden">
