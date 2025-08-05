@@ -208,6 +208,8 @@ export type Database = {
           author_name: string
           author_role: string
           author_avatar: string
+          media_urls: string[]
+          media_types: string[]
         }[]
       }
       promote_user_to_admin: {
