@@ -357,6 +357,39 @@ export type Database = {
         }
         Relationships: []
       }
+      waiver_completions: {
+        Row: {
+          created_at: string
+          id: string
+          ip_address: string | null
+          signed_at: string
+          updated_at: string
+          user_agent: string | null
+          user_id: string
+          waiver_url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          signed_at?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id: string
+          waiver_url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          signed_at?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string
+          waiver_url?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -400,6 +433,10 @@ export type Database = {
           media_types: string[]
           user_id: string
         }[]
+      }
+      has_completed_waiver: {
+        Args: { user_id: string }
+        Returns: boolean
       }
       is_user_approved: {
         Args: { user_id: string }

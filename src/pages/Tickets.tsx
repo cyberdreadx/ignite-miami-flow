@@ -13,6 +13,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSearchParams } from 'react-router-dom';
 import { SystemTester } from '@/components/SystemTester';
 import NavBar from '@/components/NavBar';
+import { useWaiver } from '@/hooks/useWaiver';
+import { WaiverModal } from '@/components/WaiverModal';
 
 interface Event {
   id: string;
@@ -30,9 +32,12 @@ const Tickets = () => {
   const [slidingAmount, setSlidingAmount] = useState(10);
   const [processingTicket, setProcessingTicket] = useState(false);
   const [processingPass, setProcessingPass] = useState(false);
+  const [showWaiverModal, setShowWaiverModal] = useState(false);
+  const [pendingPurchaseType, setPendingPurchaseType] = useState<'ticket' | 'pass' | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
+  const { hasCompletedWaiver, loading: waiverLoading, markWaiverCompleted } = useWaiver();
 
   // Check for payment success/cancel messages and handle ticket creation
   useEffect(() => {
@@ -133,7 +138,7 @@ const Tickets = () => {
     }
   };
 
-  const handleSingleTicket = async () => {
+  const checkWaiverAndProceed = (purchaseType: 'ticket' | 'pass') => {
     if (!user) {
       toast({
         title: 'Authentication Required',
@@ -143,6 +148,34 @@ const Tickets = () => {
       return;
     }
 
+    if (!hasCompletedWaiver && !waiverLoading) {
+      setPendingPurchaseType(purchaseType);
+      setShowWaiverModal(true);
+      return;
+    }
+
+    if (purchaseType === 'ticket') {
+      proceedWithTicketPurchase();
+    } else {
+      proceedWithPassPurchase();
+    }
+  };
+
+  const handleWaiverCompleted = async () => {
+    const success = await markWaiverCompleted();
+    if (success && pendingPurchaseType) {
+      setShowWaiverModal(false);
+      if (pendingPurchaseType === 'ticket') {
+        proceedWithTicketPurchase();
+      } else {
+        proceedWithPassPurchase();
+      }
+      setPendingPurchaseType(null);
+    }
+    return success;
+  };
+
+  const proceedWithTicketPurchase = async () => {
     setProcessingTicket(true);
     try {
       const { data, error } = await supabase.functions.invoke('create-ticket-payment', {
@@ -165,16 +198,7 @@ const Tickets = () => {
     }
   };
 
-  const handleMonthlyPass = async () => {
-    if (!user) {
-      toast({
-        title: 'Authentication Required',
-        description: 'Please sign in to purchase a monthly pass',
-        variant: 'destructive',
-      });
-      return;
-    }
-
+  const proceedWithPassPurchase = async () => {
     setProcessingPass(true);
     try {
       const { data, error } = await supabase.functions.invoke('create-monthly-subscription', {
@@ -275,7 +299,7 @@ const Tickets = () => {
                 </div>
                 
                 <Button 
-                  onClick={handleSingleTicket}
+                  onClick={() => checkWaiverAndProceed('ticket')}
                   disabled={processingTicket || !user}
                   className="w-full text-lg py-6"
                   size="lg"
@@ -338,7 +362,7 @@ const Tickets = () => {
                 </div>
                 
                 <Button 
-                  onClick={handleMonthlyPass}
+                  onClick={() => checkWaiverAndProceed('pass')}
                   disabled={processingPass || !user}
                   className="w-full text-lg py-6"
                   size="lg"
@@ -406,6 +430,16 @@ const Tickets = () => {
         </motion.div>
       </div>
       </div>
+
+      {/* Waiver Modal */}
+      <WaiverModal
+        isOpen={showWaiverModal}
+        onClose={() => {
+          setShowWaiverModal(false);
+          setPendingPurchaseType(null);
+        }}
+        onWaiverCompleted={handleWaiverCompleted}
+      />
     </motion.div>
   );
 };
