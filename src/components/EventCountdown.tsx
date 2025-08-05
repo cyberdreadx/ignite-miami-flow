@@ -112,21 +112,21 @@ export const EventCountdown = () => {
             </div>
           </div>
           
-          <div className="grid grid-cols-4 gap-3">
-            <div className="bg-background/50 rounded-lg p-2 border">
-              <div className="text-xl font-bold text-primary">{timeLeft.days}</div>
+          <div className="grid grid-cols-4 gap-2">
+            <div className="bg-background/50 rounded-lg p-2 border min-w-[60px]">
+              <div className="text-xl font-bold text-primary tabular-nums">{timeLeft.days}</div>
               <div className="text-xs text-muted-foreground uppercase tracking-wide">Days</div>
             </div>
-            <div className="bg-background/50 rounded-lg p-2 border">
-              <div className="text-xl font-bold text-primary">{timeLeft.hours}</div>
+            <div className="bg-background/50 rounded-lg p-2 border min-w-[60px]">
+              <div className="text-xl font-bold text-primary tabular-nums">{timeLeft.hours}</div>
               <div className="text-xs text-muted-foreground uppercase tracking-wide">Hours</div>
             </div>
-            <div className="bg-background/50 rounded-lg p-2 border">
-              <div className="text-xl font-bold text-primary">{timeLeft.minutes}</div>
+            <div className="bg-background/50 rounded-lg p-2 border min-w-[60px]">
+              <div className="text-xl font-bold text-primary tabular-nums">{timeLeft.minutes}</div>
               <div className="text-xs text-muted-foreground uppercase tracking-wide">Minutes</div>
             </div>
-            <div className="bg-background/50 rounded-lg p-2 border">
-              <div className="text-xl font-bold text-primary">{timeLeft.seconds}</div>
+            <div className="bg-background/50 rounded-lg p-2 border min-w-[60px]">
+              <div className="text-xl font-bold text-primary tabular-nums">{timeLeft.seconds}</div>
               <div className="text-xs text-muted-foreground uppercase tracking-wide">Seconds</div>
             </div>
           </div>
