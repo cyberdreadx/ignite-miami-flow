@@ -47,6 +47,8 @@ serve(async (req) => {
       const userName = profile?.full_name || profile?.email || "Unknown";
       const userEmail = profile?.email || "Unknown";
       
+      console.log("Returning ticket verification success for:", userName);
+      
       // Return complete ticket data for verification page
       return new Response(JSON.stringify({
         success: true,
