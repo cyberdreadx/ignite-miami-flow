@@ -16,6 +16,7 @@ import Merch from "./pages/Merch";
 import { MyTickets } from "./pages/MyTickets";
 import { ValidateTicket } from "./pages/ValidateTicket";
 import { PublicTicketView } from "./pages/PublicTicketView";
+import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <PWAInstallPrompt />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
