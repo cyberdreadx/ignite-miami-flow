@@ -6,10 +6,11 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Heart, MessageCircle, Trash2, MoreHorizontal, Pin } from 'lucide-react';
 import NavBar from '@/components/NavBar';
 import { AvatarUpload } from '@/components/AvatarUpload';
 import { AccountDeletion } from '@/components/AccountDeletion';
+import { UserPosts } from '@/components/UserPosts';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Profile {
@@ -197,6 +198,11 @@ const Profile = () => {
               </form>
             </CardContent>
           </Card>
+
+          {/* User Posts Section */}
+          <div className="mt-8">
+            <UserPosts />
+          </div>
 
           {/* Account Deletion Section */}
           <div className="mt-8">
