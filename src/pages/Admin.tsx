@@ -605,60 +605,66 @@ const Admin = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4 max-h-96 overflow-y-auto">
-                    {pendingUsers.map((user) => (
-                      <div
-                        key={user.user_id}
-                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg space-y-3 sm:space-y-0"
-                      >
-                        <div className="flex items-center space-x-4">
-                          <Avatar className="h-10 w-10 flex-shrink-0">
-                            <AvatarFallback>
-                              {user.full_name?.charAt(0) || user.email?.charAt(0) || 'U'}
-                            </AvatarFallback>
-                          </Avatar>
-                          
-                          <div className="min-w-0 flex-1">
-                            <div className="flex flex-wrap items-center gap-2 mb-1">
-                              <p className="font-medium truncate">{user.full_name || user.email}</p>
-                              <Badge 
-                                variant="outline" 
-                                className={`text-xs capitalize flex-shrink-0 ${
-                                  user.role === 'dj' ? 'bg-purple-100 text-purple-800' :
-                                  user.role === 'performer' ? 'bg-orange-100 text-orange-800' :
-                                  'bg-blue-100 text-blue-800'
-                                }`}
-                              >
-                                {user.role}
-                              </Badge>
-                            </div>
-                            <p className="text-sm text-muted-foreground truncate">{user.email}</p>
-                            <p className="text-xs text-muted-foreground">
-                              Applied {formatDistanceToNow(new Date(user.created_at), { addSuffix: true })}
-                            </p>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleUserApproval(user.user_id, 'approved')}
-                            className="flex items-center gap-1 text-green-600 hover:text-green-700"
-                          >
-                            <CheckCircle className="h-4 w-4" />
-                            <span className="hidden sm:inline">Approve</span>
-                          </Button>
-                          
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleUserApproval(user.user_id, 'rejected')}
-                            className="flex items-center gap-1 text-red-600 hover:text-red-700"
-                          >
-                            <XCircle className="h-4 w-4" />
-                            <span className="hidden sm:inline">Reject</span>
-                          </Button>
-            </div>
+                     {pendingUsers.map((user) => (
+                       <div
+                         key={user.user_id}
+                         className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg space-y-3 sm:space-y-0"
+                       >
+                         <div className="flex items-center space-x-4">
+                           <Avatar className="h-10 w-10 flex-shrink-0">
+                             <AvatarFallback>
+                               {user.full_name?.charAt(0) || user.email?.charAt(0) || 'U'}
+                             </AvatarFallback>
+                           </Avatar>
+                           
+                           <div className="min-w-0 flex-1">
+                             <div className="flex flex-wrap items-center gap-2 mb-1">
+                               <p className="font-medium truncate">{user.full_name || user.email}</p>
+                               <Badge 
+                                 variant="outline" 
+                                 className={`text-xs capitalize flex-shrink-0 ${
+                                   user.role === 'dj' ? 'bg-purple-100 text-purple-800' :
+                                   user.role === 'performer' ? 'bg-orange-100 text-orange-800' :
+                                   'bg-blue-100 text-blue-800'
+                                 }`}
+                               >
+                                 {user.role}
+                               </Badge>
+                             </div>
+                             <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+                             <p className="text-xs text-muted-foreground">
+                               Applied {formatDistanceToNow(new Date(user.created_at), { addSuffix: true })}
+                             </p>
+                           </div>
+                         </div>
+                         
+                         <div className="flex items-center gap-2 flex-shrink-0">
+                           <Button
+                             variant="outline"
+                             size="sm"
+                             onClick={() => handleUserApproval(user.user_id, 'approved')}
+                             className="flex items-center gap-1 text-green-600 hover:text-green-700"
+                           >
+                             <CheckCircle className="h-4 w-4" />
+                             <span className="hidden sm:inline">Approve</span>
+                           </Button>
+                           
+                           <Button
+                             variant="outline"
+                             size="sm"
+                             onClick={() => handleUserApproval(user.user_id, 'rejected')}
+                             className="flex items-center gap-1 text-red-600 hover:text-red-700"
+                           >
+                             <XCircle className="h-4 w-4" />
+                             <span className="hidden sm:inline">Reject</span>
+                           </Button>
+                         </div>
+                       </div>
+                     ))}
+                   </div>
+                 </CardContent>
+               </Card>
+             )}
 
             {/* Analytics Section */}
             <Card id="analytics">
@@ -797,15 +803,9 @@ const Admin = () => {
                       </p>
                     </div>
                   )}
-                </div>
-              </CardContent>
-            </Card>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+                 </div>
+               </CardContent>
+             </Card>
 
             {/* Users Management */}
             <Card id="users">
