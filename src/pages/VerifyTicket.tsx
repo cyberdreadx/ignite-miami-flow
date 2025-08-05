@@ -18,7 +18,9 @@ import {
   Hash,
   Clock,
   AlertTriangle,
-  Loader2
+  Loader2,
+  CreditCard,
+  Camera
 } from 'lucide-react';
 import NavBar from '@/components/NavBar';
 
@@ -36,9 +38,34 @@ interface TicketDetails {
   user_name: string;
 }
 
+interface SubscriptionInfo {
+  id: string;
+  status: string;
+  user_name: string;
+  current_period_end: string | null;
+  created_at: string;
+}
+
+interface MediaPassInfo {
+  id: string;
+  pass_type: string;
+  photographer_name: string;
+  instagram_handle: string;
+  amount: number;
+  user_name: string;
+  created_at: string;
+  valid_until: string | null;
+  status: string;
+}
+
 export const VerifyTicket: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [ticket, setTicket] = useState<TicketDetails | null>(null);
+  const [subscriptionInfo, setSubscriptionInfo] = useState<SubscriptionInfo | null>(null);
+  const [mediaPassInfo, setMediaPassInfo] = useState<MediaPassInfo | null>(null);
+  const [verificationType, setVerificationType] = useState<'ticket' | 'subscription' | 'media_pass' | null>(null);
+  const [isValid, setIsValid] = useState<boolean | null>(null);
+  const [reason, setReason] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [marking, setMarking] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -53,7 +80,7 @@ export const VerifyTicket: React.FC = () => {
   
   const canMarkAsUsed = user && (hasRole('admin') || hasRole('moderator'));
 
-  const fetchTicketDetails = async () => {
+  const fetchVerificationDetails = async () => {
     if (!qrToken) {
       setError('No QR token provided');
       setLoading(false);
@@ -69,14 +96,33 @@ export const VerifyTicket: React.FC = () => {
         throw new Error(error.message);
       }
 
+      // Handle ticket verification
       if (data.success && data.ticket) {
+        setVerificationType('ticket');
         setTicket(data.ticket);
-      } else {
-        setError(data.error || 'Ticket not found');
+        setIsValid(true);
+      }
+      // Handle subscription verification
+      else if (data.type === 'subscription') {
+        setVerificationType('subscription');
+        setSubscriptionInfo(data.subscription_info);
+        setIsValid(data.valid);
+        setReason(data.reason);
+      }
+      // Handle media pass verification
+      else if (data.type === 'media_pass') {
+        setVerificationType('media_pass');
+        setMediaPassInfo(data.media_pass_info);
+        setIsValid(data.valid);
+        setReason(data.reason);
+      }
+      // Handle error cases
+      else {
+        setError(data.error || 'QR code not found');
       }
     } catch (err) {
-      console.error('Error fetching ticket:', err);
-      setError(err instanceof Error ? err.message : 'Failed to verify ticket');
+      console.error('Error fetching verification details:', err);
+      setError(err instanceof Error ? err.message : 'Failed to verify QR code');
     } finally {
       setLoading(false);
     }
@@ -123,38 +169,65 @@ export const VerifyTicket: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchTicketDetails();
+    fetchVerificationDetails();
   }, [qrToken]);
 
+  const getVerificationTitle = () => {
+    switch (verificationType) {
+      case 'ticket':
+        return 'Ticket Verification';
+      case 'subscription':
+        return 'Monthly Pass Verification';
+      case 'media_pass':
+        return 'Media Pass Verification';
+      default:
+        return 'QR Code Verification';
+    }
+  };
+
+  const getStatusInfo = () => {
+    if (verificationType === 'ticket' && ticket) {
+      if (ticket.used_at) {
+        return { 
+          icon: CheckCircle, 
+          text: 'Already Used', 
+          variant: 'secondary' as const,
+          details: `Used on ${new Date(ticket.used_at).toLocaleString()}${ticket.used_by ? ` by ${ticket.used_by}` : ''}`
+        };
+      }
+      
+      if (ticket.status !== 'paid') {
+        return { icon: XCircle, text: 'Not Paid', variant: 'destructive' as const };
+      }
+      
+      if (ticket.valid_until && new Date(ticket.valid_until) <= new Date()) {
+        return { icon: XCircle, text: 'Expired', variant: 'destructive' as const };
+      }
+      
+      return { icon: CheckCircle, text: 'Valid Entry', variant: 'default' as const };
+    }
+
+    // For subscriptions and media passes
+    if (isValid === true) {
+      return { icon: CheckCircle, text: 'Valid Entry', variant: 'default' as const };
+    } else if (isValid === false) {
+      return { 
+        icon: XCircle, 
+        text: 'Invalid Entry', 
+        variant: 'destructive' as const,
+        details: reason || undefined
+      };
+    }
+
+    return { icon: XCircle, text: 'Unknown', variant: 'destructive' as const };
+  };
+
   const isTicketValid = () => {
-    if (!ticket) return false;
+    if (verificationType !== 'ticket' || !ticket) return false;
     if (ticket.status !== 'paid') return false;
     if (ticket.used_at) return false; // Already used
     if (!ticket.valid_until) return true;
     return new Date(ticket.valid_until) > new Date();
-  };
-
-  const getStatusInfo = () => {
-    if (!ticket) return { icon: XCircle, text: 'Unknown', variant: 'destructive' as const };
-    
-    if (ticket.used_at) {
-      return { 
-        icon: CheckCircle, 
-        text: 'Already Used', 
-        variant: 'secondary' as const,
-        details: `Used on ${new Date(ticket.used_at).toLocaleString()}${ticket.used_by ? ` by ${ticket.used_by}` : ''}`
-      };
-    }
-    
-    if (ticket.status !== 'paid') {
-      return { icon: XCircle, text: 'Not Paid', variant: 'destructive' as const };
-    }
-    
-    if (ticket.valid_until && new Date(ticket.valid_until) <= new Date()) {
-      return { icon: XCircle, text: 'Expired', variant: 'destructive' as const };
-    }
-    
-    return { icon: CheckCircle, text: 'Valid', variant: 'default' as const };
   };
 
   if (loading) {
@@ -164,7 +237,7 @@ export const VerifyTicket: React.FC = () => {
         <div className="pt-24 pb-8">
           <div className="container mx-auto px-4 text-center">
             <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
-            <p className="text-muted-foreground">Verifying ticket...</p>
+            <p className="text-muted-foreground">Verifying QR code...</p>
           </div>
         </div>
       </div>
@@ -177,24 +250,26 @@ export const VerifyTicket: React.FC = () => {
         <NavBar />
         <div className="pt-24 pb-8">
           <div className="container mx-auto px-4 text-center">
-            <AlertTriangle className="w-12 h-12 text-destructive mx-auto mb-4" />
-            <h1 className="text-2xl font-bold mb-2">Verification Failed</h1>
-            <p className="text-muted-foreground">{error}</p>
+            <XCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+            <h1 className="text-3xl font-bold mb-2 text-red-600">INVALID ENTRY</h1>
+            <p className="text-muted-foreground mb-4">{error}</p>
+            <p className="text-sm text-muted-foreground">This is an official SkateBurn ticket verification page</p>
           </div>
         </div>
       </div>
     );
   }
 
-  if (!ticket) {
+  if (!ticket && !subscriptionInfo && !mediaPassInfo) {
     return (
       <div className="min-h-screen bg-background">
         <NavBar />
         <div className="pt-24 pb-8">
           <div className="container mx-auto px-4 text-center">
-            <XCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
-            <h1 className="text-2xl font-bold mb-2">Ticket Not Found</h1>
-            <p className="text-muted-foreground">The QR code may be invalid or expired.</p>
+            <XCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+            <h1 className="text-3xl font-bold mb-2 text-red-600">INVALID ENTRY</h1>
+            <p className="text-muted-foreground mb-4">The QR code is invalid or has been deactivated.</p>
+            <p className="text-sm text-muted-foreground">This is an official SkateBurn ticket verification page</p>
           </div>
         </div>
       </div>
@@ -215,60 +290,163 @@ export const VerifyTicket: React.FC = () => {
               statusInfo.variant === 'destructive' ? 'text-red-500' :
               'text-yellow-500'
             }`} />
-            <h1 className="text-3xl font-bold mb-2">Ticket Verification</h1>
-            <Badge variant={statusInfo.variant} className="text-lg px-4 py-2">
-              {statusInfo.text}
-            </Badge>
-            {statusInfo.details && (
+            <h1 className="text-3xl font-bold mb-2">{getVerificationTitle()}</h1>
+            
+            {statusInfo.variant === 'destructive' ? (
+              <div className="bg-red-50 border-2 border-red-200 rounded-lg p-6 mb-4">
+                <h2 className="text-2xl font-bold text-red-600 mb-2">INVALID ENTRY</h2>
+                {statusInfo.details && (
+                  <p className="text-red-600">{statusInfo.details}</p>
+                )}
+              </div>
+            ) : (
+              <Badge variant={statusInfo.variant} className="text-lg px-4 py-2 mb-4">
+                {statusInfo.text}
+              </Badge>
+            )}
+            
+            {statusInfo.details && statusInfo.variant !== 'destructive' && (
               <p className="text-sm text-muted-foreground mt-2">{statusInfo.details}</p>
             )}
           </div>
 
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Ticket className="w-5 h-5" />
-                Ticket Details
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex items-center gap-2">
-                  <Hash className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">QR Token:</span>
-                  <span className="font-mono text-sm">{ticket.qr_code_token}</span>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <DollarSign className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">Amount:</span>
-                  <span className="font-semibold">${(ticket.amount / 100).toFixed(2)}</span>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <User className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">Holder:</span>
-                  <span>{ticket.user_name}</span>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">Purchased:</span>
-                  <span>{formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true })}</span>
-                </div>
-                
-                {ticket.valid_until && (
+          {/* Ticket Details */}
+          {verificationType === 'ticket' && ticket && (
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Ticket className="w-5 h-5" />
+                  Ticket Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Valid Until:</span>
-                    <span>{new Date(ticket.valid_until).toLocaleDateString()}</span>
+                    <Hash className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">QR Token:</span>
+                    <span className="font-mono text-sm">{ticket.qr_code_token}</span>
                   </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                  
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Amount:</span>
+                    <span className="font-semibold">${(ticket.amount / 100).toFixed(2)}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Holder:</span>
+                    <span>{ticket.user_name}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Purchased:</span>
+                    <span>{formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true })}</span>
+                  </div>
+                  
+                  {ticket.valid_until && (
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">Valid Until:</span>
+                      <span>{new Date(ticket.valid_until).toLocaleDateString()}</span>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-          {canMarkAsUsed && isTicketValid() && (
+          {/* Subscription Details */}
+          {verificationType === 'subscription' && subscriptionInfo && (
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="w-5 h-5" />
+                  Monthly Pass Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Holder:</span>
+                    <span>{subscriptionInfo.user_name}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Status:</span>
+                    <span className="capitalize">{subscriptionInfo.status}</span>
+                  </div>
+                  
+                  {subscriptionInfo.current_period_end && (
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">Valid Until:</span>
+                      <span>{new Date(subscriptionInfo.current_period_end).toLocaleDateString()}</span>
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Started:</span>
+                    <span>{formatDistanceToNow(new Date(subscriptionInfo.created_at), { addSuffix: true })}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Media Pass Details */}
+          {verificationType === 'media_pass' && mediaPassInfo && (
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Camera className="w-5 h-5" />
+                  Media Pass Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Photographer:</span>
+                    <span>{mediaPassInfo.photographer_name}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Hash className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Instagram:</span>
+                    <span>@{mediaPassInfo.instagram_handle}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Amount:</span>
+                    <span className="font-semibold">${(mediaPassInfo.amount / 100).toFixed(2)}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Ticket className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Pass Type:</span>
+                    <span className="capitalize">{mediaPassInfo.pass_type}</span>
+                  </div>
+                  
+                  {mediaPassInfo.valid_until && (
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">Valid Until:</span>
+                      <span>{new Date(mediaPassInfo.valid_until).toLocaleDateString()}</span>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Moderator Actions for Tickets */}
+          {canMarkAsUsed && verificationType === 'ticket' && isTicketValid() && (
             <Card className="border-green-200 bg-green-50">
               <CardContent className="p-6 text-center">
                 <h3 className="text-lg font-semibold mb-4">Moderator Actions</h3>
@@ -288,7 +466,7 @@ export const VerifyTicket: React.FC = () => {
             </Card>
           )}
 
-          {!canMarkAsUsed && user && (
+          {!canMarkAsUsed && user && verificationType === 'ticket' && (
             <Card className="border-yellow-200 bg-yellow-50">
               <CardContent className="p-4 text-center">
                 <p className="text-sm text-muted-foreground">
@@ -297,6 +475,10 @@ export const VerifyTicket: React.FC = () => {
               </CardContent>
             </Card>
           )}
+
+          <div className="text-center mt-8">
+            <p className="text-sm text-muted-foreground">This is an official SkateBurn ticket verification page</p>
+          </div>
         </div>
       </div>
     </div>
