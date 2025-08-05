@@ -17,7 +17,10 @@ import {
   Trash2, 
   Shield, 
   TrendingUp,
-  ArrowLeft 
+  ArrowLeft,
+  CheckCircle,
+  XCircle,
+  Clock
 } from 'lucide-react';
 
 interface Post {
@@ -31,6 +34,15 @@ interface Post {
   author_role: string;
 }
 
+interface PendingUser {
+  user_id: string;
+  email: string;
+  full_name: string;
+  role: string;
+  approval_status: string;
+  created_at: string;
+}
+
 interface UserStats {
   total_users: number;
   admin_count: number;
@@ -42,6 +54,7 @@ interface UserStats {
 
 const Admin = () => {
   const [posts, setPosts] = useState<Post[]>([]);
+  const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
   const { user, signOut } = useAuth();
@@ -117,10 +130,29 @@ const Admin = () => {
     }
   };
 
+  const fetchPendingUsers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('user_id, email, full_name, role, approval_status, created_at')
+        .eq('approval_status', 'pending')
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching pending users:', error);
+      } else {
+        setPendingUsers(data || []);
+      }
+    } catch (error) {
+      console.error('Error in fetchPendingUsers:', error);
+    }
+  };
+
   useEffect(() => {
     if (user && isAdmin) {
       fetchStats();
       fetchPosts();
+      fetchPendingUsers();
     }
   }, [user, isAdmin]);
 
@@ -151,6 +183,36 @@ const Admin = () => {
     } catch (error) {
       toast({
         title: 'Error updating post',
+        description: 'An unexpected error occurred.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleUserApproval = async (userId: string, action: 'approved' | 'rejected') => {
+    try {
+      const { error } = await supabase.rpc('update_user_approval', {
+        target_user_id: userId,
+        new_status: action
+      });
+
+      if (error) {
+        toast({
+          title: 'Error updating user status',
+          description: error.message,
+          variant: 'destructive',
+        });
+      } else {
+        fetchPendingUsers();
+        fetchStats();
+        toast({
+          title: `User ${action}`,
+          description: `The user has been ${action} successfully.`,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error updating user status',
         description: 'An unexpected error occurred.',
         variant: 'destructive',
       });
@@ -239,6 +301,82 @@ const Admin = () => {
               </CardContent>
             </Card>
           </div>
+
+          {/* Pending User Approvals */}
+          {pendingUsers.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5" />
+                  Pending User Approvals
+                  <Badge variant="secondary">{pendingUsers.length}</Badge>
+                </CardTitle>
+                <CardDescription>
+                  Review and approve new DJs, performers, and photographers
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {pendingUsers.map((user) => (
+                    <div
+                      key={user.user_id}
+                      className="flex items-center justify-between p-4 border rounded-lg"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <Avatar className="h-10 w-10">
+                          <AvatarFallback>
+                            {user.full_name?.charAt(0) || user.email?.charAt(0) || 'U'}
+                          </AvatarFallback>
+                        </Avatar>
+                        
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="font-medium">{user.full_name || user.email}</p>
+                            <Badge 
+                              variant="outline" 
+                              className={`text-xs capitalize ${
+                                user.role === 'dj' ? 'bg-purple-100 text-purple-800' :
+                                user.role === 'performer' ? 'bg-orange-100 text-orange-800' :
+                                'bg-blue-100 text-blue-800'
+                              }`}
+                            >
+                              {user.role}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">{user.email}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Applied {formatDistanceToNow(new Date(user.created_at), { addSuffix: true })}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleUserApproval(user.user_id, 'approved')}
+                          className="flex items-center gap-1 text-green-600 hover:text-green-700"
+                        >
+                          <CheckCircle className="h-4 w-4" />
+                          Approve
+                        </Button>
+                        
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleUserApproval(user.user_id, 'rejected')}
+                          className="flex items-center gap-1 text-red-600 hover:text-red-700"
+                        >
+                          <XCircle className="h-4 w-4" />
+                          Reject
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Recent Posts Management */}
           <Card>

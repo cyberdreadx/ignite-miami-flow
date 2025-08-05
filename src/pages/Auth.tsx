@@ -75,9 +75,12 @@ const Auth = () => {
             });
           }
         } else {
+          const isSpecialRole = ["dj", "performer", "photographer"].includes(role);
           toast({
             title: "Account Created!",
-            description: "Please check your email to confirm your account.",
+            description: isSpecialRole 
+              ? "Please check your email to confirm your account. Your account will be reviewed by an admin before activation."
+              : "Please check your email to confirm your account.",
           });
           setIsLogin(true);
         }

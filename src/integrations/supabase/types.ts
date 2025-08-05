@@ -146,6 +146,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          approval_status: string
           avatar_url: string | null
           created_at: string
           email: string | null
@@ -156,6 +157,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          approval_status?: string
           avatar_url?: string | null
           created_at?: string
           email?: string | null
@@ -166,6 +168,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          approval_status?: string
           avatar_url?: string | null
           created_at?: string
           email?: string | null
@@ -317,6 +320,10 @@ export type Database = {
           user_id: string
         }[]
       }
+      is_user_approved: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
       promote_user_to_admin: {
         Args: { user_email: string }
         Returns: boolean
@@ -327,6 +334,10 @@ export type Database = {
       }
       toggle_pin: {
         Args: { post_id: string }
+        Returns: boolean
+      }
+      update_user_approval: {
+        Args: { target_user_id: string; new_status: string }
         Returns: boolean
       }
     }
