@@ -42,27 +42,23 @@ serve(async (req) => {
       customerId = customers.data[0].id;
     }
 
-    // Determine price and product name based on pass type
-    const passPrice = passType === "30" ? 3000 : 15000; // $30 or $150 in cents
+    // Determine price ID based on pass type
+    const priceId = passType === "30" 
+      ? "prod_SoEFJCpfgiULre" // $30 Media Pass
+      : "PRICE_ID_150"; // TODO: Replace with actual $150 pass price ID
+    
     const passName = passType === "30" ? "SkateBurn Media Pass - Standard ($30)" : "SkateBurn Media Pass - Premium ($150)";
     const passDescription = passType === "30" 
       ? "Standard media pass with shared usage rights" 
       : "Premium media pass with exclusive content rights";
 
-    // Create a one-time payment session
+    // Create a one-time payment session using your product
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [
         {
-          price_data: {
-            currency: "usd",
-            product_data: { 
-              name: passName,
-              description: passDescription,
-            },
-            unit_amount: passPrice,
-          },
+          price: priceId,
           quantity: 1,
         },
       ],
@@ -91,7 +87,7 @@ serve(async (req) => {
       pass_type: passType,
       photographer_name: name,
       instagram_handle: instagramHandle,
-      amount: passPrice,
+      amount: passType === "30" ? 3000 : 15000, // Amount in cents
       status: "pending",
       created_at: new Date().toISOString()
     });
