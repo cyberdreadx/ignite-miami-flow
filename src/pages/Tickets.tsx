@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useSearchParams } from 'react-router-dom';
+import NavBar from '@/components/NavBar';
 
 interface Event {
   id: string;
@@ -168,11 +169,13 @@ const Tickets = () => {
 
   return (
     <motion.div 
-      className="min-h-screen bg-background py-24"
+      className="min-h-screen bg-background"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
+      <NavBar />
+      <div className="pt-24 pb-8">
       <div className="container mx-auto px-4">
         {/* Header */}
         <motion.div 
@@ -349,6 +352,7 @@ const Tickets = () => {
             </div>
           </motion.div>
         )}
+      </div>
       </div>
     </motion.div>
   );
