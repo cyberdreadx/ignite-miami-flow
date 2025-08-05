@@ -30,12 +30,6 @@ const BottomNav = () => {
       show: !!user 
     },
     { 
-      label: "Validate", 
-      path: "/validate", 
-      icon: Scan,
-      show: !!user && isModerator 
-    },
-    { 
       label: "Profile", 
       path: user ? "/profile" : "/auth", 
       icon: User,
