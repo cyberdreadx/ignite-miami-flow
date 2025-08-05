@@ -178,22 +178,6 @@ const NavBar = () => {
                     <span className="text-primary/90 hover:text-primary">Profile</span>
                   </Button>
                 </motion.div>
-                {isModerator && (
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                  >
-                    <Button
-                      onClick={() => navigate("/validate")}
-                      variant="outline"
-                      size="sm"
-                      className="border-primary/30 hover:bg-primary/10 backdrop-blur-sm transition-all duration-200 hover:shadow-[0_0_15px_rgba(var(--primary),0.4)] hover:border-primary/60"
-                    >
-                      <Scan className="w-4 h-4 mr-2 text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.6)]" />
-                      <span className="text-primary/90 hover:text-primary">Validate</span>
-                    </Button>
-                  </motion.div>
-                )}
                 {isAdmin && (
                   <motion.div
                     whileHover={{ scale: 1.05 }}
@@ -325,19 +309,6 @@ const NavBar = () => {
                     <User className="w-4 h-4 mr-2" />
                     Profile
                   </Button>
-                  {isModerator && (
-                    <Button
-                      onClick={() => {
-                        navigate("/validate");
-                        setIsOpen(false);
-                      }}
-                      variant="outline"
-                      className="w-full justify-start"
-                    >
-                      <Scan className="w-4 h-4 mr-2" />
-                      Validate Tickets
-                    </Button>
-                  )}
                   {isAdmin && (
                     <Button
                       onClick={() => {
