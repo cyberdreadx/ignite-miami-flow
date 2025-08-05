@@ -14,7 +14,9 @@ body {
   font-family: 'Inter', sans-serif;
 }
 
-/* SkateBurn 90s Retro Design System - Nostalgic underground vibes */
+/* SkateBurn Miami Design System - Underground street culture aesthetic
+All colors MUST be HSL.
+*/
 
 @layer base {
   :root {
@@ -22,27 +24,27 @@ body {
     --background: 220 8% 8%;
     --foreground: 0 0% 95%;
 
-    /* Cards with neon glow */
+    /* Cards with subtle glow */
     --card: 220 8% 12%;
     --card-foreground: 0 0% 95%;
 
     --popover: 220 8% 10%;
     --popover-foreground: 0 0% 95%;
 
-    /* Neon orange primary - classic 90s */
+    /* Fire orange primary */
     --primary: 15 100% 55%;
     --primary-foreground: 220 8% 8%;
 
-    /* Electric cyan secondary */
-    --secondary: 180 100% 55%;
+    /* Neon blue secondary */
+    --secondary: 200 100% 55%;
     --secondary-foreground: 220 8% 8%;
 
     /* Muted grays */
     --muted: 220 8% 18%;
     --muted-foreground: 0 0% 65%;
 
-    /* Hot pink accent - pure 90s energy */
-    --accent: 320 100% 65%;
+    /* LED blue accent */
+    --accent: 200 100% 55%;
     --accent-foreground: 220 8% 8%;
 
     /* Flame red destructive */
@@ -55,56 +57,75 @@ body {
 
     --radius: 0.75rem;
 
-    /* 90s Retro color palette */
+    /* Custom SkateBurn colors */
+    --flame-red: 0 100% 60%;
     --neon-orange: 15 100% 55%;
-    --electric-cyan: 180 100% 55%;
-    --hot-pink: 320 100% 65%;
-    --laser-purple: 270 100% 70%;
-    --acid-green: 90 100% 55%;
-    --chrome-silver: 210 10% 80%;
+    --led-blue: 200 100% 55%;
+    --street-gray: 220 8% 25%;
+    --glow-yellow: 45 100% 60%;
 
-    /* Radical gradients */
-    --gradient-radical: linear-gradient(135deg, hsl(var(--hot-pink)), hsl(var(--neon-orange)));
-    --gradient-cyber: linear-gradient(135deg, hsl(var(--electric-cyan)), hsl(var(--laser-purple)));
-    --gradient-neon: linear-gradient(45deg, hsl(var(--acid-green)), hsl(var(--electric-cyan)));
-    --gradient-retro: linear-gradient(180deg, hsl(220 8% 8%), hsl(270 20% 15%));
+    /* Gradients - Modern glass and neon effects */
+    --gradient-fire: linear-gradient(135deg, hsl(var(--flame-red)), hsl(var(--neon-orange)));
+    --gradient-neon: linear-gradient(135deg, hsl(var(--led-blue)), hsl(var(--glow-yellow)));
+    --gradient-dark: linear-gradient(180deg, hsl(var(--background)), hsl(220 8% 5%));
+    --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+    --gradient-mesh: radial-gradient(circle at 20% 50%, hsl(var(--neon-orange) / 0.3) 0%, transparent 50%), 
+                     radial-gradient(circle at 80% 20%, hsl(var(--led-blue) / 0.3) 0%, transparent 50%),
+                     radial-gradient(circle at 40% 80%, hsl(var(--glow-yellow) / 0.2) 0%, transparent 50%);
 
-    /* Sick shadows and glows */
-    --shadow-neon: 0 0 20px hsl(var(--electric-cyan) / 0.6), 0 0 40px hsl(var(--electric-cyan) / 0.3);
-    --shadow-hot: 0 0 20px hsl(var(--hot-pink) / 0.6), 0 0 40px hsl(var(--hot-pink) / 0.3);
-    --shadow-rad: 0 0 30px hsl(var(--neon-orange) / 0.5), 0 0 60px hsl(var(--neon-orange) / 0.2);
+    /* Modern shadows and effects */
+    --shadow-fire: 0 0 40px hsl(var(--neon-orange) / 0.4), 0 0 80px hsl(var(--neon-orange) / 0.2);
+    --shadow-neon: 0 0 40px hsl(var(--led-blue) / 0.4), 0 0 80px hsl(var(--led-blue) / 0.2);
+    --shadow-glow: 0 0 60px hsl(var(--glow-yellow) / 0.3), 0 0 120px hsl(var(--glow-yellow) / 0.1);
+    --shadow-elevated: 0 10px 40px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.05);
 
-    /* Smooth transitions */
-    --transition-rad: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Advanced animations */
+    --transition-smooth: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --transition-bounce: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --transition-spring: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
-    /* Sidebar */
     --sidebar-background: 0 0% 98%;
+
     --sidebar-foreground: 240 5.3% 26.1%;
+
     --sidebar-primary: 240 5.9% 10%;
+
     --sidebar-primary-foreground: 0 0% 98%;
+
     --sidebar-accent: 240 4.8% 95.9%;
+
     --sidebar-accent-foreground: 240 5.9% 10%;
+
     --sidebar-border: 220 13% 91%;
+
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
+
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
+
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
+
     --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 11.2%;
+
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
+
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
+
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
+
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
+
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
@@ -126,44 +147,5 @@ body {
 
   body {
     @apply bg-background text-foreground;
-  }
-}
-
-@layer utilities {
-  /* 90s Animation Classes */
-  .animate-float {
-    animation: float 3s ease-in-out infinite;
-  }
-
-  .animate-glow {
-    animation: glow 2s ease-in-out infinite alternate;
-  }
-
-  .animate-pulse-neon {
-    animation: pulse-neon 1.5s ease-in-out infinite;
-  }
-
-  .animate-retro-slide {
-    animation: retro-slide 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  }
-
-  @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
-  }
-
-  @keyframes glow {
-    from { text-shadow: 0 0 20px hsl(var(--electric-cyan) / 0.8); }
-    to { text-shadow: 0 0 30px hsl(var(--hot-pink) / 0.8), 0 0 40px hsl(var(--electric-cyan) / 0.5); }
-  }
-
-  @keyframes pulse-neon {
-    0%, 100% { box-shadow: 0 0 20px hsl(var(--neon-orange) / 0.6); }
-    50% { box-shadow: 0 0 40px hsl(var(--neon-orange) / 0.8), 0 0 60px hsl(var(--hot-pink) / 0.4); }
-  }
-
-  @keyframes retro-slide {
-    from { transform: translateX(-100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
   }
 }

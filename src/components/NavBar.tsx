@@ -61,18 +61,14 @@ const NavBar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <motion.div 
-            className="flex-shrink-0"
-            whileHover={{ scale: 1.05 }}
-            transition={{ type: "spring", stiffness: 400, damping: 10 }}
-          >
+          <div className="flex-shrink-0">
             <a 
               href="/" 
-              className="text-xl font-graffiti font-bold bg-gradient-to-r from-neon-orange to-hot-pink bg-clip-text text-transparent animate-glow"
+              className="text-xl font-graffiti font-bold bg-gradient-fire bg-clip-text text-transparent"
             >
               🔥 SkateBurn
             </a>
-          </motion.div>
+          </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:block">
