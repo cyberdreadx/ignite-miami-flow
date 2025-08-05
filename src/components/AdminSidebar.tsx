@@ -62,26 +62,32 @@ export function AdminSidebar() {
               {adminItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink 
-                      to={item.url} 
-                      end={item.url === "/admin"}
-                      className={getNavCls}
-                      onClick={(e) => {
-                        if (item.url.includes("#")) {
-                          e.preventDefault();
+                    {item.url.includes("#") ? (
+                      <button
+                        className={`w-full text-left ${getNavCls({ isActive: isActive(item.url) })}`}
+                        onClick={() => {
                           const elementId = item.url.split("#")[1];
                           const element = document.getElementById(elementId);
                           if (element) {
-                            element.scrollIntoView({ behavior: "smooth" });
+                            element.scrollIntoView({ behavior: "smooth", block: "start" });
                             // Update URL without triggering navigation
                             window.history.pushState({}, "", item.url);
                           }
-                        }
-                      }}
-                    >
-                      <item.icon className="mr-2 h-4 w-4" />
-                      <span>{item.title}</span>
-                    </NavLink>
+                        }}
+                      >
+                        <item.icon className="mr-2 h-4 w-4" />
+                        <span>{item.title}</span>
+                      </button>
+                    ) : (
+                      <NavLink 
+                        to={item.url} 
+                        end={item.url === "/admin"}
+                        className={getNavCls}
+                      >
+                        <item.icon className="mr-2 h-4 w-4" />
+                        <span>{item.title}</span>
+                      </NavLink>
+                    )}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
