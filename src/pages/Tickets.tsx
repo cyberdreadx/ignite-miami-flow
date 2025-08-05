@@ -179,28 +179,45 @@ const Tickets = () => {
   const proceedWithTicketPurchase = async () => {
     setProcessingTicket(true);
     try {
+      console.log('Invoking create-ticket-payment function...');
       const { data, error } = await supabase.functions.invoke('create-ticket-payment', {
         body: { amount: slidingAmount * 100 }, // Convert to cents
       });
 
-      if (error) throw error;
+      console.log('Function response:', { data, error });
+      
+      if (error) {
+        console.error('Function error:', error);
+        throw error;
+      }
 
+      if (!data?.url) {
+        console.error('No URL in response:', data);
+        throw new Error('No payment URL received');
+      }
+
+      console.log('Redirecting to:', data.url);
+      
       // Try to open in new tab, fallback to redirect if blocked
       try {
         const newWindow = window.open(data.url, '_blank');
         if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
           // Popup was blocked, use redirect instead
+          console.log('Popup blocked, using redirect');
           window.location.href = data.url;
+        } else {
+          console.log('Opened in new tab successfully');
         }
-      } catch (error) {
+      } catch (redirectError) {
         // Fallback to redirect if window.open fails
+        console.log('Window.open failed, using redirect:', redirectError);
         window.location.href = data.url;
       }
     } catch (error) {
       console.error('Error creating ticket payment:', error);
       toast({
         title: 'Payment Error',
-        description: 'Failed to create payment session',
+        description: error.message || 'Failed to create payment session',
         variant: 'destructive',
       });
     } finally {
