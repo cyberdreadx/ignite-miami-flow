@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { Menu, X, Settings, LogOut, User } from "lucide-react";
+import { useUserRole } from "@/hooks/useUserRole";
+import { Menu, X, Settings, LogOut, User, Scan } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { motion, useScroll, useTransform } from "framer-motion";
@@ -9,6 +10,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, signOut } = useAuth();
+  const { isModerator, isAdmin } = useUserRole();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { scrollY } = useScroll();
@@ -93,25 +95,37 @@ const NavBar = () => {
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <>
-                <Button
-                  onClick={() => {
-                    console.log('Profile button clicked, navigating to /profile');
-                    navigate("/profile");
-                  }}
-                  variant="ghost"
-                  size="sm"
-                >
-                  <User className="w-4 h-4 mr-2" />
-                  Profile
-                </Button>
-                <Button
-                  onClick={() => navigate("/admin")}
-                  variant="outline"
-                  size="sm"
-                >
-                  <Settings className="w-4 h-4 mr-2" />
-                  Admin
-                </Button>
+                 <Button
+                   onClick={() => {
+                     console.log('Profile button clicked, navigating to /profile');
+                     navigate("/profile");
+                   }}
+                   variant="ghost"
+                   size="sm"
+                 >
+                   <User className="w-4 h-4 mr-2" />
+                   Profile
+                 </Button>
+                 {isModerator && (
+                   <Button
+                     onClick={() => navigate("/validate")}
+                     variant="outline"
+                     size="sm"
+                   >
+                     <Scan className="w-4 h-4 mr-2" />
+                     Validate
+                   </Button>
+                 )}
+                 {isAdmin && (
+                   <Button
+                     onClick={() => navigate("/admin")}
+                     variant="outline"
+                     size="sm"
+                   >
+                     <Settings className="w-4 h-4 mr-2" />
+                     Admin
+                   </Button>
+                 )}
                 <Button
                   onClick={handleSignOut}
                   variant="ghost"
@@ -181,29 +195,44 @@ const NavBar = () => {
             <div className="border-t border-white/10 pt-4 mt-4">
               {user ? (
                 <div className="space-y-2">
-                  <Button
-                    onClick={() => {
-                      console.log('Mobile profile button clicked, navigating to /profile');
-                      navigate("/profile");
-                      setIsOpen(false);
-                    }}
-                    variant="ghost"
-                    className="w-full justify-start"
-                  >
-                    <User className="w-4 h-4 mr-2" />
-                    Profile
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      navigate("/admin");
-                      setIsOpen(false);
-                    }}
-                    variant="outline"
-                    className="w-full justify-start"
-                  >
-                    <Settings className="w-4 h-4 mr-2" />
-                    Admin Panel
-                  </Button>
+                   <Button
+                     onClick={() => {
+                       console.log('Mobile profile button clicked, navigating to /profile');
+                       navigate("/profile");
+                       setIsOpen(false);
+                     }}
+                     variant="ghost"
+                     className="w-full justify-start"
+                   >
+                     <User className="w-4 h-4 mr-2" />
+                     Profile
+                   </Button>
+                   {isModerator && (
+                     <Button
+                       onClick={() => {
+                         navigate("/validate");
+                         setIsOpen(false);
+                       }}
+                       variant="outline"
+                       className="w-full justify-start"
+                     >
+                       <Scan className="w-4 h-4 mr-2" />
+                       Validate Tickets
+                     </Button>
+                   )}
+                   {isAdmin && (
+                     <Button
+                       onClick={() => {
+                         navigate("/admin");
+                         setIsOpen(false);
+                       }}
+                       variant="outline"
+                       className="w-full justify-start"
+                     >
+                       <Settings className="w-4 h-4 mr-2" />
+                       Admin Panel
+                     </Button>
+                   )}
                   <Button
                     onClick={handleSignOut}
                     variant="ghost"
