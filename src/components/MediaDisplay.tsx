@@ -58,12 +58,12 @@ export const MediaDisplay = ({ mediaUrls, mediaTypes, className = '' }: MediaDis
                 </div>
               </div>
             ) : (
-              <img
-                src={url}
-                alt="Post media"
-                className="w-full h-48 object-cover cursor-pointer transition-transform group-hover:scale-105"
-                onClick={() => window.open(url, '_blank')}
-              />
+                <img
+                  src={url}
+                  alt="Post media"
+                  className="w-full object-contain cursor-pointer transition-transform group-hover:scale-105 max-h-96"
+                  onClick={() => window.open(url, '_blank')}
+                />
             )}
           </div>
         );
