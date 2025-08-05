@@ -19,19 +19,19 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
     );
 
-    const { qr_code_token } = await req.json();
-    
-    if (!qr_code_token) {
+    const { qr_code_token, qr_token } = await req.json();
+    const token = qr_code_token || qr_token;
+    if (!token) {
       throw new Error("QR code token is required");
     }
 
-    console.log("Public verification for QR code:", qr_code_token);
+    console.log("Public verification for QR code:", token);
 
     // First check if it's a ticket
     const { data: ticket, error: ticketError } = await supabaseClient
       .from("tickets")
       .select("*")
-      .eq("qr_code_token", qr_code_token)
+      .eq("qr_code_token", token)
       .single();
 
     console.log("Ticket query result:", { ticket, ticketError });
@@ -45,70 +45,23 @@ serve(async (req) => {
         .single();
 
       const userName = profile?.full_name || profile?.email || "Unknown";
+      const userEmail = profile?.email || "Unknown";
       
-      // Check ticket validity
-      const now = new Date();
-      const validUntil = ticket.valid_until ? new Date(ticket.valid_until) : null;
-      
-      if (ticket.used_at) {
-        return new Response(JSON.stringify({
-          valid: false,
-          reason: "This ticket has already been used",
-          type: "ticket",
-          ticket_info: {
-            id: ticket.id,
-            amount: ticket.amount,
-            user_name: userName,
-            created_at: ticket.created_at,
-            valid_until: ticket.valid_until,
-            used_at: ticket.used_at,
-            used_by: ticket.used_by
-          }
-        }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        });
-      }
-
-      if (validUntil && now > validUntil) {
-        return new Response(JSON.stringify({
-          valid: false,
-          reason: "This ticket has expired",
-          type: "ticket",
-          ticket_info: {
-            id: ticket.id,
-            amount: ticket.amount,
-            user_name: userName,
-            created_at: ticket.created_at,
-            valid_until: ticket.valid_until
-          }
-        }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        });
-      }
-
-      if (ticket.status !== "paid") {
-        return new Response(JSON.stringify({
-          valid: false,
-          reason: "This ticket payment is not confirmed",
-          type: "ticket"
-        }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        });
-      }
-
+      // Return complete ticket data for verification page
       return new Response(JSON.stringify({
-        valid: true,
-        type: "ticket",
-        ticket_info: {
+        success: true,
+        ticket: {
           id: ticket.id,
+          user_id: ticket.user_id,
           amount: ticket.amount,
-          event_id: ticket.event_id,
-          user_name: userName,
+          status: ticket.status,
           created_at: ticket.created_at,
-          valid_until: ticket.valid_until
+          valid_until: ticket.valid_until,
+          used_at: ticket.used_at,
+          used_by: ticket.used_by,
+          qr_code_token: ticket.qr_code_token,
+          user_email: userEmail,
+          user_name: userName
         }
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -120,7 +73,7 @@ serve(async (req) => {
     const { data: subscription, error: subError } = await supabaseClient
       .from("subscriptions")
       .select("*")
-      .eq("qr_code_token", qr_code_token)
+      .eq("qr_code_token", token)
       .single();
 
     console.log("Subscription query result:", { subscription, subError });
@@ -195,7 +148,7 @@ serve(async (req) => {
     const { data: mediaPass, error: mediaPassError } = await supabaseClient
       .from("media_passes")
       .select("*")
-      .eq("qr_code_token", qr_code_token)
+      .eq("qr_code_token", token)
       .single();
 
     console.log("Media pass query result:", { mediaPass, mediaPassError });
@@ -280,8 +233,8 @@ serve(async (req) => {
 
     // QR code not found
     return new Response(JSON.stringify({
-      valid: false,
-      reason: "This QR code is not valid or has been deactivated"
+      success: false,
+      error: "This QR code is not valid or has been deactivated"
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
@@ -290,11 +243,11 @@ serve(async (req) => {
   } catch (error) {
     console.error("Error in public ticket verification:", error);
     return new Response(JSON.stringify({ 
-      valid: false,
-      reason: "Unable to verify ticket at this time" 
+      success: false,
+      error: "Unable to verify ticket at this time" 
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
+      status: 500,
     });
   }
 });

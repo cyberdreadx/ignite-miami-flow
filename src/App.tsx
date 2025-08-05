@@ -16,6 +16,7 @@ import Merch from "./pages/Merch";
 import { MyTickets } from "./pages/MyTickets";
 import { ValidateTicket } from "./pages/ValidateTicket";
 import { PublicTicketView } from "./pages/PublicTicketView";
+import { VerifyTicket } from "./pages/VerifyTicket";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import BottomNav from "./components/BottomNav";
 import NotFound from "./pages/NotFound";
@@ -41,8 +42,9 @@ const App = () => (
            <Route path="/principles" element={<Principles />} />
            <Route path="/merch" element={<Merch />} />
           <Route path="/my-tickets" element={<MyTickets />} />
-          <Route path="/validate" element={<ValidateTicket />} />
-          <Route path="/ticket" element={<PublicTicketView />} />
+           <Route path="/validate" element={<ValidateTicket />} />
+           <Route path="/verify" element={<VerifyTicket />} />
+           <Route path="/ticket" element={<PublicTicketView />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
