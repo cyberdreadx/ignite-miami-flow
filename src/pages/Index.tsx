@@ -4,6 +4,7 @@ import { SocialFeed } from "@/components/SocialFeed";
 import { useAuth } from "@/hooks/useAuth";
 import { useApprovalStatus } from "@/hooks/useApprovalStatus";
 import ApprovalStatus from "@/components/ApprovalStatus";
+import { WaiverBanner } from "@/components/WaiverBanner";
 
 const Index = () => {
   const { user } = useAuth();
@@ -24,6 +25,7 @@ const Index = () => {
       <NavBar />
       <div className="pt-20 pb-8">
         <div className="container mx-auto px-4">
+          <WaiverBanner />
           <SocialFeed />
         </div>
       </div>

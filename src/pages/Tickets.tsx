@@ -15,6 +15,7 @@ import { SystemTester } from '@/components/SystemTester';
 import NavBar from '@/components/NavBar';
 import { useWaiver } from '@/hooks/useWaiver';
 import { WaiverModal } from '@/components/WaiverModal';
+import { WaiverBanner } from '@/components/WaiverBanner';
 
 interface Event {
   id: string;
@@ -242,6 +243,8 @@ const Tickets = () => {
       <NavBar />
       <div className="pt-24 pb-8">
       <div className="container mx-auto px-4">
+        <WaiverBanner />
+        
         {/* Header */}
         <motion.div 
           className="text-center mb-12"
