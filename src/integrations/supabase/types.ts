@@ -214,6 +214,7 @@ export type Database = {
           author_avatar: string
           media_urls: string[]
           media_types: string[]
+          user_id: string
         }[]
       }
       promote_user_to_admin: {
