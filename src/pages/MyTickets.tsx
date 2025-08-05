@@ -32,6 +32,7 @@ export const MyTickets: React.FC = () => {
   const [tickets, setTickets] = useState<UserTicket[]>([]);
   const [subscriptions, setSubscriptions] = useState<UserSubscription[]>([]);
   const [loading, setLoading] = useState(true);
+  const [recovering, setRecovering] = useState(false);
   const [selectedItem, setSelectedItem] = useState<{type: 'ticket' | 'subscription', id: string} | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -67,6 +68,43 @@ export const MyTickets: React.FC = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRecoverTickets = async () => {
+    if (!user) return;
+    
+    setRecovering(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('recover-missing-tickets');
+      
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      if (data.success) {
+        toast({
+          title: data.ticketsCreated > 0 ? "Tickets Recovered! 🎉" : "All Caught Up! ✅",
+          description: data.message,
+          variant: "default",
+        });
+        
+        // Refresh the tickets list if any were recovered
+        if (data.ticketsCreated > 0) {
+          await fetchUserTickets();
+        }
+      } else {
+        throw new Error(data.error || "Failed to recover tickets");
+      }
+    } catch (error) {
+      console.error('Error recovering tickets:', error);
+      toast({
+        title: "Recovery Failed",
+        description: "Could not check for missing tickets. Please try again or contact support.",
+        variant: "destructive",
+      });
+    } finally {
+      setRecovering(false);
     }
   };
 
@@ -120,8 +158,19 @@ export const MyTickets: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-          >
-            <h1 className="text-3xl font-bold mb-8">My Tickets & Passes</h1>
+            >
+            <div className="flex justify-between items-center mb-8">
+              <h1 className="text-3xl font-bold">My Tickets & Passes</h1>
+              <Button 
+                onClick={handleRecoverTickets}
+                disabled={recovering}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                {recovering && <Loader2 className="w-4 h-4 animate-spin" />}
+                Check for Missing Tickets
+              </Button>
+            </div>
 
             {loading ? (
               <div className="flex justify-center items-center py-12">
