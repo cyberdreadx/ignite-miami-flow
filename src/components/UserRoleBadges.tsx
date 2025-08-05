@@ -21,6 +21,16 @@ const ROLE_COLORS: Record<AppRole, string> = {
   user: "bg-gray-500/90 text-white border-gray-500/50 hover:bg-gray-500"
 };
 
+const ROLE_ABBREVIATIONS: Record<AppRole, string> = {
+  admin: "A",
+  dj: "D",
+  photographer: "📷",
+  performer: "🎭",
+  moderator: "M",
+  vip: "V",
+  user: "U"
+};
+
 const ROLE_FULL_NAMES: Record<AppRole, string> = {
   admin: "Administrator",
   dj: "DJ",
@@ -81,7 +91,7 @@ export const UserRoleBadges = ({ userId, className = "" }: UserRoleBadgesProps) 
     <TooltipProvider>
       <div className={`flex gap-1 ${className}`}>
         {displayRoles.map((role, index) => (
-          <Tooltip key={role} delayDuration={300}>
+          <Tooltip key={role} delayDuration={0}>
             <TooltipTrigger asChild>
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
@@ -93,12 +103,12 @@ export const UserRoleBadges = ({ userId, className = "" }: UserRoleBadgesProps) 
                 <Badge 
                   variant="secondary"
                   className={`
-                    w-4 h-4 p-0 rounded-full text-[10px] font-bold flex items-center justify-center
+                    w-4 h-4 p-0 rounded-full text-[8px] font-bold flex items-center justify-center
                     cursor-help transition-all duration-200
                     ${ROLE_COLORS[role]}
                   `}
                 >
-                  {role.charAt(0).toUpperCase()}
+                  {ROLE_ABBREVIATIONS[role]}
                 </Badge>
               </motion.div>
             </TooltipTrigger>
