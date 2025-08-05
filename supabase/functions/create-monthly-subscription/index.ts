@@ -45,15 +45,7 @@ serve(async (req) => {
       customer_email: customerId ? undefined : user.email,
       line_items: [
         {
-          price_data: {
-            currency: "usd",
-            product_data: { 
-              name: "SkateBurn Monthly Pass",
-              description: "Unlimited access to all skate events and exclusive member benefits"
-            },
-            unit_amount: 3600, // $36.00 in cents
-            recurring: { interval: "month" },
-          },
+          price: "price_1RsbkqEGhRJgsShZAxRRU1Fa", // $36 Monthly Pass
           quantity: 1,
         },
       ],
