@@ -229,39 +229,39 @@ export const SocialFeed = () => {
             {pinnedPosts.map((post) => (
               <div key={post.id} className="space-y-0 bg-background border-b border-border/20">
                 {/* Header */}
-                <div className="max-w-2xl mx-auto px-4 py-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <Avatar className="h-8 w-8">
-                        {post.author_avatar && (
-                          <AvatarImage src={post.author_avatar} alt={post.author_name} />
-                        )}
-                        <AvatarFallback className="text-xs">
-                          {post.author_name?.charAt(0)?.toUpperCase() || 'U'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex items-center gap-2">
-                        <p className="font-semibold text-sm">{post.author_name}</p>
-                        {post.author_role === 'admin' && (
-                          <Badge variant="destructive" className="text-xs h-4">Admin</Badge>
-                        )}
-                        {post.author_role === 'moderator' && (
-                          <Badge variant="outline" className="text-xs h-4">Mod</Badge>
-                        )}
-                        <span className="text-xs text-muted-foreground">•</span>
-                        <span className="text-xs text-muted-foreground">
-                          {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Badge variant="secondary" className="text-xs h-5">
-                        <Pin className="h-3 w-3 mr-1" />
-                        Pinned
-                      </Badge>
+              <div className="max-w-2xl mx-auto px-4 py-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3 flex-1 min-w-0">
+                    <Avatar className="h-8 w-8 flex-shrink-0">
+                      {post.author_avatar && (
+                        <AvatarImage src={post.author_avatar} alt={post.author_name} />
+                      )}
+                      <AvatarFallback className="text-xs">
+                        {post.author_name?.charAt(0)?.toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
+                      <p className="font-semibold text-sm truncate">{post.author_name}</p>
+                      {post.author_role === 'admin' && (
+                        <Badge variant="destructive" className="text-xs h-4 flex-shrink-0">Admin</Badge>
+                      )}
+                      {post.author_role === 'moderator' && (
+                        <Badge variant="outline" className="text-xs h-4 flex-shrink-0">Mod</Badge>
+                      )}
+                      <span className="text-xs text-muted-foreground hidden sm:inline">•</span>
+                      <span className="text-xs text-muted-foreground hidden sm:inline">
+                        {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                      </span>
                     </div>
                   </div>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <Badge variant="secondary" className="text-xs h-5">
+                      <Pin className="h-3 w-3 mr-1" />
+                      <span className="hidden sm:inline">Pinned</span>
+                    </Badge>
+                  </div>
                 </div>
+              </div>
 
                 {/* Content */}
                 {post.content && (
@@ -329,8 +329,8 @@ export const SocialFeed = () => {
               {/* Header */}
               <div className="max-w-2xl mx-auto px-4 py-3">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <Avatar className="h-8 w-8">
+                  <div className="flex items-center space-x-3 flex-1 min-w-0">
+                    <Avatar className="h-8 w-8 flex-shrink-0">
                       {post.author_avatar && (
                         <AvatarImage src={post.author_avatar} alt={post.author_name} />
                       )}
@@ -338,24 +338,24 @@ export const SocialFeed = () => {
                         {post.author_name?.charAt(0)?.toUpperCase() || 'U'}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex items-center gap-2">
-                      <p className="font-semibold text-sm">{post.author_name}</p>
+                    <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
+                      <p className="font-semibold text-sm truncate">{post.author_name}</p>
                       {post.author_role === 'admin' && (
-                        <Badge variant="destructive" className="text-xs h-4">Admin</Badge>
+                        <Badge variant="destructive" className="text-xs h-4 flex-shrink-0">Admin</Badge>
                       )}
                       {post.author_role === 'moderator' && (
-                        <Badge variant="outline" className="text-xs h-4">Mod</Badge>
+                        <Badge variant="outline" className="text-xs h-4 flex-shrink-0">Mod</Badge>
                       )}
-                      <span className="text-xs text-muted-foreground">•</span>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-muted-foreground hidden sm:inline">•</span>
+                      <span className="text-xs text-muted-foreground hidden sm:inline">
                         {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 flex-shrink-0">
                     <Badge variant="secondary" className="text-xs h-5">
                       <Pin className="h-3 w-3 mr-1" />
-                      Pinned
+                      <span className="hidden sm:inline">Pinned</span>
                     </Badge>
                     <div className="flex gap-1 ml-2">
                       {user?.id === post.user_id && (
@@ -480,8 +480,8 @@ export const SocialFeed = () => {
               {/* Header */}
               <div className="max-w-2xl mx-auto px-4 py-3">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <Avatar className="h-8 w-8">
+                  <div className="flex items-center space-x-3 flex-1 min-w-0">
+                    <Avatar className="h-8 w-8 flex-shrink-0">
                       {post.author_avatar && (
                         <AvatarImage src={post.author_avatar} alt={post.author_name} />
                       )}
@@ -489,21 +489,21 @@ export const SocialFeed = () => {
                         {post.author_name?.charAt(0)?.toUpperCase() || 'U'}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex items-center gap-2">
-                      <p className="font-semibold text-sm">{post.author_name}</p>
+                    <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
+                      <p className="font-semibold text-sm truncate">{post.author_name}</p>
                       {post.author_role === 'admin' && (
-                        <Badge variant="destructive" className="text-xs h-4">Admin</Badge>
+                        <Badge variant="destructive" className="text-xs h-4 flex-shrink-0">Admin</Badge>
                       )}
                       {post.author_role === 'moderator' && (
-                        <Badge variant="outline" className="text-xs h-4">Mod</Badge>
+                        <Badge variant="outline" className="text-xs h-4 flex-shrink-0">Mod</Badge>
                       )}
-                      <span className="text-xs text-muted-foreground">•</span>
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-muted-foreground hidden sm:inline">•</span>
+                      <span className="text-xs text-muted-foreground hidden sm:inline">
                         {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
                       </span>
                     </div>
                   </div>
-                  <div className="flex gap-1">
+                  <div className="flex gap-1 flex-shrink-0">
                     {user?.id === post.user_id && (
                       <Button
                         variant="ghost"
