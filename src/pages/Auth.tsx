@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -15,6 +16,7 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
+  const [role, setRole] = useState("member");
   const [isLoading, setIsLoading] = useState(false);
   
   const { toast } = useToast();
@@ -57,7 +59,7 @@ const Auth = () => {
           navigate("/");
         }
       } else {
-        const { error } = await signUp(email, password, username);
+        const { error } = await signUp(email, password, username, role);
         if (error) {
           if (error.message === "User already registered") {
             toast({
@@ -132,6 +134,21 @@ const Auth = () => {
                       className="bg-background/50"
                       placeholder="Enter your username"
                     />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="role">Role</Label>
+                    <Select value={role} onValueChange={setRole}>
+                      <SelectTrigger className="bg-background/50">
+                        <SelectValue placeholder="Select your role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="member">Member</SelectItem>
+                        <SelectItem value="dj">DJ</SelectItem>
+                        <SelectItem value="performer">Performer</SelectItem>
+                        <SelectItem value="photographer">Photographer</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </>
               )}
