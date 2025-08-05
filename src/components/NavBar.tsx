@@ -127,7 +127,7 @@ const NavBar = () => {
                   <Button
                     variant="ghost"
                     onClick={() => item.path ? navigate(item.path) : scrollToSection(item.id)}
-                    className="text-foreground/90 hover:text-foreground hover:bg-white/10 px-2 xl:px-3 py-2 text-xs xl:text-sm font-medium transition-all duration-200 backdrop-blur-sm whitespace-nowrap"
+                    className="text-primary/90 hover:text-primary hover:bg-primary/10 px-2 xl:px-3 py-2 text-xs xl:text-sm font-medium transition-all duration-200 backdrop-blur-sm whitespace-nowrap hover:shadow-[0_0_20px_rgba(var(--primary),0.3)]"
                   >
                     {item.label}
                   </Button>
@@ -151,10 +151,10 @@ const NavBar = () => {
                     }}
                     variant="ghost"
                     size="sm"
-                    className="hover:bg-white/10 backdrop-blur-sm transition-all duration-200"
+                    className="hover:bg-primary/10 backdrop-blur-sm transition-all duration-200 hover:shadow-[0_0_15px_rgba(var(--primary),0.4)]"
                   >
-                    <User className="w-4 h-4 mr-2" />
-                    Profile
+                    <User className="w-4 h-4 mr-2 text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.6)]" />
+                    <span className="text-primary/90 hover:text-primary">Profile</span>
                   </Button>
                 </motion.div>
                 {isModerator && (
@@ -166,10 +166,10 @@ const NavBar = () => {
                       onClick={() => navigate("/validate")}
                       variant="outline"
                       size="sm"
-                      className="border-white/20 hover:bg-white/10 backdrop-blur-sm transition-all duration-200"
+                      className="border-primary/30 hover:bg-primary/10 backdrop-blur-sm transition-all duration-200 hover:shadow-[0_0_15px_rgba(var(--primary),0.4)] hover:border-primary/60"
                     >
-                      <Scan className="w-4 h-4 mr-2" />
-                      Validate
+                      <Scan className="w-4 h-4 mr-2 text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.6)]" />
+                      <span className="text-primary/90 hover:text-primary">Validate</span>
                     </Button>
                   </motion.div>
                 )}
@@ -182,10 +182,10 @@ const NavBar = () => {
                       onClick={() => navigate("/admin")}
                       variant="outline"
                       size="sm"
-                      className="border-white/20 hover:bg-white/10 backdrop-blur-sm transition-all duration-200"
+                      className="border-primary/30 hover:bg-primary/10 backdrop-blur-sm transition-all duration-200 hover:shadow-[0_0_15px_rgba(var(--primary),0.4)] hover:border-primary/60"
                     >
-                      <Settings className="w-4 h-4 mr-2" />
-                      Admin
+                      <Settings className="w-4 h-4 mr-2 text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.6)]" />
+                      <span className="text-primary/90 hover:text-primary">Admin</span>
                     </Button>
                   </motion.div>
                 )}
@@ -197,10 +197,10 @@ const NavBar = () => {
                     onClick={handleSignOut}
                     variant="ghost"
                     size="sm"
-                    className="hover:bg-white/10 backdrop-blur-sm transition-all duration-200"
+                    className="hover:bg-red-500/10 backdrop-blur-sm transition-all duration-200 hover:shadow-[0_0_15px_rgba(239,68,68,0.4)]"
                   >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Sign Out
+                    <LogOut className="w-4 h-4 mr-2 text-red-400 drop-shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
+                    <span className="text-red-400/90 hover:text-red-400">Sign Out</span>
                   </Button>
                 </motion.div>
               </>
@@ -214,10 +214,10 @@ const NavBar = () => {
                     onClick={() => navigate("/auth")}
                     variant="ghost"
                     size="sm"
-                    className="hover:bg-white/10 backdrop-blur-sm transition-all duration-200"
+                    className="hover:bg-primary/10 backdrop-blur-sm transition-all duration-200 hover:shadow-[0_0_15px_rgba(var(--primary),0.4)]"
                   >
-                    <User className="w-4 h-4 mr-2" />
-                    Sign In
+                    <User className="w-4 h-4 mr-2 text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.6)]" />
+                    <span className="text-primary/90 hover:text-primary">Sign In</span>
                   </Button>
                 </motion.div>
                 <motion.div
@@ -228,7 +228,7 @@ const NavBar = () => {
                     onClick={() => navigate("/auth")}
                     variant="outline"
                     size="sm"
-                    className="border-white/20 hover:bg-white/10 backdrop-blur-sm transition-all duration-200"
+                    className="border-primary/30 hover:bg-primary/10 backdrop-blur-sm transition-all duration-200 hover:shadow-[0_0_15px_rgba(var(--primary),0.4)] hover:border-primary/60 text-primary/90 hover:text-primary"
                   >
                     Sign Up
                   </Button>
@@ -249,9 +249,12 @@ const NavBar = () => {
                 size="sm"
                 onClick={() => setIsOpen(!isOpen)}
                 aria-label="Toggle menu"
-                className="hover:bg-white/10 backdrop-blur-sm transition-all duration-200"
+                className="hover:bg-primary/10 backdrop-blur-sm transition-all duration-200 hover:shadow-[0_0_15px_rgba(var(--primary),0.4)]"
               >
-                {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                {isOpen ? 
+                  <X className="w-5 h-5 text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.6)]" /> : 
+                  <Menu className="w-5 h-5 text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.6)]" />
+                }
               </Button>
             </motion.div>
           </div>
