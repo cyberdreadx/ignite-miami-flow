@@ -102,28 +102,32 @@ serve(async (req) => {
             // Generate QR code token
             const qrToken = `QR_${Math.random().toString(36).substr(2, 8).toUpperCase()}_${Date.now()}`;
             
-            // Calculate validity: 2 days after the next event
+            // Calculate validity: 2 days after the relevant event
             const now = new Date();
             const aug5 = new Date('2025-08-05');
             const aug19 = new Date('2025-08-19');
-            let nextEventDate;
+            let eventDate;
 
-            if (now <= aug5) {
-              // Today's event or before
-              nextEventDate = aug5;
+            // Determine which event this ticket is for
+            if (now.toDateString() === aug5.toDateString()) {
+              // If buying today (Aug 5th), it's for today's event
+              eventDate = aug5;
+            } else if (now < aug5) {
+              // Before Aug 5th, ticket is for Aug 5th event
+              eventDate = aug5;
             } else if (now < aug19) {
-              // Between Aug 5 and Aug 19
-              nextEventDate = aug19;
+              // Between Aug 5 and Aug 19, ticket is for Aug 19th event
+              eventDate = aug19;
             } else {
               // After Aug 19, find next Tuesday
-              nextEventDate = new Date(aug19);
-              while (nextEventDate <= now) {
-                nextEventDate.setDate(nextEventDate.getDate() + 7); // Add 7 days for next Tuesday
+              eventDate = new Date(aug19);
+              while (eventDate <= now) {
+                eventDate.setDate(eventDate.getDate() + 7); // Add 7 days for next Tuesday
               }
             }
 
             // Valid until 2 days after the event
-            const validUntil = new Date(nextEventDate);
+            const validUntil = new Date(eventDate);
             validUntil.setDate(validUntil.getDate() + 2);
             validUntil.setHours(23, 59, 59, 999); // End of day
 
@@ -226,28 +230,32 @@ serve(async (req) => {
           // Generate QR code token
           const qrToken = `QR_${Math.random().toString(36).substr(2, 8).toUpperCase()}_${Date.now()}`;
           
-          // Calculate validity: 2 days after the next event
+          // Calculate validity: 2 days after the relevant event
           const now = new Date();
           const aug5 = new Date('2025-08-05');
           const aug19 = new Date('2025-08-19');
-          let nextEventDate;
+          let eventDate;
 
-          if (now <= aug5) {
-            // Today's event or before
-            nextEventDate = aug5;
+          // Determine which event this ticket is for
+          if (now.toDateString() === aug5.toDateString()) {
+            // If buying today (Aug 5th), it's for today's event
+            eventDate = aug5;
+          } else if (now < aug5) {
+            // Before Aug 5th, ticket is for Aug 5th event
+            eventDate = aug5;
           } else if (now < aug19) {
-            // Between Aug 5 and Aug 19
-            nextEventDate = aug19;
+            // Between Aug 5 and Aug 19, ticket is for Aug 19th event
+            eventDate = aug19;
           } else {
             // After Aug 19, find next Tuesday
-            nextEventDate = new Date(aug19);
-            while (nextEventDate <= now) {
-              nextEventDate.setDate(nextEventDate.getDate() + 7); // Add 7 days for next Tuesday
+            eventDate = new Date(aug19);
+            while (eventDate <= now) {
+              eventDate.setDate(eventDate.getDate() + 7); // Add 7 days for next Tuesday
             }
           }
 
           // Valid until 2 days after the event
-          const validUntil = new Date(nextEventDate);
+          const validUntil = new Date(eventDate);
           validUntil.setDate(validUntil.getDate() + 2);
           validUntil.setHours(23, 59, 59, 999); // End of day
 
