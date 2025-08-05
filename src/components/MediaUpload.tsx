@@ -2,7 +2,8 @@ import React, { useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { X, Upload, Plus } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { X, Upload, Plus, Play } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 interface MediaUploadProps {
@@ -125,11 +126,17 @@ export const MediaUpload = ({
                   className="w-full h-24 object-cover rounded-lg"
                 />
               ) : (
-                <video
-                  src={mediaFile.url}
-                  className="w-full h-24 object-cover rounded-lg"
-                  muted
-                />
+                <div className="relative">
+                  <video
+                    src={mediaFile.url}
+                    className="w-full h-24 object-cover rounded-lg"
+                    controls
+                    preload="metadata"
+                  />
+                  <div className="absolute inset-0 bg-black/20 rounded-lg flex items-center justify-center group-hover:bg-black/10 transition-colors">
+                    <Play className="w-6 h-6 text-white drop-shadow-lg" />
+                  </div>
+                </div>
               )}
               <Button
                 variant="destructive"
@@ -166,31 +173,50 @@ export const MediaUpload = ({
   );
 };
 
-// Helper function for uploading files
-export const uploadMediaFiles = async (files: MediaFile[], userId: string): Promise<{ urls: string[]; types: string[] }> => {
+// Helper function for uploading files with progress
+export const uploadMediaFiles = async (
+  files: MediaFile[], 
+  userId: string,
+  onProgress?: (progress: number) => void
+): Promise<{ urls: string[]; types: string[] }> => {
   const uploadedUrls: string[] = [];
   const uploadedTypes: string[] = [];
-
-  for (const mediaFile of files) {
+  
+  for (let i = 0; i < files.length; i++) {
+    const mediaFile = files[i];
     const fileExt = mediaFile.file.name.split('.').pop();
     const fileName = `${userId}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
 
-    // Upload to storage
-    const { error: uploadError } = await supabase.storage
-      .from('post-media')
-      .upload(fileName, mediaFile.file);
+    // Calculate progress for this file
+    const baseProgress = (i / files.length) * 100;
+    const fileProgressStep = 100 / files.length;
 
-    if (uploadError) {
-      throw uploadError;
+    try {
+      // Upload to storage with progress tracking
+      const { error: uploadError } = await supabase.storage
+        .from('post-media')
+        .upload(fileName, mediaFile.file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      // Get public URL
+      const { data } = supabase.storage
+        .from('post-media')
+        .getPublicUrl(fileName);
+
+      uploadedUrls.push(data.publicUrl);
+      uploadedTypes.push(mediaFile.type);
+
+      // Update progress
+      if (onProgress) {
+        onProgress(Math.round(baseProgress + fileProgressStep));
+      }
+    } catch (error) {
+      console.error('Upload error for file:', fileName, error);
+      throw error;
     }
-
-    // Get public URL
-    const { data } = supabase.storage
-      .from('post-media')
-      .getPublicUrl(fileName);
-
-    uploadedUrls.push(data.publicUrl);
-    uploadedTypes.push(mediaFile.type);
   }
 
   return { urls: uploadedUrls, types: uploadedTypes };

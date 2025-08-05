@@ -6,6 +6,7 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Progress } from '@/components/ui/progress';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Heart, MessageCircle, Pin, Trash2 } from 'lucide-react';
@@ -38,6 +39,7 @@ export const SocialFeed = () => {
   const [newPost, setNewPost] = useState('');
   const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [selectedMedia, setSelectedMedia] = useState<MediaFile[]>([]);
   const [clearMediaFiles, setClearMediaFiles] = useState(false);
   const { user } = useAuth();
@@ -76,13 +78,16 @@ export const SocialFeed = () => {
     if ((!newPost.trim() && selectedMedia.length === 0) || !user) return;
 
     setPosting(true);
+    setUploadProgress(0);
     try {
       let mediaUrls: string[] = [];
       let mediaTypes: string[] = [];
 
       // Upload media files if any
       if (selectedMedia.length > 0) {
-        const uploadResult = await uploadMediaFiles(selectedMedia, user.id);
+        const uploadResult = await uploadMediaFiles(selectedMedia, user.id, (progress) => {
+          setUploadProgress(progress);
+        });
         mediaUrls = uploadResult.urls;
         mediaTypes = uploadResult.types;
       }
@@ -239,12 +244,23 @@ export const SocialFeed = () => {
               clearFiles={clearMediaFiles}
             />
             
+            {/* Upload Progress */}
+            {posting && selectedMedia.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Uploading media...</span>
+                  <span>{uploadProgress}%</span>
+                </div>
+                <Progress value={uploadProgress} className="w-full" />
+              </div>
+            )}
+            
             <div className="flex justify-end">
               <Button 
                 type="submit" 
                 disabled={posting || (!newPost.trim() && selectedMedia.length === 0)}
               >
-                {posting ? 'Posting...' : 'Post'}
+                {posting ? (selectedMedia.length > 0 ? `Uploading... ${uploadProgress}%` : 'Posting...') : 'Post'}
               </Button>
             </div>
           </form>
