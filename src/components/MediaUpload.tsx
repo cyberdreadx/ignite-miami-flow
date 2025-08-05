@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { X, Upload } from 'lucide-react';
+import { X, Upload, Plus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 interface MediaUploadProps {
@@ -146,14 +146,12 @@ export const MediaUpload = ({
 
       {/* Add Media Button */}
       {mediaFiles.length < maxFiles && (
-        <Button
-          variant="outline"
+        <div
           onClick={() => fileInputRef.current?.click()}
-          className="w-full"
+          className="aspect-square w-24 border-2 border-dashed border-muted-foreground/50 rounded-lg flex items-center justify-center cursor-pointer hover:border-muted-foreground/80 hover:bg-muted/20 transition-colors"
         >
-          <Upload className="w-4 h-4 mr-2" />
-          Add Images/Videos ({mediaFiles.length}/{maxFiles})
-        </Button>
+          <Plus className="w-8 h-8 text-muted-foreground" />
+        </div>
       )}
 
       <input
