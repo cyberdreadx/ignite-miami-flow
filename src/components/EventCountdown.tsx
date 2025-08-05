@@ -10,117 +10,58 @@ interface TimeLeft {
 
 export const EventCountdown = () => {
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-  const [isEventHappening, setIsEventHappening] = useState(false);
-  const [timeUntilEventEnds, setTimeUntilEventEnds] = useState<TimeLeft>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [isEventPassed, setIsEventPassed] = useState(false);
 
-  // Get current time in EST
-  const getCurrentEST = () => {
+  // Calculate next Tuesday at 7:00 PM
+  const getNextTuesday = () => {
     const now = new Date();
-    // Convert to EST (UTC-5 or UTC-4 during DST)
-    const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
-    const estOffset = -5; // EST is UTC-5 (adjust to -4 during DST if needed)
-    const estTime = new Date(utcTime + (estOffset * 3600000));
-    return estTime;
-  };
-
-  // Get the current/next event date in EST
-  const getCurrentEventDate = () => {
-    const nowEST = getCurrentEST();
+    const nextTuesday = new Date();
     
-    // For debugging - let's check if we're on a Tuesday around event time in EST
-    const isTuesday = nowEST.getDay() === 2;
-    const currentHour = nowEST.getHours();
+    // Get current day (0 = Sunday, 1 = Monday, 2 = Tuesday, etc.)
+    const currentDay = now.getDay();
     
-    console.log('EST time check:', {
-      day: nowEST.getDay(),
-      isTuesday,
-      hour: currentHour,
-      estDate: nowEST.toString(),
-      localDate: new Date().toString()
-    });
-    
-    // If it's Tuesday and between 7 PM and 11 PM EST (7 PM + 4 hours), event is happening now
-    if (isTuesday && currentHour >= 19 && currentHour < 23) {
-      console.log('Event should be happening now in EST!');
-      const todayEvent = new Date(nowEST);
-      todayEvent.setHours(19, 0, 0, 0);
-      return todayEvent;
-    }
-    
-    // Check for Aug 19th, 2025 event at 7 PM EST
-    const aug19Event = new Date(2025, 7, 19, 19, 0, 0, 0); // This will be in local time
-    // Convert to EST
-    const aug19EST = new Date(aug19Event.getTime() - (aug19Event.getTimezoneOffset() * 60000) + (-5 * 3600000));
-    
-    if (nowEST < aug19EST) {
-      console.log('Next event is Aug 19th EST');
-      return aug19EST;
-    }
-    
-    // Calculate next Tuesday at 7:00 PM EST
-    const nextTuesday = new Date(nowEST);
-    const currentDay = nowEST.getDay();
-    
+    // Calculate days until next Tuesday
     let daysUntilTuesday;
     if (currentDay === 2) {
-      // It's Tuesday - if past 11 PM EST (event ended), next event is next Tuesday
-      if (currentHour >= 23) {
+      // It's Tuesday - check if event time has passed
+      if (now.getHours() >= 19) {
+        // Past 7 PM, so next Tuesday is in 7 days
         daysUntilTuesday = 7;
       } else {
-        // Event should be happening or about to happen today
+        // Before 7 PM, so today is the event day
         daysUntilTuesday = 0;
       }
     } else {
       // Not Tuesday - calculate days until next Tuesday
       daysUntilTuesday = (2 - currentDay + 7) % 7;
-      if (daysUntilTuesday === 0) daysUntilTuesday = 7;
+      if (daysUntilTuesday === 0) daysUntilTuesday = 7; // If result is 0, next Tuesday is 7 days away
     }
     
-    nextTuesday.setDate(nowEST.getDate() + daysUntilTuesday);
-    nextTuesday.setHours(19, 0, 0, 0); // 7:00 PM EST
+    nextTuesday.setDate(now.getDate() + daysUntilTuesday);
+    nextTuesday.setHours(19, 0, 0, 0); // 7:00 PM
     
-    console.log('Next Tuesday event in EST:', nextTuesday.toString());
     return nextTuesday;
   };
 
   useEffect(() => {
+    const nextEventDate = getNextTuesday();
+    
     const calculateTimeLeft = () => {
-      const now = new Date();
-      const nextEventDate = getCurrentEventDate();
-      const eventEndTime = new Date(nextEventDate.getTime() + (4 * 60 * 60 * 1000)); // Event + 4 hours
-      
-      const currentTime = now.getTime();
-      const eventStartTime = nextEventDate.getTime();
-      const eventEndTimeMs = eventEndTime.getTime();
+      const now = new Date().getTime();
+      const eventTime = nextEventDate.getTime();
+      const difference = eventTime - now;
 
-      // Check if event is currently happening (between start and start + 4 hours)
-      if (currentTime >= eventStartTime && currentTime <= eventEndTimeMs) {
-        // Event is happening now
-        setIsEventHappening(true);
-        
-        // Calculate time until event ends
-        const timeUntilEnd = eventEndTimeMs - currentTime;
-        const hours = Math.floor(timeUntilEnd / (1000 * 60 * 60));
-        const minutes = Math.floor((timeUntilEnd % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((timeUntilEnd % (1000 * 60)) / 1000);
-        
-        setTimeUntilEventEnds({ days: 0, hours, minutes, seconds });
+      if (difference > 0) {
+        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+        setTimeLeft({ days, hours, minutes, seconds });
+        setIsEventPassed(false);
       } else {
-        // Event is not happening, show countdown to next event
-        setIsEventHappening(false);
-        
-        const difference = eventStartTime - currentTime;
-        
-        if (difference > 0) {
-          const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-          const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-          const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-          const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-          setTimeLeft({ days, hours, minutes, seconds });
-        } else {
-          setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-        }
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        setIsEventPassed(true);
       }
     };
 
@@ -131,10 +72,12 @@ export const EventCountdown = () => {
     const timer = setInterval(calculateTimeLeft, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, []); // Empty dependency array to prevent infinite loop
 
-  const formatEventDate = (eventDate: Date) => {
-    return eventDate.toLocaleDateString('en-US', {
+  const nextEventDate = getNextTuesday();
+
+  const formatEventDate = () => {
+    return nextEventDate.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -142,17 +85,15 @@ export const EventCountdown = () => {
     });
   };
 
-  const formatEventTime = (eventDate: Date) => {
-    return eventDate.toLocaleTimeString('en-US', {
+  const formatEventTime = () => {
+    return nextEventDate.toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true,
     });
   };
 
-  const currentEventDate = getCurrentEventDate();
-
-  if (isEventHappening) {
+  if (isEventPassed) {
     return (
       <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-green-500/10 via-background to-emerald-500/10 border border-green-500/30 shadow-lg">
         {/* Background decoration */}
@@ -164,16 +105,12 @@ export const EventCountdown = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/40 mb-4">
             <span className="text-3xl animate-pulse">🔥</span>
           </div>
-          <h3 className="text-2xl font-bold text-green-500 mb-2">Happening Now!</h3>
-          <p className="text-muted-foreground mb-4">SkateBurn is live! The event is happening right now!</p>
-          
-          {/* Time until event ends */}
-          <div className="inline-flex items-center gap-2 text-sm text-green-600 bg-green-500/10 backdrop-blur-sm rounded-full px-4 py-2 border border-green-500/30 mb-4">
+          <h3 className="text-2xl font-bold text-green-500 mb-2">SkateBurn is Live!</h3>
+          <p className="text-muted-foreground">The event is happening now! See you on the ramps!</p>
+          <div className="mt-4 inline-flex items-center gap-2 text-sm text-green-600 bg-green-500/10 backdrop-blur-sm rounded-full px-4 py-2 border border-green-500/30">
             <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-            <span>Ends in {String(timeUntilEventEnds.hours).padStart(2, '0')}:{String(timeUntilEventEnds.minutes).padStart(2, '0')}:{String(timeUntilEventEnds.seconds).padStart(2, '0')}</span>
+            <span>Live Event</span>
           </div>
-          
-          <p className="text-xs text-muted-foreground">See you on the ramps! 🛹✨</p>
         </div>
       </div>
     );
@@ -196,12 +133,12 @@ export const EventCountdown = () => {
           <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-1.5">
               <Calendar className="w-4 h-4" />
-              <span className="font-medium">{formatEventDate(currentEventDate)}</span>
+              <span className="font-medium">{formatEventDate()}</span>
             </div>
             <div className="w-1 h-1 rounded-full bg-muted-foreground/40"></div>
             <div className="flex items-center gap-1.5">
               <Clock className="w-4 h-4" />
-              <span className="font-medium">{formatEventTime(currentEventDate)}</span>
+              <span className="font-medium">{formatEventTime()}</span>
             </div>
           </div>
         </div>
