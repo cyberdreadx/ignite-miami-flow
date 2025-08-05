@@ -311,6 +311,35 @@ const About = () => {
             </div>
           </motion.div>
 
+          {/* Instagram Feed */}
+          <motion.div 
+            className="mb-20"
+            initial={{ y: 30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 1.35 }}
+          >
+            <h2 className="text-4xl font-bold text-center mb-12 bg-gradient-primary bg-clip-text text-transparent">
+              Follow Our Journey
+            </h2>
+            <Card className="bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-3 text-2xl justify-center">
+                  <Instagram className="h-7 w-7 text-primary" />
+                  @skateburnmiami
+                </CardTitle>
+                <CardDescription className="text-center text-lg">
+                  See the latest from our fire-fueled community events and sessions
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div 
+                  className="elfsight-app-280d9a60-a69f-44a6-8575-f8de1937b009" 
+                  data-elfsight-app-lazy
+                ></div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
           {/* CTA Section */}
           <motion.div 
             className="text-center"
