@@ -6,7 +6,8 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Heart, MessageCircle, Trash2, MoreHorizontal, Pin } from 'lucide-react';
+import { ArrowLeft, Save, Heart, MessageCircle, Trash2, MoreHorizontal, Pin, Settings } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import NavBar from '@/components/NavBar';
 import { AvatarUpload } from '@/components/AvatarUpload';
 import { AccountDeletion } from '@/components/AccountDeletion';
@@ -131,83 +132,106 @@ const Profile = () => {
       <NavBar />
       <div className="min-h-screen bg-gradient-dark p-6 pt-24">
         <div className="max-w-2xl mx-auto">
-          <Button 
-            variant="outline" 
-            onClick={() => navigate(-1)}
-            className="mb-6"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
-          
-          <Card className="bg-card/10 backdrop-blur-lg border border-white/10">
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl font-graffiti bg-gradient-fire bg-clip-text text-transparent">
-                Profile Settings
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Avatar Section */}
-              <div className="flex justify-center">
-                <AvatarUpload 
-                  currentAvatar={profile.avatar_url}
-                  userName={profile.full_name || profile.email}
-                  onAvatarUpdate={handleAvatarUpdate}
-                  size="lg"
-                />
-              </div>
+          {/* Header with Back and Settings */}
+          <div className="flex items-center justify-between mb-6">
+            <Button 
+              variant="outline" 
+              onClick={() => navigate(-1)}
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
 
-              {/* Profile Form */}
-              <form onSubmit={handleSave} className="space-y-4">
-                <div>
-                  <Label htmlFor="fullName">Full Name</Label>
-                  <Input
-                    id="fullName"
-                    type="text"
-                    value={profile.full_name}
-                    onChange={(e) => setProfile(prev => ({ ...prev, full_name: e.target.value }))}
-                    className="bg-background/50"
-                    placeholder="Enter your full name"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={profile.email}
-                    onChange={(e) => setProfile(prev => ({ ...prev, email: e.target.value }))}
-                    className="bg-background/50"
-                    placeholder="Enter your email"
-                    disabled
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Email cannot be changed here. Contact support if needed.
-                  </p>
-                </div>
-                
-                <Button 
-                  type="submit" 
-                  className="w-full"
-                  disabled={saving}
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  {saving ? 'Saving...' : 'Save Changes'}
+            {/* Settings Dialog */}
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Settings className="w-4 h-4 mr-2" />
+                  Settings
                 </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle className="text-xl font-graffiti bg-gradient-fire bg-clip-text text-transparent">
+                    Profile Settings
+                  </DialogTitle>
+                </DialogHeader>
                 
-                {/* Account Deletion Section */}
-                <div className="pt-6 mt-6 border-t border-white/10">
-                  <AccountDeletion />
+                <div className="space-y-6">
+                  {/* Profile Form */}
+                  <form onSubmit={handleSave} className="space-y-4">
+                    <div>
+                      <Label htmlFor="fullName">Full Name</Label>
+                      <Input
+                        id="fullName"
+                        type="text"
+                        value={profile.full_name}
+                        onChange={(e) => setProfile(prev => ({ ...prev, full_name: e.target.value }))}
+                        className="bg-background/50"
+                        placeholder="Enter your full name"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={profile.email}
+                        onChange={(e) => setProfile(prev => ({ ...prev, email: e.target.value }))}
+                        className="bg-background/50"
+                        placeholder="Enter your email"
+                        disabled
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Email cannot be changed here. Contact support if needed.
+                      </p>
+                    </div>
+                    
+                    <Button 
+                      type="submit" 
+                      className="w-full"
+                      disabled={saving}
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      {saving ? 'Saving...' : 'Save Changes'}
+                    </Button>
+                  </form>
+
+                  {/* Account Deletion Section */}
+                  <div className="pt-6 mt-6 border-t border-border">
+                    <AccountDeletion />
+                  </div>
                 </div>
-              </form>
-            </CardContent>
-          </Card>
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          {/* Main Profile Content */}
+          <div className="text-center mb-8">
+            {/* Avatar Section */}
+            <div className="mb-6">
+              <AvatarUpload 
+                currentAvatar={profile.avatar_url}
+                userName={profile.full_name || profile.email}
+                onAvatarUpdate={handleAvatarUpdate}
+                size="lg"
+              />
+            </div>
+
+            {/* User Info */}
+            <div>
+              <h1 className="text-2xl font-graffiti bg-gradient-fire bg-clip-text text-transparent mb-2">
+                {profile.full_name || profile.email}
+              </h1>
+              <p className="text-muted-foreground text-sm">
+                {user?.email}
+              </p>
+            </div>
+          </div>
 
           {/* User Posts Section */}
-          <div className="mt-8">
-            <UserPosts />
-          </div>
+          <UserPosts />
         </div>
       </div>
     </>
