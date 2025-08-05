@@ -30,11 +30,22 @@ serve(async (req) => {
     // First check if it's a ticket
     const { data: ticket, error: ticketError } = await supabaseClient
       .from("tickets")
-      .select("*, profiles!tickets_user_id_fkey(full_name, email)")
+      .select("*")
       .eq("qr_code_token", qr_code_token)
       .single();
 
+    console.log("Ticket query result:", { ticket, ticketError });
+
     if (!ticketError && ticket) {
+      // Get user profile separately
+      const { data: profile } = await supabaseClient
+        .from("profiles")
+        .select("full_name, email")
+        .eq("user_id", ticket.user_id)
+        .single();
+
+      const userName = profile?.full_name || profile?.email || "Unknown";
+      
       // Check ticket validity
       const now = new Date();
       const validUntil = ticket.valid_until ? new Date(ticket.valid_until) : null;
@@ -47,7 +58,7 @@ serve(async (req) => {
           ticket_info: {
             id: ticket.id,
             amount: ticket.amount,
-            user_name: ticket.profiles?.full_name || ticket.profiles?.email || "Unknown",
+            user_name: userName,
             created_at: ticket.created_at,
             valid_until: ticket.valid_until,
             used_at: ticket.used_at,
@@ -67,7 +78,7 @@ serve(async (req) => {
           ticket_info: {
             id: ticket.id,
             amount: ticket.amount,
-            user_name: ticket.profiles?.full_name || ticket.profiles?.email || "Unknown",
+            user_name: userName,
             created_at: ticket.created_at,
             valid_until: ticket.valid_until
           }
@@ -95,7 +106,7 @@ serve(async (req) => {
           id: ticket.id,
           amount: ticket.amount,
           event_id: ticket.event_id,
-          user_name: ticket.profiles?.full_name || ticket.profiles?.email || "Unknown",
+          user_name: userName,
           created_at: ticket.created_at,
           valid_until: ticket.valid_until
         }
@@ -108,11 +119,22 @@ serve(async (req) => {
     // If not a ticket, check if it's a subscription
     const { data: subscription, error: subError } = await supabaseClient
       .from("subscriptions")
-      .select("*, profiles!subscriptions_user_id_fkey(full_name, email)")
+      .select("*")
       .eq("qr_code_token", qr_code_token)
       .single();
 
+    console.log("Subscription query result:", { subscription, subError });
+
     if (!subError && subscription) {
+      // Get user profile separately
+      const { data: profile } = await supabaseClient
+        .from("profiles")
+        .select("full_name, email")
+        .eq("user_id", subscription.user_id)
+        .single();
+
+      const userName = profile?.full_name || profile?.email || "Unknown";
+      
       // Check subscription validity
       const now = new Date();
       const currentPeriodEnd = subscription.current_period_end ? new Date(subscription.current_period_end) : null;
@@ -125,7 +147,7 @@ serve(async (req) => {
           subscription_info: {
             id: subscription.id,
             status: subscription.status,
-            user_name: subscription.profiles?.full_name || subscription.profiles?.email || "Unknown",
+            user_name: userName,
             current_period_end: subscription.current_period_end,
             created_at: subscription.created_at
           }
@@ -143,7 +165,7 @@ serve(async (req) => {
           subscription_info: {
             id: subscription.id,
             status: subscription.status,
-            user_name: subscription.profiles?.full_name || subscription.profiles?.email || "Unknown",
+            user_name: userName,
             current_period_end: subscription.current_period_end,
             created_at: subscription.created_at
           }
@@ -159,7 +181,7 @@ serve(async (req) => {
         subscription_info: {
           id: subscription.id,
           status: subscription.status,
-          user_name: subscription.profiles?.full_name || subscription.profiles?.email || "Unknown",
+          user_name: userName,
           current_period_end: subscription.current_period_end,
           created_at: subscription.created_at
         }
