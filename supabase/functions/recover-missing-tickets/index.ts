@@ -102,18 +102,29 @@ serve(async (req) => {
             // Generate QR code token
             const qrToken = `QR_${Math.random().toString(36).substr(2, 8).toUpperCase()}_${Date.now()}`;
             
-            // Get the current active event to determine validity period
-            const { data: event } = await supabase
-              .from('events')
-              .select('*')
-              .eq('is_active', true)
-              .single();
+            // Calculate validity: 2 days after the next event
+            const now = new Date();
+            const aug5 = new Date('2025-08-05');
+            const aug19 = new Date('2025-08-19');
+            let nextEventDate;
 
-            // Calculate validity: 2 days after the next Tuesday event
-            const validUntil = new Date();
-            const dayOfWeek = validUntil.getDay(); // 0 = Sunday, 1 = Monday, ..., 2 = Tuesday
-            const daysUntilTuesday = dayOfWeek <= 2 ? (2 - dayOfWeek) : (9 - dayOfWeek); // Next Tuesday
-            validUntil.setDate(validUntil.getDate() + daysUntilTuesday + 2); // Event date + 2 days
+            if (now <= aug5) {
+              // Today's event or before
+              nextEventDate = aug5;
+            } else if (now < aug19) {
+              // Between Aug 5 and Aug 19
+              nextEventDate = aug19;
+            } else {
+              // After Aug 19, find next Tuesday
+              nextEventDate = new Date(aug19);
+              while (nextEventDate <= now) {
+                nextEventDate.setDate(nextEventDate.getDate() + 7); // Add 7 days for next Tuesday
+              }
+            }
+
+            // Valid until 2 days after the event
+            const validUntil = new Date(nextEventDate);
+            validUntil.setDate(validUntil.getDate() + 2);
             validUntil.setHours(23, 59, 59, 999); // End of day
 
             const qrData = {
@@ -215,18 +226,29 @@ serve(async (req) => {
           // Generate QR code token
           const qrToken = `QR_${Math.random().toString(36).substr(2, 8).toUpperCase()}_${Date.now()}`;
           
-          // Get the current active event to determine validity period
-          const { data: event } = await supabase
-            .from('events')
-            .select('*')
-            .eq('is_active', true)
-            .single();
+          // Calculate validity: 2 days after the next event
+          const now = new Date();
+          const aug5 = new Date('2025-08-05');
+          const aug19 = new Date('2025-08-19');
+          let nextEventDate;
 
-          // Calculate validity: 2 days after the next Tuesday event
-          const validUntil = new Date();
-          const dayOfWeek = validUntil.getDay(); // 0 = Sunday, 1 = Monday, ..., 2 = Tuesday
-          const daysUntilTuesday = dayOfWeek <= 2 ? (2 - dayOfWeek) : (9 - dayOfWeek); // Next Tuesday
-          validUntil.setDate(validUntil.getDate() + daysUntilTuesday + 2); // Event date + 2 days
+          if (now <= aug5) {
+            // Today's event or before
+            nextEventDate = aug5;
+          } else if (now < aug19) {
+            // Between Aug 5 and Aug 19
+            nextEventDate = aug19;
+          } else {
+            // After Aug 19, find next Tuesday
+            nextEventDate = new Date(aug19);
+            while (nextEventDate <= now) {
+              nextEventDate.setDate(nextEventDate.getDate() + 7); // Add 7 days for next Tuesday
+            }
+          }
+
+          // Valid until 2 days after the event
+          const validUntil = new Date(nextEventDate);
+          validUntil.setDate(validUntil.getDate() + 2);
           validUntil.setHours(23, 59, 59, 999); // End of day
 
           const qrData = {

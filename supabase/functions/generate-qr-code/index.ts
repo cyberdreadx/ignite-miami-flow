@@ -58,11 +58,21 @@ serve(async (req) => {
         const { data: tokenData } = await supabaseClient.rpc("generate_qr_token");
         const qrToken = tokenData;
         
+        // Get user profile for proper name display
+        const { data: profile } = await supabaseClient
+          .from('profiles')
+          .select('full_name, email')
+          .eq('user_id', userData.user.id)
+          .single();
+
+        const userName = profile?.full_name || profile?.email || userData.user.email;
+        
         // Create QR code data (JSON string with verification info)
         const qrData = JSON.stringify({
           type: "ticket",
           id: ticket.id,
           user_id: userData.user.id,
+          user_name: userName,
           token: qrToken,
           event_id: ticket.event_id,
           amount: ticket.amount,
