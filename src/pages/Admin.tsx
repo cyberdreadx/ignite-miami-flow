@@ -101,6 +101,8 @@ interface TicketPurchase {
   user_email: string;
   user_name: string;
   valid_until: string | null;
+  used_at: string | null;
+  used_by: string | null;
 }
 
 interface ReportedPost {
@@ -582,7 +584,9 @@ const Admin = () => {
           status,
           created_at,
           stripe_session_id,
-          valid_until
+          valid_until,
+          used_at,
+          used_by
         `)
         .order('created_at', { ascending: false })
         .limit(50);
@@ -615,6 +619,8 @@ const Admin = () => {
           created_at: ticket.created_at,
           stripe_session_id: ticket.stripe_session_id,
           valid_until: ticket.valid_until,
+          used_at: ticket.used_at,
+          used_by: ticket.used_by,
           user_email: profile?.email || 'Unknown',
           user_name: profile?.full_name || profile?.email || 'Unknown User',
         };
@@ -623,6 +629,38 @@ const Admin = () => {
       setTicketPurchases(mappedPurchases);
     } catch (error) {
       console.error('Error in fetchTicketPurchases:', error);
+    }
+  };
+
+  const handleUnuseTicket = async (ticketId: string) => {
+    try {
+      const { error } = await supabase
+        .from('tickets')
+        .update({
+          used_at: null,
+          used_by: null
+        })
+        .eq('id', ticketId);
+
+      if (error) {
+        toast({
+          title: 'Error resetting ticket',
+          description: error.message,
+          variant: 'destructive',
+        });
+      } else {
+        fetchTicketPurchases(); // Refresh the list
+        toast({
+          title: 'Ticket Reset Successfully ✅',
+          description: 'The ticket has been marked as unused and is valid again.',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Error resetting ticket',
+        description: 'An unexpected error occurred.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -1031,6 +1069,11 @@ const Admin = () => {
                             >
                               {purchase.status}
                             </Badge>
+                            {purchase.used_at && (
+                              <Badge variant="secondary" className="text-xs">
+                                Used
+                              </Badge>
+                            )}
                           </div>
                           <p className="text-sm text-muted-foreground truncate">{purchase.user_email}</p>
                           <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
@@ -1049,10 +1092,15 @@ const Admin = () => {
                               Session: {purchase.stripe_session_id.slice(-8)}
                             </p>
                           )}
+                          {purchase.used_at && (
+                            <p className="text-xs text-orange-600 mt-1">
+                              Used: {new Date(purchase.used_at).toLocaleString()} {purchase.used_by && `by ${purchase.used_by}`}
+                            </p>
+                          )}
                         </div>
                       </div>
                       
-                      <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="flex flex-col items-end gap-2 flex-shrink-0">
                         <div className="text-right">
                           <div className="text-lg font-bold">
                             ${(purchase.amount / 100).toFixed(2)}
@@ -1061,6 +1109,17 @@ const Admin = () => {
                             {purchase.status === 'paid' ? 'Paid' : 'Pending'}
                           </div>
                         </div>
+                        
+                        {purchase.used_at && purchase.status === 'paid' && (
+                          <Button
+                            onClick={() => handleUnuseTicket(purchase.id)}
+                            variant="outline"
+                            size="sm"
+                            className="text-orange-600 hover:text-orange-700 text-xs"
+                          >
+                            Reset Ticket
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))}

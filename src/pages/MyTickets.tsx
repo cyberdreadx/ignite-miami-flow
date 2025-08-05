@@ -17,6 +17,8 @@ interface UserTicket {
   status: string;
   valid_until: string;
   created_at: string;
+  used_at?: string | null;
+  used_by?: string | null;
   qr_code_token?: string;
 }
 
@@ -155,6 +157,7 @@ export const MyTickets: React.FC = () => {
 
   const isValidTicket = (ticket: UserTicket) => {
     if (ticket.status !== 'paid') return false;
+    if (ticket.used_at) return false; // Can't use QR code if already used
     if (!ticket.valid_until) return true;
     return new Date(ticket.valid_until) > new Date();
   };
@@ -291,10 +294,15 @@ export const MyTickets: React.FC = () => {
                           <CardContent className="p-4 sm:p-6">
                             <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
                               <div className="flex-1 space-y-2">
-                                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                                  <h3 className="font-semibold text-base">Event Ticket</h3>
-                                  {getStatusBadge(ticket.status)}
-                                </div>
+                                 <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                   <h3 className="font-semibold text-base">Event Ticket</h3>
+                                   {getStatusBadge(ticket.status)}
+                                   {ticket.used_at && (
+                                     <Badge variant="secondary" className="text-xs">
+                                       Used
+                                     </Badge>
+                                   )}
+                                 </div>
                                 <div className="space-y-1 text-sm">
                                   <p className="text-muted-foreground">
                                     Amount: ${(ticket.amount / 100).toFixed(2)}
@@ -304,10 +312,15 @@ export const MyTickets: React.FC = () => {
                                       Valid until: {new Date(ticket.valid_until).toLocaleDateString()}
                                     </p>
                                   )}
-                                  <p className="text-xs text-muted-foreground">
-                                    Purchased: {new Date(ticket.created_at).toLocaleDateString()}
-                                  </p>
-                                </div>
+                                   <p className="text-xs text-muted-foreground">
+                                     Purchased: {new Date(ticket.created_at).toLocaleDateString()}
+                                   </p>
+                                   {ticket.used_at && (
+                                     <p className="text-xs text-orange-600">
+                                       Used: {new Date(ticket.used_at).toLocaleString()} {ticket.used_by && `by ${ticket.used_by}`}
+                                     </p>
+                                   )}
+                                 </div>
                               </div>
                               <div className="flex flex-col sm:flex-row gap-2">
                                 {isValidTicket(ticket) && (
@@ -334,9 +347,16 @@ export const MyTickets: React.FC = () => {
                     <Calendar className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                     <h3 className="text-lg font-semibold mb-2">No tickets yet</h3>
                     <p className="text-muted-foreground mb-4">Purchase tickets to see them here</p>
-                    <Button onClick={() => window.location.href = '/tickets'}>
-                      Buy Tickets
-                    </Button>
+                    <div className="space-y-2">
+                      <Button onClick={() => window.location.href = '/tickets'}>
+                        Buy Tickets
+                      </Button>
+                      <p className="text-xs text-muted-foreground">
+                        If you purchased tickets but don't see them, try the "Check for Missing Tickets" button above.
+                        <br />
+                        If your ticket was incorrectly marked as used, contact an admin for assistance.
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>
