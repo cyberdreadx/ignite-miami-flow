@@ -274,12 +274,13 @@ export const SocialFeed = () => {
                   </div>
                 )}
                 
-                {/* Media Display - Full Width */}
-                <MediaDisplay 
-                  mediaUrls={post.media_urls}
-                  mediaTypes={post.media_types}
-                  className="w-full"
-                />
+                {/* Media Display */}
+                <div className="max-w-2xl mx-auto px-4 pb-3">
+                  <MediaDisplay 
+                    mediaUrls={post.media_urls}
+                    mediaTypes={post.media_types}
+                  />
+                </div>
                 
               {/* Interaction buttons */}
               <div className="max-w-2xl mx-auto px-4 py-3">
@@ -399,12 +400,13 @@ export const SocialFeed = () => {
                 </div>
               )}
               
-              {/* Media Display - Full Width */}
-              <MediaDisplay 
-                mediaUrls={post.media_urls}
-                mediaTypes={post.media_types}
-                className="w-full"
-              />
+              {/* Media Display */}
+              <div className="max-w-2xl mx-auto px-4 pb-3">
+                <MediaDisplay 
+                  mediaUrls={post.media_urls}
+                  mediaTypes={post.media_types}
+                />
+              </div>
               
               {/* Interaction buttons */}
               <div className="max-w-2xl mx-auto px-4 py-3">
@@ -549,12 +551,13 @@ export const SocialFeed = () => {
                 </div>
               )}
               
-              {/* Media Display - Full Width */}
-              <MediaDisplay 
-                mediaUrls={post.media_urls}
-                mediaTypes={post.media_types}
-                className="w-full"
-              />
+              {/* Media Display */}
+              <div className="max-w-2xl mx-auto px-4 pb-3">
+                <MediaDisplay 
+                  mediaUrls={post.media_urls}
+                  mediaTypes={post.media_types}
+                />
+              </div>
               
               {/* Interaction buttons */}
               <div className="max-w-2xl mx-auto px-4 py-3">
