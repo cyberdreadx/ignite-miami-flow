@@ -70,6 +70,12 @@ const Qualifications = () => {
     }
   ];
 
+  const groundRules = [
+    "NO IGNITING OR SMOKING NEAR THE DIPPING STATION",
+    "FLOW ONLY IN SKATING AREA",
+    "IGNITED PROPS MUST HAVE DESIGNATED FIRE SAFETY"
+  ];
+
   const generalGuidelines = [
     "All performers must be 18+ years old",
     "Commitment to community safety and positive vibes",
@@ -99,12 +105,42 @@ const Qualifications = () => {
           </p>
         </motion.div>
 
+        {/* Ground Rules */}
+        <motion.div 
+          className="mb-8"
+          initial={{ y: 30, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          <Card className="bg-gradient-to-br from-red-500/10 to-orange-500/10 border-red-500/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3 text-2xl">
+                <Flame className="h-7 w-7 text-red-500" />
+                Skateburn Ground Rules
+              </CardTitle>
+              <CardDescription>
+                These rules MUST be followed at all times - failure to follow will lead to harsh punishments. LOL.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {groundRules.map((rule, index) => (
+                  <div key={index} className="flex items-start gap-3">
+                    <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
+                    <span className="font-semibold text-red-600">{rule}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
         {/* General Guidelines */}
         <motion.div 
           className="mb-16"
           initial={{ y: 30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.3 }}
         >
           <Card className="bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/20">
             <CardHeader>
