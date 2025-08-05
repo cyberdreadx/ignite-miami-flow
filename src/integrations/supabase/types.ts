@@ -229,33 +229,51 @@ export type Database = {
         Row: {
           approval_status: string
           avatar_url: string | null
+          bio: string | null
           created_at: string
           email: string | null
           full_name: string | null
           id: string
+          instagram_handle: string | null
+          last_active: string | null
+          location: string | null
           role: string
+          show_contact_info: boolean | null
+          show_in_directory: boolean | null
           updated_at: string
           user_id: string
         }
         Insert: {
           approval_status?: string
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
           id?: string
+          instagram_handle?: string | null
+          last_active?: string | null
+          location?: string | null
           role?: string
+          show_contact_info?: boolean | null
+          show_in_directory?: boolean | null
           updated_at?: string
           user_id: string
         }
         Update: {
           approval_status?: string
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
           id?: string
+          instagram_handle?: string | null
+          last_active?: string | null
+          location?: string | null
           role?: string
+          show_contact_info?: boolean | null
+          show_in_directory?: boolean | null
           updated_at?: string
           user_id?: string
         }
