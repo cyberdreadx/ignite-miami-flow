@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Camera, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 
 interface QRScannerProps {
@@ -109,6 +109,9 @@ const QRScanner = ({ onScan, isOpen, onClose }: QRScannerProps) => {
             <Camera className="w-5 h-5" />
             Scan QR Code
           </DialogTitle>
+          <DialogDescription>
+            Position your camera over a QR code to scan it automatically
+          </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4">
