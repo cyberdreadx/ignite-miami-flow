@@ -66,6 +66,18 @@ export function AdminSidebar() {
                       to={item.url} 
                       end={item.url === "/admin"}
                       className={getNavCls}
+                      onClick={(e) => {
+                        if (item.url.includes("#")) {
+                          e.preventDefault();
+                          const elementId = item.url.split("#")[1];
+                          const element = document.getElementById(elementId);
+                          if (element) {
+                            element.scrollIntoView({ behavior: "smooth" });
+                            // Update URL without triggering navigation
+                            window.history.pushState({}, "", item.url);
+                          }
+                        }
+                      }}
                     >
                       <item.icon className="mr-2 h-4 w-4" />
                       <span>{item.title}</span>

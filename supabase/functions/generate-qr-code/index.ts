@@ -178,9 +178,28 @@ serve(async (req) => {
 
         const userName = profile?.full_name || profile?.email || userData.user.email;
         
-        // Calculate validity (30 days from creation for media passes)
-        const validUntil = new Date();
-        validUntil.setDate(validUntil.getDate() + 30);
+        // Calculate validity (2 days after current or next event, same as tickets)
+        const now = new Date();
+        const aug5 = new Date('2025-08-05');
+        const aug19 = new Date('2025-08-19');
+        
+        let validUntil;
+        if (now <= aug5) {
+          // If today or before Aug 5th, valid until Aug 7th
+          validUntil = new Date('2025-08-07T23:59:59.999Z');
+        } else if (now <= aug19) {
+          // If between Aug 5th and Aug 19th, valid until Aug 21st
+          validUntil = new Date('2025-08-21T23:59:59.999Z');
+        } else {
+          // After Aug 19th, find next Tuesday and add 2 days
+          const nextTuesday = new Date(now);
+          const dayOfWeek = nextTuesday.getDay();
+          const daysUntilTuesday = dayOfWeek === 2 ? 0 : (2 + 7 - dayOfWeek) % 7;
+          nextTuesday.setDate(nextTuesday.getDate() + daysUntilTuesday);
+          nextTuesday.setDate(nextTuesday.getDate() + 2); // 2 days after
+          nextTuesday.setHours(23, 59, 59, 999);
+          validUntil = nextTuesday;
+        }
         
         // Create QR code data
         const qrData = JSON.stringify({

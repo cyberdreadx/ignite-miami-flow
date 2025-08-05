@@ -391,6 +391,42 @@ const Admin = () => {
               </Card>
             )}
 
+            {/* Users Management */}
+            <Card id="users">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  User Management
+                </CardTitle>
+                <CardDescription>
+                  View and manage all users in the system
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">User management coming soon</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Moderation Tools */}
+            <Card id="moderation">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5" />
+                  Moderation Tools
+                </CardTitle>
+                <CardDescription>
+                  Advanced moderation and content management tools
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">Moderation tools coming soon</p>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Recent Posts Management */}
             <Card id="posts">
               <CardHeader>
