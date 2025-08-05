@@ -92,12 +92,16 @@ export const VerifyTicket: React.FC = () => {
         body: { qr_token: qrToken }
       });
 
+      console.log('Verification response:', data);
+      console.log('Verification error:', error);
+
       if (error) {
         throw new Error(error.message);
       }
 
       // Handle ticket verification
       if (data.success && data.ticket) {
+        console.log('Found valid ticket:', data.ticket);
         setVerificationType('ticket');
         setTicket(data.ticket);
         setIsValid(true);
