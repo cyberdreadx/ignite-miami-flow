@@ -9,6 +9,8 @@ import { motion, useScroll, useTransform } from "framer-motion";
 
 const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   const { user, signOut } = useAuth();
   const { isModerator, isAdmin } = useUserRole();
   const navigate = useNavigate();
@@ -18,6 +20,30 @@ const NavBar = () => {
   // Background opacity based on scroll
   const backgroundOpacity = useTransform(scrollY, [0, 100], [0.8, 0.95]);
   const backdropBlur = useTransform(scrollY, [0, 100], [8, 16]);
+
+  // Handle scroll direction for navbar visibility
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Show navbar when at top or scrolling up
+      if (currentScrollY < 10) {
+        setIsVisible(true);
+      } else if (currentScrollY < lastScrollY) {
+        // Scrolling up
+        setIsVisible(true);
+      } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        // Scrolling down and past 100px
+        setIsVisible(false);
+        setIsOpen(false); // Close mobile menu when hiding
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
 
   const handleSignOut = async () => {
     const { error } = await signOut();
@@ -54,10 +80,11 @@ const NavBar = () => {
 
   return (
     <motion.nav 
-      className="fixed top-0 left-0 right-0 z-50 border-b border-white/10"
+      className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 transition-transform duration-300 ease-in-out"
       style={{ 
         backgroundColor: useTransform(backgroundOpacity, (value) => `rgba(0, 0, 0, ${value})`),
-        backdropFilter: useTransform(backdropBlur, (value) => `blur(${value}px)`)
+        backdropFilter: useTransform(backdropBlur, (value) => `blur(${value}px)`),
+        transform: isVisible ? 'translateY(0)' : 'translateY(-100%)'
       }}
       initial={{ y: -100 }}
       animate={{ y: 0 }}
