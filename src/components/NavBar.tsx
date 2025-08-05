@@ -156,13 +156,14 @@ const NavBar = () => {
             )}
           </div>
 
-          {/* Mobile menu button */}
-          <div className="md:hidden">
+          {/* Mobile menu button - Hide on mobile since we use bottom nav */}
+          <div className="sm:hidden">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setIsOpen(!isOpen)}
               aria-label="Toggle menu"
+              className="hidden"
             >
               {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
@@ -170,9 +171,9 @@ const NavBar = () => {
         </div>
       </div>
 
-      {/* Mobile Navigation */}
+      {/* Mobile Navigation - Hide on small screens where bottom nav is used */}
       {isOpen && (
-        <div className="md:hidden bg-background/95 backdrop-blur-lg border-b border-white/10">
+        <div className="md:hidden bg-background/95 backdrop-blur-lg border-b border-white/10 hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             {navItems.map((item) => (
               <Button
@@ -195,44 +196,44 @@ const NavBar = () => {
             <div className="border-t border-white/10 pt-4 mt-4">
               {user ? (
                 <div className="space-y-2">
-                   <Button
-                     onClick={() => {
-                       console.log('Mobile profile button clicked, navigating to /profile');
-                       navigate("/profile");
-                       setIsOpen(false);
-                     }}
-                     variant="ghost"
-                     className="w-full justify-start"
-                   >
-                     <User className="w-4 h-4 mr-2" />
-                     Profile
-                   </Button>
-                   {isModerator && (
-                     <Button
-                       onClick={() => {
-                         navigate("/validate");
-                         setIsOpen(false);
-                       }}
-                       variant="outline"
-                       className="w-full justify-start"
-                     >
-                       <Scan className="w-4 h-4 mr-2" />
-                       Validate Tickets
-                     </Button>
-                   )}
-                   {isAdmin && (
-                     <Button
-                       onClick={() => {
-                         navigate("/admin");
-                         setIsOpen(false);
-                       }}
-                       variant="outline"
-                       className="w-full justify-start"
-                     >
-                       <Settings className="w-4 h-4 mr-2" />
-                       Admin Panel
-                     </Button>
-                   )}
+                  <Button
+                    onClick={() => {
+                      console.log('Mobile profile button clicked, navigating to /profile');
+                      navigate("/profile");
+                      setIsOpen(false);
+                    }}
+                    variant="ghost"
+                    className="w-full justify-start"
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    Profile
+                  </Button>
+                  {isModerator && (
+                    <Button
+                      onClick={() => {
+                        navigate("/validate");
+                        setIsOpen(false);
+                      }}
+                      variant="outline"
+                      className="w-full justify-start"
+                    >
+                      <Scan className="w-4 h-4 mr-2" />
+                      Validate Tickets
+                    </Button>
+                  )}
+                  {isAdmin && (
+                    <Button
+                      onClick={() => {
+                        navigate("/admin");
+                        setIsOpen(false);
+                      }}
+                      variant="outline"
+                      className="w-full justify-start"
+                    >
+                      <Settings className="w-4 h-4 mr-2" />
+                      Admin Panel
+                    </Button>
+                  )}
                   <Button
                     onClick={handleSignOut}
                     variant="ghost"

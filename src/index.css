@@ -148,4 +148,11 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Add bottom padding to prevent content from being hidden behind bottom nav on mobile */
+  @media (max-width: 768px) {
+    body {
+      padding-bottom: 4rem;
+    }
+  }
 }

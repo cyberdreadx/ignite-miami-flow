@@ -17,6 +17,7 @@ import { MyTickets } from "./pages/MyTickets";
 import { ValidateTicket } from "./pages/ValidateTicket";
 import { PublicTicketView } from "./pages/PublicTicketView";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
+import BottomNav from "./components/BottomNav";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -45,6 +46,7 @@ const App = () => (
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <BottomNav />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
