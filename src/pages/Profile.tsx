@@ -6,8 +6,8 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Heart, MessageCircle, Trash2, MoreHorizontal, Pin, Settings } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { ArrowLeft, Save, Heart, MessageCircle, Trash2, MoreHorizontal, Pin, Settings, X } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import NavBar from '@/components/NavBar';
 import { AvatarUpload } from '@/components/AvatarUpload';
 import { AccountDeletion } from '@/components/AccountDeletion';
@@ -150,11 +150,16 @@ const Profile = () => {
                   Settings
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-md">
-                <DialogHeader>
+              <DialogContent className="w-[95vw] max-w-md max-h-[90vh] overflow-y-auto">
+                <DialogHeader className="flex flex-row items-center justify-between">
                   <DialogTitle className="text-xl font-graffiti bg-gradient-fire bg-clip-text text-transparent">
                     Profile Settings
                   </DialogTitle>
+                  <DialogClose asChild>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </DialogClose>
                 </DialogHeader>
                 
                 <div className="space-y-6">
