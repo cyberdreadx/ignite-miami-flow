@@ -44,9 +44,9 @@ export const EventCountdown = () => {
     return nextTuesday;
   };
 
-  const nextEventDate = getNextTuesday();
-
   useEffect(() => {
+    const nextEventDate = getNextTuesday();
+    
     const calculateTimeLeft = () => {
       const now = new Date().getTime();
       const eventTime = nextEventDate.getTime();
@@ -73,7 +73,9 @@ export const EventCountdown = () => {
     const timer = setInterval(calculateTimeLeft, 1000);
 
     return () => clearInterval(timer);
-  }, [nextEventDate]);
+  }, []); // Empty dependency array to prevent infinite loop
+
+  const nextEventDate = getNextTuesday();
 
   const formatEventDate = () => {
     return nextEventDate.toLocaleDateString('en-US', {

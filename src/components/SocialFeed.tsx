@@ -15,6 +15,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { MediaUpload, MediaFile, uploadMediaFiles } from '@/components/MediaUpload';
 import { MediaDisplay } from '@/components/MediaDisplay';
 import { LinkifyText } from '@/components/LinkifyText';
+import { CommentsSection } from '@/components/CommentsSection';
 import { EventCountdown } from '@/components/EventCountdown';
 
 interface Post {
@@ -280,21 +281,26 @@ export const SocialFeed = () => {
                   className="w-full"
                 />
                 
-                {/* Interaction buttons */}
-                <div className="max-w-2xl mx-auto px-4 py-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="flex items-center space-x-1 text-muted-foreground">
-                        <Heart className="h-5 w-5" />
-                        <span className="text-sm font-medium">{post.like_count}</span>
-                      </div>
-                      <div className="flex items-center space-x-1 text-muted-foreground">
-                        <MessageCircle className="h-5 w-5" />
-                        <span className="text-sm font-medium">{post.comment_count}</span>
-                      </div>
+              {/* Interaction buttons */}
+              <div className="max-w-2xl mx-auto px-4 py-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-1 text-muted-foreground">
+                      <Heart className="h-5 w-5" />
+                      <span className="text-sm font-medium">{post.like_count}</span>
                     </div>
+                    <CommentsSection 
+                      postId={post.id}
+                      commentCount={post.comment_count}
+                      onCommentCountChange={(newCount) => {
+                        setPosts(prev => prev.map(p => 
+                          p.id === post.id ? { ...p, comment_count: newCount } : p
+                        ));
+                      }}
+                    />
                   </div>
                 </div>
+              </div>
               </div>
             ))}
           </div>
@@ -413,10 +419,15 @@ export const SocialFeed = () => {
                       <Heart className={`h-5 w-5 ${post.user_liked ? 'fill-red-500 text-red-500' : ''}`} />
                       <span className="text-sm font-medium">{post.like_count}</span>
                     </Button>
-                    <Button variant="ghost" size="sm" className="flex items-center space-x-1 h-auto p-0 hover:bg-transparent">
-                      <MessageCircle className="h-5 w-5" />
-                      <span className="text-sm font-medium">{post.comment_count}</span>
-                    </Button>
+                    <CommentsSection 
+                      postId={post.id}
+                      commentCount={post.comment_count}
+                      onCommentCountChange={(newCount) => {
+                        setPosts(prev => prev.map(p => 
+                          p.id === post.id ? { ...p, comment_count: newCount } : p
+                        ));
+                      }}
+                    />
                   </div>
                 </div>
               </div>
@@ -558,10 +569,15 @@ export const SocialFeed = () => {
                       <Heart className={`h-5 w-5 ${post.user_liked ? 'fill-red-500 text-red-500' : ''}`} />
                       <span className="text-sm font-medium">{post.like_count}</span>
                     </Button>
-                    <Button variant="ghost" size="sm" className="flex items-center space-x-1 h-auto p-0 hover:bg-transparent">
-                      <MessageCircle className="h-5 w-5" />
-                      <span className="text-sm font-medium">{post.comment_count}</span>
-                    </Button>
+                    <CommentsSection 
+                      postId={post.id}
+                      commentCount={post.comment_count}
+                      onCommentCountChange={(newCount) => {
+                        setPosts(prev => prev.map(p => 
+                          p.id === post.id ? { ...p, comment_count: newCount } : p
+                        ));
+                      }}
+                    />
                   </div>
                 </div>
               </div>
