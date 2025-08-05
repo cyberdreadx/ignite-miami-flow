@@ -174,6 +174,18 @@ const Auth = () => {
                             <SelectItem value="photographer">Photographer</SelectItem>
                           </SelectContent>
                         </Select>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Applying as a performer, DJ, or photographer? 
+                          <Button 
+                            variant="link" 
+                            size="sm" 
+                            className="px-1 h-auto text-xs underline"
+                            onClick={() => window.open("/qualifications", "_blank")}
+                            type="button"
+                          >
+                            Check qualification requirements
+                          </Button>
+                        </p>
                       </div>
                     </>
                   )}
