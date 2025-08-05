@@ -7,8 +7,9 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, CheckCircle, XCircle, Scan, User, Calendar, DollarSign } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, Scan, User, Calendar, DollarSign, Camera } from 'lucide-react';
 import NavBar from '@/components/NavBar';
+import QRScanner from '@/components/QRScanner';
 
 interface ValidationResult {
   valid: boolean;
@@ -25,6 +26,7 @@ export const ValidateTicket: React.FC = () => {
   const [validatorName, setValidatorName] = useState('');
   const [validating, setValidating] = useState(false);
   const [result, setResult] = useState<ValidationResult | null>(null);
+  const [showScanner, setShowScanner] = useState(false);
   const { toast } = useToast();
 
   const validateQRCode = async () => {
@@ -86,6 +88,15 @@ export const ValidateTicket: React.FC = () => {
     setResult(null);
   };
 
+  const handleScan = (data: string) => {
+    setQrToken(data);
+    setShowScanner(false);
+    toast({
+      title: "Success",
+      description: "QR code scanned successfully!",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <NavBar />
@@ -121,13 +132,23 @@ export const ValidateTicket: React.FC = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="qr-token">QR Code Token</Label>
-                  <Input
-                    id="qr-token"
-                    placeholder="Enter or scan QR code token"
-                    value={qrToken}
-                    onChange={(e) => setQrToken(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && validateQRCode()}
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      id="qr-token"
+                      placeholder="Enter or scan QR code token"
+                      value={qrToken}
+                      onChange={(e) => setQrToken(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && validateQRCode()}
+                      className="flex-1"
+                    />
+                    <Button 
+                      onClick={() => setShowScanner(true)}
+                      variant="outline"
+                      size="icon"
+                    >
+                      <Camera className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="flex gap-4">
@@ -242,6 +263,12 @@ export const ValidateTicket: React.FC = () => {
           </motion.div>
         </div>
       </div>
+
+      <QRScanner 
+        isOpen={showScanner}
+        onClose={() => setShowScanner(false)}
+        onScan={handleScan}
+      />
     </div>
   );
 };

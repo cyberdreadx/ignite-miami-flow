@@ -116,8 +116,8 @@ const NavBar = () => {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-8">
+          <div className="hidden md:block flex-1">
+            <div className="ml-4 flex items-baseline space-x-2 xl:space-x-4 overflow-x-auto">
               {navItems.map((item) => (
                 <motion.div
                   key={item.id}
@@ -127,7 +127,7 @@ const NavBar = () => {
                   <Button
                     variant="ghost"
                     onClick={() => item.path ? navigate(item.path) : scrollToSection(item.id)}
-                    className="text-foreground/90 hover:text-foreground hover:bg-white/10 px-3 py-2 text-sm font-medium transition-all duration-200 backdrop-blur-sm"
+                    className="text-foreground/90 hover:text-foreground hover:bg-white/10 px-2 xl:px-3 py-2 text-xs xl:text-sm font-medium transition-all duration-200 backdrop-blur-sm whitespace-nowrap"
                   >
                     {item.label}
                   </Button>
