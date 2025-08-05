@@ -3,8 +3,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Camera, Upload } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Camera, Upload, Crop as CropIcon, Check, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import ReactCrop, { Crop, PixelCrop } from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
 
 interface AvatarUploadProps {
   currentAvatar?: string | null;
@@ -21,7 +24,12 @@ export const AvatarUpload = ({
 }: AvatarUploadProps) => {
   const [uploading, setUploading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(currentAvatar);
+  const [showCropDialog, setShowCropDialog] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState<string>('');
+  const [crop, setCrop] = useState<Crop>({ unit: '%', width: 90, height: 90, x: 5, y: 5 });
+  const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -31,7 +39,38 @@ export const AvatarUpload = ({
     lg: 'h-32 w-32'
   };
 
-  const uploadAvatar = async (file: File) => {
+  const getCroppedImg = (image: HTMLImageElement, crop: PixelCrop): Promise<Blob> => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    if (!ctx) {
+      throw new Error('No 2d context');
+    }
+
+    const scaleX = image.naturalWidth / image.width;
+    const scaleY = image.naturalHeight / image.height;
+
+    canvas.width = crop.width;
+    canvas.height = crop.height;
+
+    ctx.drawImage(
+      image,
+      crop.x * scaleX,
+      crop.y * scaleY,
+      crop.width * scaleX,
+      crop.height * scaleY,
+      0,
+      0,
+      crop.width,
+      crop.height
+    );
+
+    return new Promise((resolve) => {
+      canvas.toBlob(resolve as BlobCallback, 'image/jpeg', 0.95);
+    });
+  };
+
+  const uploadCroppedAvatar = async (croppedBlob: Blob) => {
     if (!user) {
       toast({
         title: 'Error',
@@ -43,13 +82,12 @@ export const AvatarUpload = ({
 
     setUploading(true);
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/avatar.${fileExt}`;
+      const fileName = `${user.id}/avatar.jpg`;
 
       // Upload to storage
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(fileName, file, { upsert: true });
+        .upload(fileName, croppedBlob, { upsert: true });
 
       if (uploadError) {
         throw uploadError;
@@ -74,6 +112,8 @@ export const AvatarUpload = ({
 
       setAvatarUrl(publicUrl);
       onAvatarUpdate?.(publicUrl);
+      setShowCropDialog(false);
+      setImageToCrop('');
 
       toast({
         title: 'Avatar updated!',
@@ -88,6 +128,24 @@ export const AvatarUpload = ({
       });
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleCropComplete = async () => {
+    if (!completedCrop || !imgRef.current) return;
+
+    try {
+      const croppedBlob = await getCroppedImg(imgRef.current, completedCrop);
+      if (croppedBlob) {
+        await uploadCroppedAvatar(croppedBlob);
+      }
+    } catch (error) {
+      console.error('Error cropping image:', error);
+      toast({
+        title: 'Crop failed',
+        description: 'Failed to crop image. Please try again.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -115,54 +173,113 @@ export const AvatarUpload = ({
       return;
     }
 
-    uploadAvatar(file);
+    // Create object URL for cropping
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImageToCrop(reader.result as string);
+      setShowCropDialog(true);
+    };
+    reader.readAsDataURL(file);
   };
 
   return (
-    <div className="flex flex-col items-center space-y-4">
-      <div className="relative group">
-        <Avatar className={sizeClasses[size]}>
-          {avatarUrl && (
-            <AvatarImage src={avatarUrl} alt={userName} />
+    <>
+      <div className="flex flex-col items-center space-y-4">
+        <div className="relative group">
+          <Avatar className={sizeClasses[size]}>
+            {avatarUrl && (
+              <AvatarImage src={avatarUrl} alt={userName} />
+            )}
+            <AvatarFallback className="text-lg">
+              {userName.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+          
+          {user && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="absolute -bottom-2 -right-2 rounded-full h-8 w-8 p-0 bg-background border-2 opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+            >
+              <Camera className="h-4 w-4" />
+            </Button>
           )}
-          <AvatarFallback className="text-lg">
-            {userName.charAt(0).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-        
+        </div>
+
         {user && (
           <Button
             variant="outline"
             size="sm"
-            className="absolute -bottom-2 -right-2 rounded-full h-8 w-8 p-0 bg-background border-2 opacity-0 group-hover:opacity-100 transition-opacity"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
+            className="flex items-center gap-2"
           >
-            <Camera className="h-4 w-4" />
+            <Upload className="h-4 w-4" />
+            {uploading ? 'Uploading...' : currentAvatar ? 'Change Avatar' : 'Upload Avatar'}
           </Button>
         )}
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileSelect}
+          className="hidden"
+        />
       </div>
 
-      {user && (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={uploading}
-          className="flex items-center gap-2"
-        >
-          <Upload className="h-4 w-4" />
-          {uploading ? 'Uploading...' : currentAvatar ? 'Change Avatar' : 'Upload Avatar'}
-        </Button>
-      )}
-
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        onChange={handleFileSelect}
-        className="hidden"
-      />
-    </div>
+      <Dialog open={showCropDialog} onOpenChange={setShowCropDialog}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CropIcon className="h-5 w-5" />
+              Crop Your Avatar
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {imageToCrop && (
+              <ReactCrop
+                crop={crop}
+                onChange={(_, percentCrop) => setCrop(percentCrop)}
+                onComplete={(c) => setCompletedCrop(c)}
+                aspect={1}
+                className="max-w-full"
+              >
+                <img
+                  ref={imgRef}
+                  src={imageToCrop}
+                  alt="Crop preview"
+                  className="max-w-full h-auto"
+                />
+              </ReactCrop>
+            )}
+            
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowCropDialog(false);
+                  setImageToCrop('');
+                }}
+                disabled={uploading}
+              >
+                <X className="h-4 w-4 mr-2" />
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCropComplete}
+                disabled={uploading || !completedCrop}
+              >
+                <Check className="h-4 w-4 mr-2" />
+                {uploading ? 'Saving...' : 'Save Avatar'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
