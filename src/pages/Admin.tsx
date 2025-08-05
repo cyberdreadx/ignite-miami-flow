@@ -23,7 +23,12 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  LogOut
+  LogOut,
+  DollarSign,
+  Calendar,
+  CreditCard,
+  Camera,
+  Ticket
 } from 'lucide-react';
 
 interface Post {
@@ -76,11 +81,36 @@ interface ReportedPost {
   report_count?: number;
 }
 
+interface TicketAnalytics {
+  total_tickets: number;
+  total_revenue: number;
+  avg_ticket_price: number;
+  paid_tickets: number;
+  tickets_last_7_days: number;
+}
+
+interface MediaPassAnalytics {
+  total_media_passes: number;
+  total_media_revenue: number;
+  paid_media_passes: number;
+  passes_by_type: { pass_type: string; count: number; revenue: number }[];
+}
+
+interface SalesData {
+  date: string;
+  tickets: number;
+  media_passes: number;
+  revenue: number;
+}
+
 const Admin = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
   const [allUsers, setAllUsers] = useState<AllUser[]>([]);
   const [reportedPosts, setReportedPosts] = useState<ReportedPost[]>([]);
+  const [ticketAnalytics, setTicketAnalytics] = useState<TicketAnalytics | null>(null);
+  const [mediaPassAnalytics, setMediaPassAnalytics] = useState<MediaPassAnalytics | null>(null);
+  const [salesData, setSalesData] = useState<SalesData[]>([]);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
   const { user, signOut } = useAuth();
@@ -181,6 +211,9 @@ const Admin = () => {
       fetchPendingUsers();
       fetchAllUsers();
       fetchReportedPosts();
+      fetchTicketAnalytics();
+      fetchMediaPassAnalytics();
+      fetchSalesData();
     }
   }, [user, isAdmin]);
 
@@ -255,6 +288,122 @@ const Admin = () => {
         description: 'An unexpected error occurred.',
         variant: 'destructive',
       });
+    }
+  };
+
+  const fetchTicketAnalytics = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('tickets')
+        .select('amount, status, created_at');
+
+      if (error) {
+        console.error('Error fetching ticket analytics:', error);
+        return;
+      }
+
+      const tickets = data || [];
+      const paidTickets = tickets.filter(t => t.status === 'paid');
+      const last7Days = tickets.filter(t => 
+        new Date(t.created_at) >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+      );
+
+      setTicketAnalytics({
+        total_tickets: tickets.length,
+        total_revenue: paidTickets.reduce((sum, t) => sum + (t.amount || 0), 0),
+        avg_ticket_price: paidTickets.length > 0 ? paidTickets.reduce((sum, t) => sum + (t.amount || 0), 0) / paidTickets.length : 0,
+        paid_tickets: paidTickets.length,
+        tickets_last_7_days: last7Days.length
+      });
+    } catch (error) {
+      console.error('Error in fetchTicketAnalytics:', error);
+    }
+  };
+
+  const fetchMediaPassAnalytics = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('media_passes')
+        .select('amount, status, pass_type, created_at');
+
+      if (error) {
+        console.error('Error fetching media pass analytics:', error);
+        return;
+      }
+
+      const passes = data || [];
+      const paidPasses = passes.filter(p => p.status === 'paid');
+      
+      // Group by pass type
+      const passByType = passes.reduce((acc: any, pass) => {
+        const type = pass.pass_type;
+        if (!acc[type]) {
+          acc[type] = { pass_type: type, count: 0, revenue: 0 };
+        }
+        acc[type].count++;
+        if (pass.status === 'paid') {
+          acc[type].revenue += pass.amount || 0;
+        }
+        return acc;
+      }, {});
+
+      setMediaPassAnalytics({
+        total_media_passes: passes.length,
+        total_media_revenue: paidPasses.reduce((sum, p) => sum + (p.amount || 0), 0),
+        paid_media_passes: paidPasses.length,
+        passes_by_type: Object.values(passByType)
+      });
+    } catch (error) {
+      console.error('Error in fetchMediaPassAnalytics:', error);
+    }
+  };
+
+  const fetchSalesData = async () => {
+    try {
+      // Get last 30 days of sales data
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      
+      const [ticketsResult, passesResult] = await Promise.all([
+        supabase
+          .from('tickets')
+          .select('amount, created_at, status')
+          .gte('created_at', thirtyDaysAgo.toISOString()),
+        supabase
+          .from('media_passes')
+          .select('amount, created_at, status')
+          .gte('created_at', thirtyDaysAgo.toISOString())
+      ]);
+
+      // Group by date
+      const salesByDate: { [key: string]: SalesData } = {};
+      
+      // Process tickets
+      (ticketsResult.data || []).forEach(ticket => {
+        if (ticket.status === 'paid') {
+          const date = new Date(ticket.created_at).toISOString().split('T')[0];
+          if (!salesByDate[date]) {
+            salesByDate[date] = { date, tickets: 0, media_passes: 0, revenue: 0 };
+          }
+          salesByDate[date].tickets++;
+          salesByDate[date].revenue += ticket.amount || 0;
+        }
+      });
+
+      // Process media passes
+      (passesResult.data || []).forEach(pass => {
+        if (pass.status === 'paid') {
+          const date = new Date(pass.created_at).toISOString().split('T')[0];
+          if (!salesByDate[date]) {
+            salesByDate[date] = { date, tickets: 0, media_passes: 0, revenue: 0 };
+          }
+          salesByDate[date].media_passes++;
+          salesByDate[date].revenue += pass.amount || 0;
+        }
+      });
+
+      setSalesData(Object.values(salesByDate).sort((a, b) => a.date.localeCompare(b.date)));
+    } catch (error) {
+      console.error('Error in fetchSalesData:', error);
     }
   };
 
@@ -509,7 +658,148 @@ const Admin = () => {
                             <XCircle className="h-4 w-4" />
                             <span className="hidden sm:inline">Reject</span>
                           </Button>
+            </div>
+
+            {/* Analytics Section */}
+            <Card id="analytics">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5" />
+                  Sales Analytics
+                </CardTitle>
+                <CardDescription>
+                  Track ticket sales, revenue, and performance metrics
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {/* Revenue Overview */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <Card>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+                        <DollarSign className="h-4 w-4 text-muted-foreground" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">
+                          ${((ticketAnalytics?.total_revenue || 0) + (mediaPassAnalytics?.total_media_revenue || 0)) / 100}
                         </div>
+                        <p className="text-xs text-muted-foreground">
+                          Tickets: ${(ticketAnalytics?.total_revenue || 0) / 100} | Media: ${(mediaPassAnalytics?.total_media_revenue || 0) / 100}
+                        </p>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Tickets Sold</CardTitle>
+                        <Ticket className="h-4 w-4 text-muted-foreground" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">{ticketAnalytics?.paid_tickets || 0}</div>
+                        <p className="text-xs text-muted-foreground">
+                          {ticketAnalytics?.tickets_last_7_days || 0} in last 7 days
+                        </p>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Media Passes</CardTitle>
+                        <Camera className="h-4 w-4 text-muted-foreground" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">{mediaPassAnalytics?.paid_media_passes || 0}</div>
+                        <p className="text-xs text-muted-foreground">
+                          ${(mediaPassAnalytics?.total_media_revenue || 0) / 100} revenue
+                        </p>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Avg Ticket Price</CardTitle>
+                        <CreditCard className="h-4 w-4 text-muted-foreground" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-2xl font-bold">
+                          ${((ticketAnalytics?.avg_ticket_price || 0) / 100).toFixed(2)}
+                        </div>
+                        <p className="text-xs text-muted-foreground">Per ticket sold</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Media Pass Breakdown */}
+                  {mediaPassAnalytics?.passes_by_type && mediaPassAnalytics.passes_by_type.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4">Media Pass Breakdown</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {mediaPassAnalytics.passes_by_type.map((passType) => (
+                          <Card key={passType.pass_type}>
+                            <CardHeader className="pb-2">
+                              <CardTitle className="text-sm">
+                                ${passType.pass_type} Media Pass
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="flex justify-between items-center">
+                                <span className="text-2xl font-bold">{passType.count}</span>
+                                <span className="text-sm text-muted-foreground">
+                                  ${passType.revenue / 100} revenue
+                                </span>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Recent Sales Timeline */}
+                  {salesData.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-semibold mb-4">Recent Sales (Last 30 Days)</h3>
+                      <div className="space-y-2 max-h-64 overflow-y-auto">
+                        {salesData.slice(-10).reverse().map((sale) => (
+                          <div key={sale.date} className="flex justify-between items-center p-3 border rounded-lg">
+                            <div>
+                              <p className="font-medium">{new Date(sale.date).toLocaleDateString()}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {sale.tickets} tickets, {sale.media_passes} media passes
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-bold">${sale.revenue / 100}</p>
+                              <p className="text-sm text-muted-foreground">revenue</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* No Data States */}
+                  {(!ticketAnalytics || !mediaPassAnalytics) && (
+                    <div className="text-center py-8">
+                      <TrendingUp className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground">Loading analytics data...</p>
+                    </div>
+                  )}
+
+                  {ticketAnalytics && mediaPassAnalytics && 
+                   ticketAnalytics.total_tickets === 0 && mediaPassAnalytics.total_media_passes === 0 && (
+                    <div className="text-center py-8">
+                      <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground">No sales data yet</p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Analytics will appear once tickets and media passes are sold
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
                       </div>
                     ))}
                   </div>
