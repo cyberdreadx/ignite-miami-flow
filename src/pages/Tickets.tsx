@@ -42,9 +42,10 @@ const Tickets = () => {
 
     if (success === 'true') {
       toast({
-        title: 'Payment Successful!',
-        description: 'Your ticket has been purchased successfully.',
+        title: 'Payment Successful! 🎉',
+        description: 'Your ticket is ready! Check "My Tickets" to view your QR code for entry.',
         variant: 'default',
+        action: <Button variant="outline" size="sm" onClick={() => window.location.href = '/my-tickets'}>View My Tickets</Button>
       });
     } else if (canceled === 'true') {
       toast({
@@ -54,9 +55,10 @@ const Tickets = () => {
       });
     } else if (subscription === 'success') {
       toast({
-        title: 'Subscription Active!',
-        description: 'Your monthly pass is now active.',
+        title: 'Monthly Pass Active! 🎟️',
+        description: 'Your monthly pass is ready! Check "My Tickets" to view your QR code.',
         variant: 'default',
+        action: <Button variant="outline" size="sm" onClick={() => window.location.href = '/my-tickets'}>View My Tickets</Button>
       });
     } else if (subscription === 'canceled') {
       toast({
