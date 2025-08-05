@@ -582,19 +582,32 @@ const Admin = () => {
           status,
           created_at,
           stripe_session_id,
-          valid_until,
-          profiles!tickets_user_id_fkey (
-            email,
-            full_name
-          )
+          valid_until
         `)
         .order('created_at', { ascending: false })
         .limit(50);
 
       if (error) {
         console.error('Error fetching ticket purchases:', error);
-      } else {
-        const mappedPurchases = (data || []).map((ticket: any) => ({
+        return;
+      }
+
+      // Fetch user profiles separately
+      const userIds = [...new Set((data || []).map(ticket => ticket.user_id))];
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, email, full_name')
+        .in('user_id', userIds);
+
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        return;
+      }
+
+      // Map tickets with user data
+      const mappedPurchases = (data || []).map((ticket: any) => {
+        const profile = profilesData?.find(p => p.user_id === ticket.user_id);
+        return {
           id: ticket.id,
           user_id: ticket.user_id,
           amount: ticket.amount,
@@ -602,11 +615,12 @@ const Admin = () => {
           created_at: ticket.created_at,
           stripe_session_id: ticket.stripe_session_id,
           valid_until: ticket.valid_until,
-          user_email: ticket.profiles?.email || 'Unknown',
-          user_name: ticket.profiles?.full_name || ticket.profiles?.email || 'Unknown User',
-        }));
-        setTicketPurchases(mappedPurchases);
-      }
+          user_email: profile?.email || 'Unknown',
+          user_name: profile?.full_name || profile?.email || 'Unknown User',
+        };
+      });
+      
+      setTicketPurchases(mappedPurchases);
     } catch (error) {
       console.error('Error in fetchTicketPurchases:', error);
     }
