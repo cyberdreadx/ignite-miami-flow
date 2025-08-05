@@ -78,6 +78,26 @@ interface ReportedPost {
   author_role: string;
   like_count: number;
   comment_count: number;
+}
+
+interface DeletionRequest {
+  id: string;
+  user_id: string;
+  reason: string | null;
+  status: string;
+  created_at: string;
+  user_email: string;
+  user_name: string;
+}
+
+interface ReportedPost {
+  id: string;
+  content: string;
+  created_at: string;
+  author_name: string;
+  author_role: string;
+  like_count: number;
+  comment_count: number;
   report_count?: number;
 }
 
@@ -108,6 +128,7 @@ const Admin = () => {
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
   const [allUsers, setAllUsers] = useState<AllUser[]>([]);
   const [reportedPosts, setReportedPosts] = useState<ReportedPost[]>([]);
+  const [deletionRequests, setDeletionRequests] = useState<DeletionRequest[]>([]);
   const [ticketAnalytics, setTicketAnalytics] = useState<TicketAnalytics | null>(null);
   const [mediaPassAnalytics, setMediaPassAnalytics] = useState<MediaPassAnalytics | null>(null);
   const [salesData, setSalesData] = useState<SalesData[]>([]);
@@ -211,6 +232,7 @@ const Admin = () => {
       fetchPendingUsers();
       fetchAllUsers();
       fetchReportedPosts();
+      fetchDeletionRequests();
       fetchTicketAnalytics();
       fetchMediaPassAnalytics();
       fetchSalesData();
@@ -491,6 +513,99 @@ const Admin = () => {
     } catch (error) {
       toast({
         title: 'Error deleting post',
+        description: 'An unexpected error occurred.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const fetchDeletionRequests = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('account_deletion_requests')
+        .select(`
+          id,
+          user_id,
+          reason,
+          status,
+          created_at,
+          profiles!account_deletion_requests_user_id_fkey (
+            email,
+            full_name
+          )
+        `)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching deletion requests:', error);
+      } else {
+        const mappedRequests = (data || []).map((req: any) => ({
+          id: req.id,
+          user_id: req.user_id,
+          reason: req.reason,
+          status: req.status,
+          created_at: req.created_at,
+          user_email: req.profiles?.email || 'Unknown',
+          user_name: req.profiles?.full_name || req.profiles?.email || 'Unknown User',
+        }));
+        setDeletionRequests(mappedRequests);
+      }
+    } catch (error) {
+      console.error('Error in fetchDeletionRequests:', error);
+    }
+  };
+
+  const handleDeletionRequestAction = async (requestId: string, action: 'approved' | 'denied') => {
+    try {
+      const { error } = await supabase
+        .from('account_deletion_requests')
+        .update({
+          status: action,
+          reviewed_by: user?.id,
+          reviewed_at: new Date().toISOString(),
+        })
+        .eq('id', requestId);
+
+      if (error) {
+        toast({
+          title: 'Error updating request',
+          description: error.message,
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      if (action === 'approved') {
+        // Process the actual deletion
+        const { error: processError } = await supabase.rpc('process_account_deletion', {
+          request_id: requestId
+        });
+
+        if (processError) {
+          toast({
+            title: 'Error processing deletion',
+            description: processError.message,
+            variant: 'destructive',
+          });
+          return;
+        }
+      }
+
+      fetchDeletionRequests();
+      fetchAllUsers();
+      fetchStats();
+      
+      toast({
+        title: `Request ${action}`,
+        description: action === 'approved' 
+          ? 'Account has been deleted successfully.'
+          : 'Deletion request has been denied.',
+        variant: action === 'approved' ? 'default' : 'destructive',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error processing request',
         description: 'An unexpected error occurred.',
         variant: 'destructive',
       });
@@ -1070,6 +1185,80 @@ const Admin = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Account Deletion Requests */}
+            {deletionRequests.length > 0 && (
+              <Card id="deletions">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Trash2 className="h-5 w-5" />
+                    Account Deletion Requests
+                    <Badge variant="destructive">{deletionRequests.length}</Badge>
+                  </CardTitle>
+                  <CardDescription>
+                    Review and approve account deletion requests from users
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4 max-h-96 overflow-y-auto">
+                    {deletionRequests.map((request) => (
+                      <div
+                        key={request.id}
+                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg border-destructive/20 bg-destructive/5 space-y-3 sm:space-y-0"
+                      >
+                        <div className="flex items-center space-x-4">
+                          <Avatar className="h-10 w-10 flex-shrink-0">
+                            <AvatarFallback>
+                              {request.user_name?.charAt(0) || request.user_email?.charAt(0) || 'U'}
+                            </AvatarFallback>
+                          </Avatar>
+                          
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-2 mb-1">
+                              <p className="font-medium truncate">{request.user_name}</p>
+                              <Badge variant="destructive" className="text-xs">
+                                Deletion Request
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground truncate">{request.user_email}</p>
+                            {request.reason && (
+                              <p className="text-sm text-foreground mt-1 italic">
+                                "{request.reason}"
+                              </p>
+                            )}
+                            <p className="text-xs text-muted-foreground">
+                              Requested {formatDistanceToNow(new Date(request.created_at), { addSuffix: true })}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeletionRequestAction(request.id, 'approved')}
+                            className="flex items-center gap-1 text-red-600 hover:text-red-700"
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="hidden sm:inline">Approve Deletion</span>
+                          </Button>
+                          
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeletionRequestAction(request.id, 'denied')}
+                            className="flex items-center gap-1 text-green-600 hover:text-green-700"
+                          >
+                            <XCircle className="h-4 w-4" />
+                            <span className="hidden sm:inline">Deny</span>
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </main>
       </div>

@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save } from 'lucide-react';
 import NavBar from '@/components/NavBar';
 import { AvatarUpload } from '@/components/AvatarUpload';
+import { AccountDeletion } from '@/components/AccountDeletion';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Profile {
@@ -196,6 +197,11 @@ const Profile = () => {
               </form>
             </CardContent>
           </Card>
+
+          {/* Account Deletion Section */}
+          <div className="mt-8">
+            <AccountDeletion />
+          </div>
         </div>
       </div>
     </>
