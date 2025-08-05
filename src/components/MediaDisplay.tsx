@@ -65,7 +65,7 @@ export const MediaDisplay = ({ mediaUrls, mediaTypes, className = '' }: MediaDis
       <video
         ref={videoRef}
         src={src}
-        className="w-full h-96 sm:h-[400px] md:h-[600px] object-cover rounded-lg"
+        className="w-full h-96 sm:h-[400px] md:h-[600px] object-cover"
         controls
         preload="metadata"
         muted
@@ -76,7 +76,7 @@ export const MediaDisplay = ({ mediaUrls, mediaTypes, className = '' }: MediaDis
   };
 
   return (
-    <div className={`grid gap-2 ${getGridClasses(mediaUrls.length)} ${className} max-w-full overflow-hidden`}>
+    <div className={`grid gap-1 ${getGridClasses(mediaUrls.length)} ${className} w-full`}>
       {mediaUrls.map((url, index) => {
         const type = mediaTypes[index];
         const isVideo = type === 'video';
@@ -84,7 +84,7 @@ export const MediaDisplay = ({ mediaUrls, mediaTypes, className = '' }: MediaDis
         return (
           <div
             key={index}
-            className={`relative group overflow-hidden rounded-lg bg-muted ${getItemClasses(index, mediaUrls.length)} max-w-full`}
+            className={`relative group overflow-hidden bg-muted ${getItemClasses(index, mediaUrls.length)} w-full`}
           >
             {isVideo ? (
               <VideoPlayer src={url} index={index} />
@@ -92,7 +92,7 @@ export const MediaDisplay = ({ mediaUrls, mediaTypes, className = '' }: MediaDis
               <img
                 src={url}
                 alt="Post media"
-                className="w-full h-96 sm:h-[400px] md:h-[600px] object-cover cursor-pointer transition-transform group-hover:scale-105 rounded-lg"
+                className="w-full h-96 sm:h-[400px] md:h-[600px] object-cover cursor-pointer transition-transform group-hover:scale-105"
                 onClick={() => window.open(url, '_blank')}
               />
             )}
