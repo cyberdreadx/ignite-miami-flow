@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import heroBg from "@/assets/hero-bg.jpg";
-import skateburnLogo from "@/assets/skateburn-logo.png";
+import skateburnLogo from "/lovable-uploads/f40780ef-982b-41a4-99b9-49357cc44738.png";
 
 const Hero = () => {
   const { scrollY } = useScroll();

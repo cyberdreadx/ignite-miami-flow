@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => ({
     componentTagger(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'skateburn-logo.png'],
+      includeAssets: ['favicon.ico', '/lovable-uploads/f40780ef-982b-41a4-99b9-49357cc44738.png'],
       manifest: {
         name: 'SkateBurn',
         short_name: 'SkateBurn',
@@ -29,17 +29,17 @@ export default defineConfig(({ mode }) => ({
         start_url: '/',
         icons: [
           {
-            src: '/skateburn-logo.png',
+            src: '/lovable-uploads/f40780ef-982b-41a4-99b9-49357cc44738.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: '/skateburn-logo.png',
+            src: '/lovable-uploads/f40780ef-982b-41a4-99b9-49357cc44738.png',
             sizes: '512x512',
             type: 'image/png'
           },
           {
-            src: '/skateburn-logo.png',
+            src: '/lovable-uploads/f40780ef-982b-41a4-99b9-49357cc44738.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'

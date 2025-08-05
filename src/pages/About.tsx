@@ -117,7 +117,7 @@ const About = () => {
             transition={{ duration: 1, type: "spring", stiffness: 100 }}
           >
             <motion.img 
-              src="/skateburn-logo.png" 
+              src="/lovable-uploads/f40780ef-982b-41a4-99b9-49357cc44738.png" 
               alt="SkateBurn Miami" 
               className="h-32 w-32 mb-8 drop-shadow-2xl"
               whileHover={{ scale: 1.1, rotate: 5 }}
