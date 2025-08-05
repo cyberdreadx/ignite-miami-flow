@@ -324,7 +324,15 @@ const Tickets = () => {
                         id="amount"
                         type="number"
                         value={slidingAmount}
-                        onChange={(e) => setSlidingAmount(Math.max(10, parseInt(e.target.value) || 10))}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (value === '') {
+                            setSlidingAmount(10);
+                          } else {
+                            const numValue = parseInt(value);
+                            setSlidingAmount(isNaN(numValue) ? 10 : Math.max(10, numValue));
+                          }
+                        }}
                         min="10"
                         step="1"
                         className="text-xl font-semibold"
