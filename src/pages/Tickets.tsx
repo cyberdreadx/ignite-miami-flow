@@ -185,8 +185,8 @@ const Tickets = () => {
 
       if (error) throw error;
 
-      // Open Stripe checkout in a new tab
-      window.open(data.url, '_blank');
+      // Redirect to Stripe checkout (mobile-friendly)
+      window.location.href = data.url;
     } catch (error) {
       console.error('Error creating ticket payment:', error);
       toast({
@@ -208,8 +208,8 @@ const Tickets = () => {
 
       if (error) throw error;
 
-      // Open Stripe checkout in a new tab
-      window.open(data.url, '_blank');
+      // Redirect to Stripe checkout (mobile-friendly)
+      window.location.href = data.url;
     } catch (error) {
       console.error('Error creating subscription:', error);
       toast({
