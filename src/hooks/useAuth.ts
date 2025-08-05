@@ -12,6 +12,14 @@ export const useAuth = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         console.log('Auth state change event:', event, 'session:', session?.user?.email);
+        
+        // Handle different auth events
+        if (event === 'SIGNED_IN') {
+          console.log('User signed in successfully');
+        } else if (event === 'TOKEN_REFRESHED') {
+          console.log('Token refreshed');
+        }
+        
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
