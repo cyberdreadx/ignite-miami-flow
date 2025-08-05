@@ -34,19 +34,57 @@ const Tickets = () => {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
 
-  // Check for payment success/cancel messages
+  // Check for payment success/cancel messages and handle ticket creation
   useEffect(() => {
     const success = searchParams.get('success');
     const canceled = searchParams.get('canceled');
     const subscription = searchParams.get('subscription');
+    const sessionId = searchParams.get('session_id');
+
+    const handleTicketCreation = async () => {
+      if (success === 'true' && sessionId && user?.email) {
+        try {
+          // Call verification function to create ticket if it doesn't exist
+          const { data, error } = await supabase.functions.invoke('verify-and-create-ticket', {
+            body: { sessionId, userEmail: user.email }
+          });
+
+          if (error) {
+            console.error('Error verifying payment:', error);
+            toast({
+              title: 'Payment Successful! ⚠️',
+              description: 'Your payment went through but there was an issue creating your ticket. Please contact support.',
+              variant: 'destructive',
+            });
+            return;
+          }
+
+          toast({
+            title: 'Payment Successful! 🎉',
+            description: 'Your ticket is ready! Check "My Tickets" to view your QR code for entry.',
+            variant: 'default',
+            action: <Button variant="outline" size="sm" onClick={() => window.location.href = '/my-tickets'}>View My Tickets</Button>
+          });
+        } catch (error) {
+          console.error('Error creating ticket:', error);
+          toast({
+            title: 'Payment Successful! ⚠️',
+            description: 'Your payment went through but there was an issue creating your ticket. Please contact support.',
+            variant: 'destructive',
+          });
+        }
+      } else if (success === 'true') {
+        toast({
+          title: 'Payment Successful! 🎉',
+          description: 'Your ticket is ready! Check "My Tickets" to view your QR code for entry.',
+          variant: 'default',
+          action: <Button variant="outline" size="sm" onClick={() => window.location.href = '/my-tickets'}>View My Tickets</Button>
+        });
+      }
+    };
 
     if (success === 'true') {
-      toast({
-        title: 'Payment Successful! 🎉',
-        description: 'Your ticket is ready! Check "My Tickets" to view your QR code for entry.',
-        variant: 'default',
-        action: <Button variant="outline" size="sm" onClick={() => window.location.href = '/my-tickets'}>View My Tickets</Button>
-      });
+      handleTicketCreation();
     } else if (canceled === 'true') {
       toast({
         title: 'Payment Canceled',
