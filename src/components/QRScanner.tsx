@@ -56,13 +56,14 @@ const QRScanner = ({ onScan, isOpen, onClose }: QRScannerProps) => {
         console.log('Video srcObject set');
         setIsScanning(true);
         
-        // Wait for video to be ready
-        videoRef.current.onloadedmetadata = () => {
-          console.log('Video metadata loaded');
-          videoRef.current?.play().catch(e => {
-            console.error('Error playing video:', e);
-          });
-        };
+        // Force play after a short delay for iOS
+        setTimeout(() => {
+          if (videoRef.current) {
+            videoRef.current.play().catch(e => {
+              console.error('Error playing video:', e);
+            });
+          }
+        }, 100);
       }
     } catch (error) {
       console.error('Error accessing camera:', error);
@@ -102,7 +103,7 @@ const QRScanner = ({ onScan, isOpen, onClose }: QRScannerProps) => {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose(); }} modal={true}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -138,8 +139,27 @@ const QRScanner = ({ onScan, isOpen, onClose }: QRScannerProps) => {
                 autoPlay
                 playsInline
                 muted
+                webkit-playsinline="true"
+                controls={false}
                 className="w-full h-64 object-cover"
-                style={{ transform: 'scaleX(-1)' }} // Mirror for better UX
+                style={{ 
+                  transform: 'scaleX(-1)',
+                  WebkitTransform: 'scaleX(-1)'
+                }}
+                onLoadedMetadata={() => {
+                  console.log('Video metadata loaded, attempting play...');
+                  if (videoRef.current) {
+                    videoRef.current.play().catch(e => {
+                      console.error('Error playing video:', e);
+                    });
+                  }
+                }}
+                onCanPlay={() => {
+                  console.log('Video can play');
+                }}
+                onError={(e) => {
+                  console.error('Video error:', e);
+                }}
               />
               <div className="absolute inset-0 border-2 border-primary rounded-lg pointer-events-none">
                 <div className="absolute top-4 left-4 w-6 h-6 border-l-2 border-t-2 border-primary"></div>
