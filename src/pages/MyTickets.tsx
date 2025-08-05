@@ -152,23 +152,24 @@ export const MyTickets: React.FC = () => {
   return (
     <div className="min-h-screen bg-background">
       <NavBar />
-      <div className="pt-24 pb-8">
-        <div className="container mx-auto px-4">
+      <div className="pt-20 sm:pt-24 pb-8">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
             >
-            <div className="flex justify-between items-center mb-8">
-              <h1 className="text-3xl font-bold">My Tickets & Passes</h1>
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
+              <h1 className="text-2xl sm:text-3xl font-bold">My Tickets & Passes</h1>
               <Button 
                 onClick={handleRecoverTickets}
                 disabled={recovering}
                 variant="outline"
-                className="flex items-center gap-2"
+                className="flex items-center justify-center gap-2 w-full sm:w-auto"
+                size="sm"
               >
                 {recovering && <Loader2 className="w-4 h-4 animate-spin" />}
-                Check for Missing Tickets
+                <span className="text-sm">Check for Missing Tickets</span>
               </Button>
             </div>
 
@@ -200,28 +201,32 @@ export const MyTickets: React.FC = () => {
                       <CreditCard className="w-5 h-5" />
                       Monthly Passes
                     </h2>
-                    <div className="grid gap-4">
+                    <div className="space-y-4">
                       {subscriptions.map((subscription) => (
                         <Card key={subscription.id} className="hover:shadow-md transition-shadow">
-                          <CardContent className="p-6">
-                            <div className="flex justify-between items-start">
-                              <div className="space-y-2">
-                                <div className="flex items-center gap-2">
-                                  <h3 className="font-semibold">Monthly Pass</h3>
+                          <CardContent className="p-4 sm:p-6">
+                            <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
+                              <div className="flex-1 space-y-2">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                  <h3 className="font-semibold text-base">Monthly Pass</h3>
                                   {getStatusBadge(subscription.status)}
                                 </div>
-                                <p className="text-sm text-muted-foreground">
-                                  Valid until: {new Date(subscription.current_period_end).toLocaleDateString()}
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                  Purchased: {new Date(subscription.created_at).toLocaleDateString()}
-                                </p>
+                                <div className="space-y-1 text-sm">
+                                  <p className="text-muted-foreground">
+                                    Valid until: {new Date(subscription.current_period_end).toLocaleDateString()}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    Purchased: {new Date(subscription.created_at).toLocaleDateString()}
+                                  </p>
+                                </div>
                               </div>
-                              <div className="space-y-2">
+                              <div className="flex flex-col sm:flex-row gap-2">
                                 {isValidSubscription(subscription) && (
                                   <Button
                                     onClick={() => setSelectedItem({type: 'subscription', id: subscription.id})}
                                     variant={selectedItem?.id === subscription.id ? 'default' : 'outline'}
+                                    className="w-full sm:w-auto text-sm"
+                                    size="sm"
                                   >
                                     Show QR Code
                                   </Button>
@@ -242,33 +247,37 @@ export const MyTickets: React.FC = () => {
                       <Ticket className="w-5 h-5" />
                       Event Tickets
                     </h2>
-                    <div className="grid gap-4">
+                    <div className="space-y-4">
                       {tickets.map((ticket) => (
                         <Card key={ticket.id} className="hover:shadow-md transition-shadow">
-                          <CardContent className="p-6">
-                            <div className="flex justify-between items-start">
-                              <div className="space-y-2">
-                                <div className="flex items-center gap-2">
-                                  <h3 className="font-semibold">Event Ticket</h3>
+                          <CardContent className="p-4 sm:p-6">
+                            <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
+                              <div className="flex-1 space-y-2">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                  <h3 className="font-semibold text-base">Event Ticket</h3>
                                   {getStatusBadge(ticket.status)}
                                 </div>
-                                <p className="text-sm text-muted-foreground">
-                                  Amount: ${(ticket.amount / 100).toFixed(2)}
-                                </p>
-                                {ticket.valid_until && (
-                                  <p className="text-sm text-muted-foreground">
-                                    Valid until: {new Date(ticket.valid_until).toLocaleDateString()}
+                                <div className="space-y-1 text-sm">
+                                  <p className="text-muted-foreground">
+                                    Amount: ${(ticket.amount / 100).toFixed(2)}
                                   </p>
-                                )}
-                                <p className="text-xs text-muted-foreground">
-                                  Purchased: {new Date(ticket.created_at).toLocaleDateString()}
-                                </p>
+                                  {ticket.valid_until && (
+                                    <p className="text-muted-foreground">
+                                      Valid until: {new Date(ticket.valid_until).toLocaleDateString()}
+                                    </p>
+                                  )}
+                                  <p className="text-xs text-muted-foreground">
+                                    Purchased: {new Date(ticket.created_at).toLocaleDateString()}
+                                  </p>
+                                </div>
                               </div>
-                              <div className="space-y-2">
+                              <div className="flex flex-col sm:flex-row gap-2">
                                 {isValidTicket(ticket) && (
                                   <Button
                                     onClick={() => setSelectedItem({type: 'ticket', id: ticket.id})}
                                     variant={selectedItem?.id === ticket.id ? 'default' : 'outline'}
+                                    className="w-full sm:w-auto text-sm"
+                                    size="sm"
                                   >
                                     Show QR Code
                                   </Button>
