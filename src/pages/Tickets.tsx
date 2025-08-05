@@ -11,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useSearchParams } from 'react-router-dom';
-import { SystemTester } from '@/components/SystemTester';
+
 import NavBar from '@/components/NavBar';
 import { useWaiver } from '@/hooks/useWaiver';
 import { WaiverModal } from '@/components/WaiverModal';
@@ -32,10 +32,13 @@ const Tickets = () => {
   const [loading, setLoading] = useState(true);
   const [slidingAmount, setSlidingAmount] = useState(10);
   const [inputValue, setInputValue] = useState('10');
+  const [donationAmount, setDonationAmount] = useState(1);
+  const [donationInputValue, setDonationInputValue] = useState('1');
   const [processingTicket, setProcessingTicket] = useState(false);
   const [processingPass, setProcessingPass] = useState(false);
+  const [processingDonation, setProcessingDonation] = useState(false);
   const [showWaiverModal, setShowWaiverModal] = useState(false);
-  const [pendingPurchaseType, setPendingPurchaseType] = useState<'ticket' | 'pass' | null>(null);
+  const [pendingPurchaseType, setPendingPurchaseType] = useState<'ticket' | 'pass' | 'donation' | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
@@ -46,6 +49,7 @@ const Tickets = () => {
     const success = searchParams.get('success');
     const canceled = searchParams.get('canceled');
     const subscription = searchParams.get('subscription');
+    const donation = searchParams.get('donation');
     const sessionId = searchParams.get('session_id');
 
     const handleTicketCreation = async () => {
@@ -90,8 +94,20 @@ const Tickets = () => {
       }
     };
 
-    if (success === 'true') {
+    if (success === 'true' && donation === 'true') {
+      toast({
+        title: 'Donation Successful! ❤️',
+        description: 'Thank you for supporting our performers! Your generosity helps keep our community thriving.',
+        variant: 'default',
+      });
+    } else if (success === 'true') {
       handleTicketCreation();
+    } else if (canceled === 'true' && donation === 'true') {
+      toast({
+        title: 'Donation Canceled',
+        description: 'Your donation was canceled.',
+        variant: 'destructive',
+      });
     } else if (canceled === 'true') {
       toast({
         title: 'Payment Canceled',
@@ -140,11 +156,11 @@ const Tickets = () => {
     }
   };
 
-  const checkWaiverAndProceed = (purchaseType: 'ticket' | 'pass') => {
+  const checkWaiverAndProceed = (purchaseType: 'ticket' | 'pass' | 'donation') => {
     if (!user) {
       toast({
         title: 'Authentication Required',
-        description: 'Please sign in to purchase tickets',
+        description: purchaseType === 'donation' ? 'Please sign in to make a donation' : 'Please sign in to purchase tickets',
         variant: 'destructive',
       });
       return;
@@ -158,8 +174,10 @@ const Tickets = () => {
 
     if (purchaseType === 'ticket') {
       proceedWithTicketPurchase();
-    } else {
+    } else if (purchaseType === 'pass') {
       proceedWithPassPurchase();
+    } else if (purchaseType === 'donation') {
+      proceedWithDonation();
     }
   };
 
@@ -169,8 +187,10 @@ const Tickets = () => {
       setShowWaiverModal(false);
       if (pendingPurchaseType === 'ticket') {
         proceedWithTicketPurchase();
-      } else {
+      } else if (pendingPurchaseType === 'pass') {
         proceedWithPassPurchase();
+      } else if (pendingPurchaseType === 'donation') {
+        proceedWithDonation();
       }
       setPendingPurchaseType(null);
     }
@@ -255,6 +275,55 @@ const Tickets = () => {
       });
     } finally {
       setProcessingPass(false);
+    }
+  };
+
+  const proceedWithDonation = async () => {
+    setProcessingDonation(true);
+    try {
+      console.log('Invoking create-donation-payment function...');
+      const { data, error } = await supabase.functions.invoke('create-donation-payment', {
+        body: { amount: donationAmount * 100 }, // Convert to cents
+      });
+
+      console.log('Function response:', { data, error });
+      
+      if (error) {
+        console.error('Function error:', error);
+        throw error;
+      }
+
+      if (!data?.url) {
+        console.error('No URL in response:', data);
+        throw new Error('No payment URL received');
+      }
+
+      console.log('Redirecting to:', data.url);
+      
+      // Try to open in new tab, fallback to redirect if blocked
+      try {
+        const newWindow = window.open(data.url, '_blank');
+        if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+          // Popup was blocked, use redirect instead
+          console.log('Popup blocked, using redirect');
+          window.location.href = data.url;
+        } else {
+          console.log('Opened in new tab successfully');
+        }
+      } catch (redirectError) {
+        // Fallback to redirect if window.open fails
+        console.log('Window.open failed, using redirect:', redirectError);
+        window.location.href = data.url;
+      }
+    } catch (error) {
+      console.error('Error creating donation payment:', error);
+      toast({
+        title: 'Donation Error',
+        description: error.message || 'Failed to create donation session',
+        variant: 'destructive',
+      });
+    } finally {
+      setProcessingDonation(false);
     }
   };
 
@@ -470,15 +539,86 @@ const Tickets = () => {
           </motion.div>
         )}
 
-        {/* System Tester */}
+        {/* Performer Donations */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="mt-12"
+          className="mt-16"
         >
-          <h2 className="text-2xl font-bold mb-6 text-center">System Testing</h2>
-          <SystemTester />
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold mb-4 bg-gradient-primary bg-clip-text text-transparent">
+              Support Our Performers
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Show love to the skaters and artists who make our community amazing
+            </p>
+          </div>
+          
+          <div className="max-w-md mx-auto">
+            <Card className="border-2 hover:border-primary/20 transition-colors">
+              <CardHeader>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-6 h-6 text-primary">❤️</div>
+                  <Badge variant="outline">Donation</Badge>
+                </div>
+                <CardTitle className="text-2xl">Support Performers</CardTitle>
+                <CardDescription>
+                  Help support the skaters and performers who bring energy to our events
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="donation-amount">Amount (minimum $1)</Label>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="text-2xl font-bold">$</span>
+                      <Input
+                        id="donation-amount"
+                        type="number"
+                        value={donationInputValue}
+                        onChange={(e) => {
+                          setDonationInputValue(e.target.value);
+                        }}
+                        onBlur={(e) => {
+                          const value = e.target.value;
+                          const numValue = parseInt(value);
+                          if (value === '' || isNaN(numValue) || numValue < 1) {
+                            setDonationAmount(1);
+                            setDonationInputValue('1');
+                          } else {
+                            setDonationAmount(numValue);
+                            setDonationInputValue(value);
+                          }
+                        }}
+                        min="1"
+                        step="1"
+                        className="text-xl font-semibold"
+                      />
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Every dollar helps support our amazing performers
+                    </p>
+                  </div>
+                </div>
+                
+                <Button 
+                  onClick={() => checkWaiverAndProceed('donation')}
+                  disabled={processingDonation || !user}
+                  className="w-full text-lg py-6"
+                  size="lg"
+                >
+                  {processingDonation ? 'Processing...' : 'Send Donation'}
+                </Button>
+                
+                {!user && (
+                  <p className="text-sm text-muted-foreground text-center">
+                    Please sign in to make a donation
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </motion.div>
       </div>
       </div>
