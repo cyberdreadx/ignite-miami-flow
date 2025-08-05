@@ -152,7 +152,7 @@ export type Database = {
       }
       posts: {
         Row: {
-          content: string
+          content: string | null
           created_at: string
           id: string
           is_pinned: boolean
@@ -162,7 +162,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          content: string
+          content?: string | null
           created_at?: string
           id?: string
           is_pinned?: boolean
@@ -172,7 +172,7 @@ export type Database = {
           user_id: string
         }
         Update: {
-          content?: string
+          content?: string | null
           created_at?: string
           id?: string
           is_pinned?: boolean
