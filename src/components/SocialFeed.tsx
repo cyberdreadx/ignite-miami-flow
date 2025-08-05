@@ -14,6 +14,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { MediaUpload, MediaFile, uploadMediaFiles } from '@/components/MediaUpload';
 import { MediaDisplay } from '@/components/MediaDisplay';
 import { LinkifyText } from '@/components/LinkifyText';
+import { EventCountdown } from '@/components/EventCountdown';
 
 interface Post {
   id: string;
@@ -217,6 +218,9 @@ export const SocialFeed = () => {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
+      {/* Countdown to Next Event */}
+      <EventCountdown />
+      
       {/* Create Post */}
       <Card>
         <CardContent className="pt-6">
