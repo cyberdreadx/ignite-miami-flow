@@ -76,13 +76,11 @@ const NavBar = () => {
   };
 
   const handleNavigation = (path: string) => {
-    if (isPWA() && path === '/tickets') {
-      // For PWA, open the tickets page in system browser to handle Stripe payments
-      window.open(`${window.location.origin}${path}`, '_blank');
-    } else {
-      // For regular browser or other pages, use normal navigation
-      window.location.href = path;
-    }
+    console.log('Navigating to:', path);
+    console.log('Is PWA context:', isPWA());
+
+    // Always use normal navigation for consistency
+    window.location.href = path;
   };
 
   const navItems = [
