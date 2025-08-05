@@ -12,8 +12,8 @@ export const WaiverBanner: React.FC = () => {
   const [showWaiverModal, setShowWaiverModal] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
 
-  // Don't show banner if user is not logged in, waiver is completed, or banner is dismissed
-  if (!user || loading || hasCompletedWaiver || isDismissed) {
+  // Don't show banner if user is not logged in, waiver is completed, loading, or banner is dismissed
+  if (!user || loading || hasCompletedWaiver === null || hasCompletedWaiver === true || isDismissed) {
     return null;
   }
 

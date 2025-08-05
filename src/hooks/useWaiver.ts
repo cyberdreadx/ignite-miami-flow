@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
 export const useWaiver = () => {
-  const [hasCompletedWaiver, setHasCompletedWaiver] = useState<boolean>(false);
+  const [hasCompletedWaiver, setHasCompletedWaiver] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
@@ -59,7 +59,7 @@ export const useWaiver = () => {
   };
 
   return {
-    hasCompletedWaiver,
+    hasCompletedWaiver: hasCompletedWaiver as boolean,
     loading,
     markWaiverCompleted,
     checkWaiverCompletion
