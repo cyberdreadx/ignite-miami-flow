@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import { MediaDisplay } from '@/components/MediaDisplay';
 import { LinkifyText } from '@/components/LinkifyText';
+import { CommentsSection } from '@/components/CommentsSection';
 import { UserRoleBadges } from '@/components/UserRoleBadges';
 
 interface Post {
@@ -314,6 +315,19 @@ export const UserPosts: React.FC = () => {
                             <span className="text-sm">{post.comment_count}</span>
                           </div>
                         </div>
+                      </div>
+
+                      {/* Comments Section */}
+                      <div className="mt-4">
+                        <CommentsSection 
+                          postId={post.id} 
+                          commentCount={post.comment_count}
+                          onCommentCountChange={(count) => {
+                            setPosts(prev => prev.map(p => 
+                              p.id === post.id ? { ...p, comment_count: count } : p
+                            ));
+                          }}
+                        />
                       </div>
                     </CardContent>
                   </Card>
