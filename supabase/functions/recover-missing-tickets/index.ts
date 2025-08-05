@@ -90,14 +90,24 @@ serve(async (req) => {
           if (!existingTicket) {
             console.log(`Creating missing ticket for session: ${session.id}`);
 
+            // Get user profile for proper name display
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('full_name, email')
+              .eq('user_id', user.id)
+              .single();
+
+            const userName = profile?.full_name || profile?.email || user.email;
+
             // Generate QR code token
             const qrToken = `QR_${Math.random().toString(36).substr(2, 8).toUpperCase()}_${Date.now()}`;
             const validUntil = new Date();
-            validUntil.setDate(validUntil.getDate() + 30); // Valid for 30 days
+            validUntil.setDate(validUntil.getDate() + 2); // Valid for 2 days only
 
             const qrData = {
               type: "ticket",
               user_id: user.id,
+              user_name: userName,
               token: qrToken,
               amount: session.amount_total,
               valid_until: validUntil.toISOString()
@@ -181,14 +191,24 @@ serve(async (req) => {
         if (!existingTicket) {
           console.log(`Creating missing ticket for session: ${session.id}`);
 
+          // Get user profile for proper name display
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('full_name, email')
+            .eq('user_id', user.id)
+            .single();
+
+          const userName = profile?.full_name || profile?.email || user.email;
+
           // Generate QR code token
           const qrToken = `QR_${Math.random().toString(36).substr(2, 8).toUpperCase()}_${Date.now()}`;
           const validUntil = new Date();
-          validUntil.setDate(validUntil.getDate() + 30); // Valid for 30 days
+          validUntil.setDate(validUntil.getDate() + 2); // Valid for 2 days only
 
           const qrData = {
             type: "ticket",
             user_id: user.id,
+            user_name: userName,
             token: qrToken,
             amount: session.amount_total,
             valid_until: validUntil.toISOString()
