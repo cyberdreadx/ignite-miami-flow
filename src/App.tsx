@@ -11,6 +11,7 @@ import About from "./pages/About";
 import Tickets from "./pages/Tickets";
 import Photographers from "./pages/Photographers";
 import Qualifications from "./pages/Qualifications";
+import Principles from "./pages/Principles";
 import { MyTickets } from "./pages/MyTickets";
 import { ValidateTicket } from "./pages/ValidateTicket";
 import { PublicTicketView } from "./pages/PublicTicketView";
@@ -32,7 +33,8 @@ const App = () => (
           <Route path="/about" element={<About />} />
           <Route path="/tickets" element={<Tickets />} />
           <Route path="/photographers" element={<Photographers />} />
-          <Route path="/qualifications" element={<Qualifications />} />
+           <Route path="/qualifications" element={<Qualifications />} />
+           <Route path="/principles" element={<Principles />} />
           <Route path="/my-tickets" element={<MyTickets />} />
           <Route path="/validate" element={<ValidateTicket />} />
           <Route path="/ticket" element={<PublicTicketView />} />

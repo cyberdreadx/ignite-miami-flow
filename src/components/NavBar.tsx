@@ -45,6 +45,7 @@ const NavBar = () => {
     { label: "My Tickets", id: "my-tickets", path: "/my-tickets" },
     { label: "Media Pass", id: "photographers", path: "/photographers" },
     { label: "Qualifications", id: "qualifications", path: "/qualifications" },
+    { label: "Principles", id: "principles", path: "/principles" },
     { label: "About", id: "about", path: "/about" },
   ];
 
