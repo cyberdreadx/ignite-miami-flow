@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useExternalLinkHandler } from "@/utils/linkHandler";
 import { 
   ExternalLink, 
   Instagram, 
@@ -10,6 +11,8 @@ import {
 } from "lucide-react";
 
 const SocialLinks = () => {
+  const { handleExternalClick } = useExternalLinkHandler();
+  
   const links = [
     {
       icon: ExternalLink,
@@ -80,6 +83,7 @@ const SocialLinks = () => {
                       href={link.href}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={handleExternalClick}
                       className="text-center group-hover:scale-105 transition-transform duration-300"
                     >
                       <link.icon className="w-10 h-10" />

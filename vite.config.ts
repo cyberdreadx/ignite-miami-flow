@@ -27,6 +27,24 @@ export default defineConfig(({ mode }) => ({
         orientation: 'portrait',
         scope: '/',
         start_url: '/',
+        display_override: ['window-controls-overlay', 'standalone'],
+        categories: ['social', 'lifestyle', 'sports'],
+        shortcuts: [
+          {
+            name: 'Get Tickets',
+            short_name: 'Tickets',
+            description: 'Get tickets for SkateBurn events',
+            url: '/tickets',
+            icons: [{ src: '/lovable-uploads/f40780ef-982b-41a4-99b9-49357cc44738.png', sizes: '192x192' }]
+          },
+          {
+            name: 'My Tickets',
+            short_name: 'My Tickets',
+            description: 'View your tickets',
+            url: '/my-tickets',
+            icons: [{ src: '/lovable-uploads/f40780ef-982b-41a4-99b9-49357cc44738.png', sizes: '192x192' }]
+          }
+        ],
         icons: [
           {
             src: '/lovable-uploads/f40780ef-982b-41a4-99b9-49357cc44738.png',
