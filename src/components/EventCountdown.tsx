@@ -119,10 +119,8 @@ export const EventCountdown = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const nextEventDate = getCurrentEventDate();
-
-  const formatEventDate = () => {
-    return nextEventDate.toLocaleDateString('en-US', {
+  const formatEventDate = (eventDate: Date) => {
+    return eventDate.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -130,13 +128,15 @@ export const EventCountdown = () => {
     });
   };
 
-  const formatEventTime = () => {
-    return nextEventDate.toLocaleTimeString('en-US', {
+  const formatEventTime = (eventDate: Date) => {
+    return eventDate.toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true,
     });
   };
+
+  const currentEventDate = getCurrentEventDate();
 
   if (isEventHappening) {
     return (
@@ -182,12 +182,12 @@ export const EventCountdown = () => {
           <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-1.5">
               <Calendar className="w-4 h-4" />
-              <span className="font-medium">{formatEventDate()}</span>
+              <span className="font-medium">{formatEventDate(currentEventDate)}</span>
             </div>
             <div className="w-1 h-1 rounded-full bg-muted-foreground/40"></div>
             <div className="flex items-center gap-1.5">
               <Clock className="w-4 h-4" />
-              <span className="font-medium">{formatEventTime()}</span>
+              <span className="font-medium">{formatEventTime(currentEventDate)}</span>
             </div>
           </div>
         </div>
