@@ -6,6 +6,8 @@
 html {
   scroll-behavior: smooth;
   overflow-x: hidden;
+  /* Prevent mobile zoom on input focus */
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -149,10 +151,31 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 
+  /* Prevent mobile zoom on input elements */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="search"],
+  textarea,
+  select {
+    font-size: 16px !important;
+    transform-origin: left top;
+    -webkit-tap-highlight-color: transparent;
+  }
+
   /* Add bottom padding to prevent content from being hidden behind bottom nav on mobile */
   @media (max-width: 768px) {
     body {
       padding-bottom: 4rem;
+    }
+    
+    /* Ensure inputs don't zoom on mobile */
+    input,
+    textarea,
+    select {
+      font-size: 16px !important;
     }
   }
 }
