@@ -13,6 +13,7 @@ import Photographers from "./pages/Photographers";
 import Qualifications from "./pages/Qualifications";
 import Principles from "./pages/Principles";
 import Merch from "./pages/Merch";
+import Members from "./pages/Members";
 import { MyTickets } from "./pages/MyTickets";
 import { ValidateTicket } from "./pages/ValidateTicket";
 import { PublicTicketView } from "./pages/PublicTicketView";
@@ -41,6 +42,7 @@ const App = () => (
            <Route path="/qualifications" element={<Qualifications />} />
            <Route path="/principles" element={<Principles />} />
            <Route path="/merch" element={<Merch />} />
+           <Route path="/members" element={<Members />} />
           <Route path="/my-tickets" element={<MyTickets />} />
            <Route path="/validate" element={<ValidateTicket />} />
            <Route path="/verify" element={<VerifyTicket />} />
