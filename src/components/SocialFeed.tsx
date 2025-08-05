@@ -221,17 +221,114 @@ export const SocialFeed = () => {
     );
   }
 
-  // Sort posts to show pinned posts first
-  const sortedPosts = [...posts].sort((a, b) => {
-    if (a.pinned && !b.pinned) return -1;
-    if (!a.pinned && b.pinned) return 1;
-    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-  });
+  // Separate pinned and regular posts
+  const pinnedPosts = posts.filter(post => post.pinned);
+  const regularPosts = posts.filter(post => !post.pinned).sort((a, b) => 
+    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 overflow-hidden">
       {/* Countdown to Next Event */}
       <EventCountdown />
+      
+      {/* Pinned Posts */}
+      {pinnedPosts.length > 0 && (
+        <div className="space-y-4">
+          {pinnedPosts.map((post) => (
+            <Card key={post.id} className="relative border-primary/20 bg-primary/5">
+              {post.pinned && (
+                <div className="absolute top-4 right-4">
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    <Pin className="h-3 w-3" />
+                    Pinned
+                  </Badge>
+                </div>
+              )}
+              <CardHeader className="pb-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center space-x-3">
+                    <Avatar>
+                      {post.author_avatar && (
+                        <AvatarImage src={post.author_avatar} alt={post.author_name} />
+                      )}
+                      <AvatarFallback>
+                        {post.author_name?.charAt(0)?.toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-medium">{post.author_name}</p>
+                      <div className="flex items-center gap-2">
+                        {post.author_role === 'admin' && (
+                          <Badge variant="destructive" className="text-xs">Admin</Badge>
+                        )}
+                        {post.author_role === 'moderator' && (
+                          <Badge variant="outline" className="text-xs">Mod</Badge>
+                        )}
+                        <span className="text-sm text-muted-foreground">
+                          {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    {user?.id === post.user_id && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeletePost(post.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {isAdmin && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handlePin(post.id, post.pinned)}
+                      >
+                        <Pin className={`h-4 w-4 ${post.pinned ? 'fill-current' : ''}`} />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-0">
+                {post.content && (
+                  <LinkifyText 
+                    text={post.content}
+                    className="whitespace-pre-wrap mb-4 block"
+                  />
+                )}
+                
+                {/* Media Display */}
+                <MediaDisplay 
+                  mediaUrls={post.media_urls}
+                  mediaTypes={post.media_types}
+                  className="mb-4"
+                />
+                
+                <div className="flex items-center space-x-6">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleLike(post.id, post.user_liked)}
+                    className="flex items-center space-x-2"
+                  >
+                    <Heart className={`h-4 w-4 ${post.user_liked ? 'fill-red-500 text-red-500' : ''}`} />
+                    <span>{post.like_count}</span>
+                  </Button>
+                  <Button variant="ghost" size="sm" className="flex items-center space-x-2">
+                    <MessageCircle className="h-4 w-4" />
+                    <span>{post.comment_count}</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
       
       {/* Create Post */}
       <Card>
@@ -281,16 +378,8 @@ export const SocialFeed = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          {sortedPosts.map((post) => (
+          {regularPosts.map((post) => (
             <Card key={post.id} className="relative">
-              {post.pinned && (
-                <div className="absolute top-4 right-4">
-                  <Badge variant="secondary" className="flex items-center gap-1">
-                    <Pin className="h-3 w-3" />
-                    Pinned
-                  </Badge>
-                </div>
-              )}
               <CardHeader className="pb-4">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center space-x-3">
@@ -314,30 +403,30 @@ export const SocialFeed = () => {
                         <span className="text-sm text-muted-foreground">
                           {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
                         </span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                {user?.id === post.user_id && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDeletePost(post.id)}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                )}
-                {isAdmin && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handlePin(post.id, post.pinned)}
-                  >
-                    <Pin className={`h-4 w-4 ${post.pinned ? 'fill-current' : ''}`} />
-                  </Button>
-                )}
-              </div>
+                  <div className="flex gap-2">
+                    {user?.id === post.user_id && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeletePost(post.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                    {isAdmin && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handlePin(post.id, post.pinned)}
+                      >
+                        <Pin className={`h-4 w-4 ${post.pinned ? 'fill-current' : ''}`} />
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="pt-0">
@@ -373,7 +462,7 @@ export const SocialFeed = () => {
               </CardContent>
             </Card>
           ))}
-          {sortedPosts.length === 0 && (
+          {regularPosts.length === 0 && pinnedPosts.length === 0 && (
             <div className="text-center py-8">
               <p className="text-muted-foreground">No posts yet. Be the first to share something!</p>
             </div>
