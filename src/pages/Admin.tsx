@@ -4,6 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { AdminSidebar } from '@/components/AdminSidebar';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useToast } from '@/hooks/use-toast';
@@ -20,7 +22,8 @@ import {
   ArrowLeft,
   CheckCircle,
   XCircle,
-  Clock
+  Clock,
+  LogOut
 } from 'lucide-react';
 
 interface Post {
@@ -235,242 +238,255 @@ const Admin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost" onClick={() => navigate('/')}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Feed
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-                <p className="text-muted-foreground">Manage your SkateBurn community</p>
-              </div>
-            </div>
-            <Button variant="outline" onClick={handleSignOut}>
-              Sign Out
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid gap-6">
-          {/* Stats Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats?.total_users || 0}</div>
-                <p className="text-xs text-muted-foreground">
-                  {stats?.admin_count || 0} admins, {stats?.moderator_count || 0} moderators
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
-                <MessageSquare className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats?.total_posts || 0}</div>
-                <p className="text-xs text-muted-foreground">
-                  {stats?.total_likes || 0} likes, {stats?.total_comments || 0} comments
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Engagement</CardTitle>
-                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {stats?.total_posts ? Math.round(((stats?.total_likes || 0) + (stats?.total_comments || 0)) / stats.total_posts * 10) / 10 : 0}
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full">
+        <AdminSidebar />
+        
+        <main className="flex-1 overflow-auto">
+          {/* Header */}
+          <div className="border-b border-border bg-card sticky top-0 z-40">
+            <div className="flex items-center justify-between p-4">
+              <div className="flex items-center space-x-4">
+                <SidebarTrigger className="md:hidden" />
+                <div className="hidden md:flex items-center space-x-4">
+                  <Button variant="ghost" onClick={() => navigate('/')} className="hidden lg:flex">
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Back to Feed
+                  </Button>
+                  <div>
+                    <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+                    <p className="text-muted-foreground hidden sm:block">Manage your SkateBurn community</p>
+                  </div>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Average interactions per post
-                </p>
-              </CardContent>
-            </Card>
+                <div className="md:hidden">
+                  <h1 className="text-xl font-bold">Admin Dashboard</h1>
+                </div>
+              </div>
+              <Button variant="outline" onClick={handleSignOut} size="sm">
+                <LogOut className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Sign Out</span>
+              </Button>
+            </div>
           </div>
 
-          {/* Pending User Approvals */}
-          {pendingUsers.length > 0 && (
-            <Card>
+          {/* Content */}
+          <div className="p-4 space-y-6">
+            {/* Stats Overview */}
+            <div id="dashboard" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats?.total_users || 0}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {stats?.admin_count || 0} admins, {stats?.moderator_count || 0} moderators
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
+                  <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats?.total_posts || 0}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {stats?.total_likes || 0} likes, {stats?.total_comments || 0} comments
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="sm:col-span-2 lg:col-span-1">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Engagement</CardTitle>
+                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {stats?.total_posts ? Math.round(((stats?.total_likes || 0) + (stats?.total_comments || 0)) / stats.total_posts * 10) / 10 : 0}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Average interactions per post
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Pending User Approvals */}
+            {pendingUsers.length > 0 && (
+              <Card id="pending">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Clock className="h-5 w-5" />
+                    Pending User Approvals
+                    <Badge variant="secondary">{pendingUsers.length}</Badge>
+                  </CardTitle>
+                  <CardDescription>
+                    Review and approve new DJs, performers, and photographers
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4 max-h-96 overflow-y-auto">
+                    {pendingUsers.map((user) => (
+                      <div
+                        key={user.user_id}
+                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg space-y-3 sm:space-y-0"
+                      >
+                        <div className="flex items-center space-x-4">
+                          <Avatar className="h-10 w-10 flex-shrink-0">
+                            <AvatarFallback>
+                              {user.full_name?.charAt(0) || user.email?.charAt(0) || 'U'}
+                            </AvatarFallback>
+                          </Avatar>
+                          
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-2 mb-1">
+                              <p className="font-medium truncate">{user.full_name || user.email}</p>
+                              <Badge 
+                                variant="outline" 
+                                className={`text-xs capitalize flex-shrink-0 ${
+                                  user.role === 'dj' ? 'bg-purple-100 text-purple-800' :
+                                  user.role === 'performer' ? 'bg-orange-100 text-orange-800' :
+                                  'bg-blue-100 text-blue-800'
+                                }`}
+                              >
+                                {user.role}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground truncate">{user.email}</p>
+                            <p className="text-xs text-muted-foreground">
+                              Applied {formatDistanceToNow(new Date(user.created_at), { addSuffix: true })}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleUserApproval(user.user_id, 'approved')}
+                            className="flex items-center gap-1 text-green-600 hover:text-green-700"
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                            <span className="hidden sm:inline">Approve</span>
+                          </Button>
+                          
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleUserApproval(user.user_id, 'rejected')}
+                            className="flex items-center gap-1 text-red-600 hover:text-red-700"
+                          >
+                            <XCircle className="h-4 w-4" />
+                            <span className="hidden sm:inline">Reject</span>
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Recent Posts Management */}
+            <Card id="posts">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Clock className="h-5 w-5" />
-                  Pending User Approvals
-                  <Badge variant="secondary">{pendingUsers.length}</Badge>
+                  <Shield className="h-5 w-5" />
+                  Post Management
                 </CardTitle>
                 <CardDescription>
-                  Review and approve new DJs, performers, and photographers
+                  Manage community posts, pin important announcements, and moderate content
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {pendingUsers.map((user) => (
+                <div className="space-y-4 max-h-96 overflow-y-auto">
+                  {posts.map((post) => (
                     <div
-                      key={user.user_id}
-                      className="flex items-center justify-between p-4 border rounded-lg"
+                      key={post.id}
+                      className="flex flex-col lg:flex-row lg:items-start space-y-4 lg:space-y-0 lg:space-x-4 p-4 border rounded-lg"
                     >
-                      <div className="flex items-center space-x-4">
-                        <Avatar className="h-10 w-10">
+                      <div className="flex items-start space-x-3 flex-1 min-w-0">
+                        <Avatar className="h-10 w-10 flex-shrink-0">
                           <AvatarFallback>
-                            {user.full_name?.charAt(0) || user.email?.charAt(0) || 'U'}
+                            {post.author_name?.charAt(0) || 'U'}
                           </AvatarFallback>
                         </Avatar>
                         
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <p className="font-medium">{user.full_name || user.email}</p>
-                            <Badge 
-                              variant="outline" 
-                              className={`text-xs capitalize ${
-                                user.role === 'dj' ? 'bg-purple-100 text-purple-800' :
-                                user.role === 'performer' ? 'bg-orange-100 text-orange-800' :
-                                'bg-blue-100 text-blue-800'
-                              }`}
-                            >
-                              {user.role}
-                            </Badge>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-2 mb-2">
+                            <p className="font-medium truncate">{post.author_name}</p>
+                            {post.author_role === 'admin' && (
+                              <Badge variant="destructive" className="text-xs">Admin</Badge>
+                            )}
+                            {post.author_role === 'moderator' && (
+                              <Badge variant="outline" className="text-xs">Mod</Badge>
+                            )}
+                            {post.pinned && (
+                              <Badge variant="secondary" className="text-xs">
+                                <Pin className="h-3 w-3 mr-1" />
+                                Pinned
+                              </Badge>
+                            )}
+                            <span className="text-sm text-muted-foreground">
+                              {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                            </span>
                           </div>
-                          <p className="text-sm text-muted-foreground">{user.email}</p>
-                          <p className="text-xs text-muted-foreground">
-                            Applied {formatDistanceToNow(new Date(user.created_at), { addSuffix: true })}
+                          
+                          <p className="text-sm text-foreground mb-2 line-clamp-3">
+                            {post.content}
                           </p>
+                          
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <Heart className="h-4 w-4" />
+                              {post.like_count}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <MessageSquare className="h-4 w-4" />
+                              {post.comment_count}
+                            </span>
+                          </div>
                         </div>
                       </div>
                       
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-shrink-0">
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           size="sm"
-                          onClick={() => handleUserApproval(user.user_id, 'approved')}
-                          className="flex items-center gap-1 text-green-600 hover:text-green-700"
+                          onClick={() => handleTogglePin(post.id, post.pinned)}
+                          className="flex items-center gap-1"
                         >
-                          <CheckCircle className="h-4 w-4" />
-                          Approve
+                          <Pin className={`h-4 w-4 ${post.pinned ? 'fill-current' : ''}`} />
+                          <span className="hidden sm:inline">{post.pinned ? 'Unpin' : 'Pin'}</span>
                         </Button>
                         
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           size="sm"
-                          onClick={() => handleUserApproval(user.user_id, 'rejected')}
-                          className="flex items-center gap-1 text-red-600 hover:text-red-700"
+                          className="text-destructive hover:text-destructive"
                         >
-                          <XCircle className="h-4 w-4" />
-                          Reject
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
                   ))}
+                  
+                  {posts.length === 0 && (
+                    <div className="text-center py-8">
+                      <p className="text-muted-foreground">No posts to manage yet.</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
-          )}
-
-          {/* Recent Posts Management */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
-                Post Management
-              </CardTitle>
-              <CardDescription>
-                Manage community posts, pin important announcements, and moderate content
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {posts.map((post) => (
-                  <div
-                    key={post.id}
-                    className="flex items-start space-x-4 p-4 border rounded-lg"
-                  >
-                    <Avatar className="h-10 w-10">
-                      <AvatarFallback>
-                        {post.author_name?.charAt(0) || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-2">
-                        <p className="font-medium">{post.author_name}</p>
-                        {post.author_role === 'admin' && (
-                          <Badge variant="destructive" className="text-xs">Admin</Badge>
-                        )}
-                        {post.author_role === 'moderator' && (
-                          <Badge variant="outline" className="text-xs">Mod</Badge>
-                        )}
-                        {post.pinned && (
-                          <Badge variant="secondary" className="text-xs">
-                            <Pin className="h-3 w-3 mr-1" />
-                            Pinned
-                          </Badge>
-                        )}
-                        <span className="text-sm text-muted-foreground">
-                          {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
-                        </span>
-                      </div>
-                      
-                      <p className="text-sm text-foreground mb-2 line-clamp-3">
-                        {post.content}
-                      </p>
-                      
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Heart className="h-4 w-4" />
-                          {post.like_count}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <MessageSquare className="h-4 w-4" />
-                          {post.comment_count}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleTogglePin(post.id, post.pinned)}
-                        className="flex items-center gap-1"
-                      >
-                        <Pin className={`h-4 w-4 ${post.pinned ? 'fill-current' : ''}`} />
-                        {post.pinned ? 'Unpin' : 'Pin'}
-                      </Button>
-                      
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-                
-                {posts.length === 0 && (
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground">No posts to manage yet.</p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+          </div>
+        </main>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 

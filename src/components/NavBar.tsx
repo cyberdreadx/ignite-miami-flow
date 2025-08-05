@@ -118,14 +118,23 @@ const NavBar = () => {
                 </Button>
               </>
             ) : (
-              <Button
-                onClick={() => navigate("/auth")}
-                variant="outline"
-                size="sm"
-              >
-                <User className="w-4 h-4 mr-2" />
-                Login
-              </Button>
+              <div className="flex items-center space-x-2">
+                <Button
+                  onClick={() => navigate("/auth")}
+                  variant="ghost"
+                  size="sm"
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  Sign In
+                </Button>
+                <Button
+                  onClick={() => navigate("/auth")}
+                  variant="outline"
+                  size="sm"
+                >
+                  Sign Up
+                </Button>
+              </div>
             )}
           </div>
 
@@ -201,17 +210,29 @@ const NavBar = () => {
                   </Button>
                 </div>
               ) : (
-                <Button
-                  onClick={() => {
-                    navigate("/auth");
-                    setIsOpen(false);
-                  }}
-                  variant="outline"
-                  className="w-full justify-start"
-                >
-                  <User className="w-4 h-4 mr-2" />
-                  Login
-                </Button>
+                <div className="space-y-2">
+                  <Button
+                    onClick={() => {
+                      navigate("/auth");
+                      setIsOpen(false);
+                    }}
+                    variant="ghost"
+                    className="w-full justify-start"
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    Sign In
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      navigate("/auth");
+                      setIsOpen(false);
+                    }}
+                    variant="outline"
+                    className="w-full justify-start"
+                  >
+                    Sign Up
+                  </Button>
+                </div>
               )}
             </div>
           </div>
