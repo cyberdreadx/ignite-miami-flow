@@ -6,13 +6,11 @@ import { X, Upload } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 interface MediaUploadProps {
-  onMediaUpload: (urls: string[], types: string[]) => void;
+  onMediaChange: (files: MediaFile[]) => void;
   maxFiles?: number;
-  onUploadStart?: () => void;
-  onUploadComplete?: () => void;
 }
 
-interface MediaFile {
+export interface MediaFile {
   file: File;
   url: string;
   type: 'image' | 'video';
@@ -20,15 +18,11 @@ interface MediaFile {
 }
 
 export const MediaUpload = ({ 
-  onMediaUpload, 
-  maxFiles = 4, 
-  onUploadStart, 
-  onUploadComplete 
+  onMediaChange, 
+  maxFiles = 4
 }: MediaUploadProps) => {
-  const [uploading, setUploading] = useState(false);
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { user } = useAuth();
   const { toast } = useToast();
 
   const validateFile = (file: File): { valid: boolean; error?: string } => {
@@ -84,7 +78,9 @@ export const MediaUpload = ({
       newMediaFiles.push(mediaFile);
     }
 
-    setMediaFiles(prev => [...prev, ...newMediaFiles]);
+    const updatedFiles = [...mediaFiles, ...newMediaFiles];
+    setMediaFiles(updatedFiles);
+    onMediaChange(updatedFiles);
     
     // Clear the input
     if (fileInputRef.current) {
@@ -93,74 +89,21 @@ export const MediaUpload = ({
   };
 
   const removeFile = (id: string) => {
-    setMediaFiles(prev => {
-      const fileToRemove = prev.find(f => f.id === id);
-      if (fileToRemove) {
-        URL.revokeObjectURL(fileToRemove.url);
+    const updatedFiles = mediaFiles.filter(f => {
+      if (f.id === id) {
+        URL.revokeObjectURL(f.url);
+        return false;
       }
-      return prev.filter(f => f.id !== id);
+      return true;
     });
+    setMediaFiles(updatedFiles);
+    onMediaChange(updatedFiles);
   };
-
-  const uploadFiles = async (): Promise<{ urls: string[]; types: string[] }> => {
-    if (!user || !mediaFiles.length) {
-      return { urls: [], types: [] };
-    }
-
-    setUploading(true);
-    onUploadStart?.();
-    const uploadedUrls: string[] = [];
-    const uploadedTypes: string[] = [];
-
-    try {
-      for (const mediaFile of mediaFiles) {
-        const fileExt = mediaFile.file.name.split('.').pop();
-        const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
-
-        // Upload to storage
-        const { error: uploadError } = await supabase.storage
-          .from('post-media')
-          .upload(fileName, mediaFile.file);
-
-        if (uploadError) {
-          throw uploadError;
-        }
-
-        // Get public URL
-        const { data } = supabase.storage
-          .from('post-media')
-          .getPublicUrl(fileName);
-
-        uploadedUrls.push(data.publicUrl);
-        uploadedTypes.push(mediaFile.type);
-      }
-
-      // Clean up object URLs
-      mediaFiles.forEach(file => URL.revokeObjectURL(file.url));
-      setMediaFiles([]);
-
-      onMediaUpload(uploadedUrls, uploadedTypes);
-      return { urls: uploadedUrls, types: uploadedTypes };
-    } catch (error) {
-      console.error('Error uploading media:', error);
-      toast({
-        title: 'Upload failed',
-        description: 'Failed to upload media files. Please try again.',
-        variant: 'destructive',
-      });
-      throw error;
-    } finally {
-      setUploading(false);
-      onUploadComplete?.();
-    }
-  };
-
-  const hasFiles = mediaFiles.length > 0;
 
   return (
     <div className="space-y-4">
       {/* File Preview */}
-      {hasFiles && (
+      {mediaFiles.length > 0 && (
         <div className="grid grid-cols-2 gap-2">
           {mediaFiles.map((mediaFile) => (
             <div key={mediaFile.id} className="relative group">
@@ -190,27 +133,15 @@ export const MediaUpload = ({
         </div>
       )}
 
-      {/* Upload Button */}
+      {/* Add Media Button */}
       {mediaFiles.length < maxFiles && (
         <Button
           variant="outline"
           onClick={() => fileInputRef.current?.click()}
-          disabled={uploading}
           className="w-full"
         >
           <Upload className="w-4 h-4 mr-2" />
           Add Images/Videos ({mediaFiles.length}/{maxFiles})
-        </Button>
-      )}
-
-      {/* Upload Action */}
-      {hasFiles && (
-        <Button
-          onClick={uploadFiles}
-          disabled={uploading}
-          className="w-full"
-        >
-          {uploading ? 'Uploading...' : `Upload ${mediaFiles.length} file${mediaFiles.length > 1 ? 's' : ''}`}
         </Button>
       )}
 
@@ -224,4 +155,34 @@ export const MediaUpload = ({
       />
     </div>
   );
+};
+
+// Helper function for uploading files
+export const uploadMediaFiles = async (files: MediaFile[], userId: string): Promise<{ urls: string[]; types: string[] }> => {
+  const uploadedUrls: string[] = [];
+  const uploadedTypes: string[] = [];
+
+  for (const mediaFile of files) {
+    const fileExt = mediaFile.file.name.split('.').pop();
+    const fileName = `${userId}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${fileExt}`;
+
+    // Upload to storage
+    const { error: uploadError } = await supabase.storage
+      .from('post-media')
+      .upload(fileName, mediaFile.file);
+
+    if (uploadError) {
+      throw uploadError;
+    }
+
+    // Get public URL
+    const { data } = supabase.storage
+      .from('post-media')
+      .getPublicUrl(fileName);
+
+    uploadedUrls.push(data.publicUrl);
+    uploadedTypes.push(mediaFile.type);
+  }
+
+  return { urls: uploadedUrls, types: uploadedTypes };
 };
