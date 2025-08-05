@@ -8,47 +8,72 @@ import {
   Flame, 
   Users, 
   Heart, 
-  MessageSquare, 
-  Pin, 
+  Zap, 
   Star,
   ArrowRight,
   MapPin,
   Calendar,
   Instagram,
-  Send
+  Music,
+  Sparkles,
+  Target,
+  Crown
 } from "lucide-react";
 
 const About = () => {
   const navigate = useNavigate();
 
-  const features = [
+  const coreValues = [
     {
-      icon: MessageSquare,
-      title: "Share Your Stories",
-      description: "Post about your skateboarding adventures, tricks, and experiences with the community."
+      icon: Flame,
+      title: "Courage",
+      description: "The bravery to try new tricks, express yourself, and take creative risks in a supportive environment."
     },
     {
       icon: Heart,
-      title: "Connect with Riders",
-      description: "Like and engage with posts from fellow skaters in the SkateBurn community."
+      title: "Connection",
+      description: "Building genuine relationships through shared passion for movement, art, and self-expression."
     },
     {
-      icon: Pin,
-      title: "Stay Updated",
-      description: "See pinned announcements from admins about events, meetups, and important community news."
+      icon: Sparkles,
+      title: "Transformation",
+      description: "Personal growth through fire, flow, and community that ignites your potential."
     },
     {
       icon: Users,
-      title: "Build Community",
-      description: "Join a vibrant community of skateboarding enthusiasts in Miami and beyond."
+      title: "Unity",
+      description: "Bringing together skaters, spinners, dancers, and all creatives under one flame."
+    }
+  ];
+
+  const eventFeatures = [
+    {
+      icon: Music,
+      title: "Live DJs",
+      description: "Pulsing beats that fuel your flow and keep the energy burning bright"
+    },
+    {
+      icon: Zap,
+      title: "Skill Shares & Workshops",
+      description: "Learn new techniques and share knowledge across disciplines"
+    },
+    {
+      icon: Crown,
+      title: "Themed Jams",
+      description: "Creative sessions with unique themes that challenge and inspire"
+    },
+    {
+      icon: Target,
+      title: "Choreography Collabs",
+      description: "Collaborative performances that blend movement and artistry"
     }
   ];
 
   const stats = [
-    { label: "Community Members", value: "500+", icon: Users },
-    { label: "Posts Shared", value: "2.5K+", icon: MessageSquare },
-    { label: "Likes Given", value: "15K+", icon: Heart },
-    { label: "Years Active", value: "3+", icon: Calendar }
+    { label: "Years Strong", value: "2+", icon: Calendar },
+    { label: "Community Events", value: "50+", icon: Flame },
+    { label: "Fire Performers", value: "25+", icon: Star },
+    { label: "Creative Souls", value: "200+", icon: Users }
   ];
 
   return (
@@ -64,82 +89,144 @@ const About = () => {
         <div className="container mx-auto px-4">
           {/* Hero Section */}
           <motion.div 
-            className="text-center mb-16"
-            initial={{ y: 20, opacity: 0 }}
+            className="text-center mb-20"
+            initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
           >
-            <div className="flex items-center justify-center mb-6">
-              <Flame className="h-12 w-12 text-primary mr-4" />
-              <h1 className="text-5xl font-bold">About SkateBurn</h1>
-            </div>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              More than just a skateboarding community - we're a family of riders, creators, and rebels 
-              pushing the boundaries of street culture in Miami and beyond.
-            </p>
+            <motion.div 
+              className="flex items-center justify-center mb-8"
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.3, type: "spring", stiffness: 100 }}
+            >
+              <Flame className="h-16 w-16 text-primary mr-6 animate-pulse" />
+              <div>
+                <h1 className="text-6xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                  About Skateburn
+                </h1>
+                <div className="text-lg text-muted-foreground mt-2 font-medium">
+                  Founded by Miranda Shines & Brandon Menard • June 2023 – Present
+                </div>
+              </div>
+            </motion.div>
+            
+            <motion.p 
+              className="text-2xl text-primary font-semibold max-w-4xl mx-auto leading-relaxed mb-4"
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.4 }}
+            >
+              🔥 Skate. Flow. Burn. Repeat. 🔥
+            </motion.p>
+            
+            <motion.p 
+              className="text-xl text-muted-foreground max-w-4xl mx-auto leading-relaxed"
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.5 }}
+            >
+              A pulsing hub where skaters, spinners, dancers, and creatives unite through movement and expression at Miami's Skatebird.
+            </motion.p>
           </motion.div>
 
-          {/* Story Section */}
+          {/* Origin Story */}
           <motion.div 
-            className="mb-16"
-            initial={{ y: 20, opacity: 0 }}
+            className="mb-20"
+            initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.3 }}
+            transition={{ delay: 0.6 }}
           >
-            <Card className="bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/20">
-              <CardHeader>
-                <CardTitle className="text-2xl flex items-center gap-2">
-                  <Star className="h-6 w-6 text-primary" />
-                  Our Story
+            <Card className="bg-gradient-to-br from-primary/10 via-primary/5 to-secondary/10 border-primary/30 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent animate-pulse"></div>
+              <CardHeader className="relative">
+                <CardTitle className="text-3xl flex items-center gap-3">
+                  <Sparkles className="h-8 w-8 text-primary" />
+                  The Spark That Started It All
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4 text-lg leading-relaxed">
-                <p>
-                  Founded in 2021, SkateBurn started as a small group of passionate skateboarders 
-                  meeting at local parks in Miami. What began as weekend sessions quickly evolved 
-                  into something bigger - a movement that celebrates the raw energy, creativity, 
-                  and freedom that skateboarding represents.
+              <CardContent className="space-y-6 text-lg leading-relaxed relative">
+                <p className="text-xl font-medium text-foreground">
+                  Skateburn was born from a spark — a vision to bring community, creativity, and healing to the heart of a concrete jungle.
                 </p>
                 <p>
-                  Today, SkateBurn is a thriving community where riders of all skill levels come 
-                  together to share their passion, learn from each other, and push the culture forward. 
-                  From beginners landing their first ollie to pros filming street parts, everyone 
-                  has a place in our family.
+                  In the summer of 2023, Miranda Shines and Brandon Menard gathered a small circle of intentional fire artists to practice their craft safely, under the stars. What began as a humble gathering of performers has grown into a <span className="text-primary font-semibold">biweekly movement</span> that blends fire, flow, dance, and skate culture at Miami's Skatebird.
                 </p>
                 <p>
-                  This social platform is our digital home - a space where the SkateBurn community 
-                  can stay connected, share their latest sessions, organize meetups, and celebrate 
-                  the culture we all love.
+                  Now, Skateburn is a pulsing hub for skaters, spinners, dancers, and creatives to unite through movement and expression. Each event is a celebration — with live DJs, skill shares, workshops, themed jams, choreography collabs, and powerful <span className="text-primary font-semibold">fire performances that light up the night</span>.
                 </p>
+                <div className="bg-gradient-to-r from-primary/20 to-secondary/20 rounded-lg p-6 border-l-4 border-primary">
+                  <p className="text-xl font-semibold text-center">
+                    "At its core, Skateburn is about courage, connection, and transformation. Whether you're here to ignite your flow, meet your people, or simply catch the flame, you're welcome here."
+                  </p>
+                </div>
               </CardContent>
             </Card>
           </motion.div>
 
-          {/* Platform Features */}
+          {/* Core Values */}
           <motion.div 
-            className="mb-16"
-            initial={{ y: 20, opacity: 0 }}
+            className="mb-20"
+            initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.4 }}
+            transition={{ delay: 0.7 }}
           >
-            <h2 className="text-3xl font-bold text-center mb-8">Platform Features</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {features.map((feature, index) => (
+            <h2 className="text-4xl font-bold text-center mb-12 bg-gradient-primary bg-clip-text text-transparent">
+              Our Core Values
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {coreValues.map((value, index) => (
+                <motion.div
+                  key={value.title}
+                  initial={{ y: 30, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: 0.8 + index * 0.1 }}
+                  whileHover={{ scale: 1.05 }}
+                >
+                  <Card className="h-full hover:shadow-xl transition-all duration-300 border-primary/20 bg-gradient-to-b from-background to-primary/5">
+                    <CardHeader className="text-center">
+                      <motion.div
+                        whileHover={{ rotate: 360 }}
+                        transition={{ duration: 0.5 }}
+                      >
+                        <value.icon className="h-12 w-12 text-primary mx-auto mb-4" />
+                      </motion.div>
+                      <CardTitle className="text-xl">{value.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-muted-foreground text-center">{value.description}</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Event Features */}
+          <motion.div 
+            className="mb-20"
+            initial={{ y: 30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.9 }}
+          >
+            <h2 className="text-4xl font-bold text-center mb-12">What Makes Our Events Special</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {eventFeatures.map((feature, index) => (
                 <motion.div
                   key={feature.title}
-                  initial={{ y: 20, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.5 + index * 0.1 }}
+                  initial={{ x: index % 2 === 0 ? -30 : 30, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 1.0 + index * 0.1 }}
                 >
-                  <Card className="h-full hover:shadow-lg transition-shadow duration-300">
+                  <Card className="h-full hover:shadow-lg transition-all duration-300 border-primary/10">
                     <CardHeader>
-                      <CardTitle className="flex items-center gap-3">
-                        <feature.icon className="h-6 w-6 text-primary" />
+                      <CardTitle className="flex items-center gap-3 text-xl">
+                        <feature.icon className="h-7 w-7 text-primary" />
                         {feature.title}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-muted-foreground">{feature.description}</p>
+                      <p className="text-muted-foreground text-lg">{feature.description}</p>
                     </CardContent>
                   </Card>
                 </motion.div>
@@ -149,127 +236,74 @@ const About = () => {
 
           {/* Community Stats */}
           <motion.div 
-            className="mb-16"
-            initial={{ y: 20, opacity: 0 }}
+            className="mb-20"
+            initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.6 }}
+            transition={{ delay: 1.1 }}
           >
-            <h2 className="text-3xl font-bold text-center mb-8">Community by Numbers</h2>
+            <h2 className="text-4xl font-bold text-center mb-12">Community by Numbers</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {stats.map((stat, index) => (
                 <motion.div
                   key={stat.label}
-                  initial={{ scale: 0.9, opacity: 0 }}
+                  initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 0.7 + index * 0.1 }}
+                  transition={{ delay: 1.2 + index * 0.1, type: "spring", stiffness: 100 }}
+                  whileHover={{ scale: 1.1 }}
                 >
-                  <Card className="text-center p-6">
-                    <stat.icon className="h-8 w-8 text-primary mx-auto mb-3" />
-                    <div className="text-3xl font-bold text-primary mb-2">{stat.value}</div>
-                    <div className="text-sm text-muted-foreground">{stat.label}</div>
+                  <Card className="text-center p-6 bg-gradient-to-b from-primary/10 to-secondary/10 border-primary/20">
+                    <stat.icon className="h-10 w-10 text-primary mx-auto mb-4" />
+                    <div className="text-4xl font-bold text-primary mb-2">{stat.value}</div>
+                    <div className="text-sm text-muted-foreground font-medium">{stat.label}</div>
                   </Card>
                 </motion.div>
               ))}
             </div>
           </motion.div>
 
-          {/* Community Guidelines */}
+          {/* Location & Community */}
           <motion.div 
-            className="mb-16"
-            initial={{ y: 20, opacity: 0 }}
+            className="mb-20"
+            initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.8 }}
-          >
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-2xl">Community Guidelines</CardTitle>
-                <CardDescription>
-                  To keep our community positive and inclusive, we ask all members to follow these guidelines:
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-4">
-                  <div className="flex items-start gap-3">
-                    <Badge variant="outline" className="mt-1">1</Badge>
-                    <div>
-                      <h4 className="font-semibold">Respect Everyone</h4>
-                      <p className="text-muted-foreground text-sm">
-                        Treat all community members with respect, regardless of skill level or background.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <Badge variant="outline" className="mt-1">2</Badge>
-                    <div>
-                      <h4 className="font-semibold">Share Quality Content</h4>
-                      <p className="text-muted-foreground text-sm">
-                        Post skateboarding-related content that adds value to the community.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <Badge variant="outline" className="mt-1">3</Badge>
-                    <div>
-                      <h4 className="font-semibold">Support Each Other</h4>
-                      <p className="text-muted-foreground text-sm">
-                        Encourage fellow skaters and celebrate everyone's progress and achievements.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <Badge variant="outline" className="mt-1">4</Badge>
-                    <div>
-                      <h4 className="font-semibold">No Spam or Self-Promotion</h4>
-                      <p className="text-muted-foreground text-sm">
-                        Keep posts relevant to skateboarding and avoid excessive self-promotion.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Location & Social */}
-          <motion.div 
-            className="mb-16"
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.9 }}
+            transition={{ delay: 1.3 }}
           >
             <div className="grid md:grid-cols-2 gap-8">
-              <Card>
+              <Card className="bg-gradient-to-br from-primary/5 to-secondary/5">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MapPin className="h-5 w-5 text-primary" />
-                    Find Us
+                  <CardTitle className="flex items-center gap-3 text-2xl">
+                    <MapPin className="h-7 w-7 text-primary" />
+                    Find Us at Skatebird
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground mb-4">
-                    Based in Miami, Florida, we regularly meet at various skate spots around the city. 
-                    Join our social platform to stay updated on session locations and meetups.
+                  <p className="text-muted-foreground mb-4 text-lg">
+                    Every other week, we transform Miami's Skatebird into a canvas of creativity and community. 
+                    Join us under the stars where concrete meets fire and flow.
                   </p>
-                  <Badge variant="secondary" className="mb-2">Miami, FL</Badge>
+                  <Badge variant="secondary" className="mb-2 text-base py-2 px-4">
+                    NW 83rd & Biscayne Blvd, El Portal
+                  </Badge>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-gradient-to-br from-secondary/5 to-primary/5">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Instagram className="h-5 w-5 text-primary" />
+                  <CardTitle className="flex items-center gap-3 text-2xl">
+                    <Instagram className="h-7 w-7 text-primary" />
                     Connect With Us
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground mb-4">
-                    Follow us on our social channels and join our Telegram group for instant updates.
+                  <p className="text-muted-foreground mb-4 text-lg">
+                    Stay connected with our vibrant community and never miss an event or update.
                   </p>
-                  <div className="flex gap-2">
-                    <Badge variant="secondary">@skateburnmiami</Badge>
-                    <Badge variant="secondary">
-                      <Send className="h-3 w-3 mr-1" />
-                      Telegram
+                  <div className="flex flex-col gap-2">
+                    <Badge variant="secondary" className="text-base py-2 px-4 w-fit">
+                      @skateburnmiami
+                    </Badge>
+                    <Badge variant="outline" className="text-base py-2 px-4 w-fit">
+                      Biweekly Events
                     </Badge>
                   </div>
                 </CardContent>
@@ -280,21 +314,38 @@ const About = () => {
           {/* CTA Section */}
           <motion.div 
             className="text-center"
-            initial={{ y: 20, opacity: 0 }}
+            initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 1.0 }}
+            transition={{ delay: 1.4 }}
           >
-            <Card className="bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">
-              <CardContent className="p-8">
-                <h2 className="text-3xl font-bold mb-4">Ready to Join the Community?</h2>
-                <p className="text-muted-foreground text-lg mb-6">
-                  Sign up today and become part of the SkateBurn family. Share your passion, 
-                  connect with fellow riders, and help shape the future of skateboarding culture.
+            <Card className="bg-gradient-to-r from-primary/20 via-primary/10 to-secondary/20 border-primary/30 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent animate-pulse"></div>
+              <CardContent className="p-12 relative">
+                <motion.h2 
+                  className="text-4xl font-bold mb-6 bg-gradient-primary bg-clip-text text-transparent"
+                  initial={{ scale: 0.9 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 1.5, type: "spring" }}
+                >
+                  Ready to Catch the Flame?
+                </motion.h2>
+                <p className="text-muted-foreground text-xl mb-8 max-w-2xl mx-auto">
+                  Join our community of fire artists, skaters, and creatives. Whether you're here to ignite your flow, 
+                  meet your people, or simply catch the flame — you're welcome here.
                 </p>
-                <Button size="lg" onClick={() => navigate('/')} className="animate-fade-in">
-                  Join the Feed
-                  <ArrowRight className="h-5 w-5 ml-2" />
-                </Button>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button 
+                    size="lg" 
+                    onClick={() => navigate('/')} 
+                    className="text-lg px-8 py-6"
+                  >
+                    Join the Community
+                    <ArrowRight className="h-6 w-6 ml-3" />
+                  </Button>
+                </motion.div>
               </CardContent>
             </Card>
           </motion.div>
