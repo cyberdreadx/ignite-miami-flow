@@ -352,12 +352,12 @@ const Tickets = () => {
         
         {/* Header */}
         <motion.div 
-          className="text-center mb-12"
+          className="text-center mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <h1 className="text-4xl font-bold mb-4 bg-gradient-primary bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold mb-3 bg-gradient-primary bg-clip-text text-transparent">
             Get Your Tickets
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -366,7 +366,7 @@ const Tickets = () => {
         </motion.div>
 
         {/* Ticket Options */}
-        <div className="grid lg:grid-cols-2 gap-8 mb-16">
+        <div className="grid lg:grid-cols-2 gap-6 mb-12">
           {/* Single Event Ticket */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -508,7 +508,7 @@ const Tickets = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
-            <h2 className="text-3xl font-bold mb-8 text-center">Upcoming Events</h2>
+            <h2 className="text-3xl font-bold mb-6 text-center">Upcoming Events</h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {events.map((event) => (
                 <Card key={event.id} className="hover:shadow-lg transition-shadow">
@@ -544,10 +544,10 @@ const Tickets = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="mt-16"
+          className="mt-12"
         >
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold mb-4 bg-gradient-primary bg-clip-text text-transparent">
+          <div className="text-center mb-6">
+            <h2 className="text-3xl font-bold mb-3 bg-gradient-primary bg-clip-text text-transparent">
               Support Our Performers
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
