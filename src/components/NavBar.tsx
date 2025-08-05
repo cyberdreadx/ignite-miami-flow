@@ -66,9 +66,13 @@ const NavBar = () => {
           <div className="flex-shrink-0">
             <a 
               href="/" 
-              className="text-xl font-graffiti font-bold bg-gradient-fire bg-clip-text text-transparent"
+              className="block transition-transform hover:scale-105"
             >
-              🔥 SkateBurn
+              <img 
+                src="/lovable-uploads/8d0a6a4f-38d5-4282-97c9-f38ba3bd0903.png" 
+                alt="SkateBurn" 
+                className="h-10 w-auto"
+              />
             </a>
           </div>
 
