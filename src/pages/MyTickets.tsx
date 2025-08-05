@@ -108,6 +108,36 @@ export const MyTickets: React.FC = () => {
     }
   };
 
+  const handleManageSubscription = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('customer-portal', {
+        headers: {
+          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+        },
+      });
+      
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      if (data.url) {
+        // Open Stripe Customer Portal in new tab
+        window.open(data.url, '_blank');
+      } else {
+        throw new Error("No portal URL received");
+      }
+    } catch (error) {
+      console.error('Error opening customer portal:', error);
+      toast({
+        title: "Portal Access Failed",
+        description: error instanceof Error ? error.message : "Could not open subscription management portal. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
     fetchUserTickets();
   }, [user]);
@@ -220,7 +250,7 @@ export const MyTickets: React.FC = () => {
                                   </p>
                                 </div>
                               </div>
-                              <div className="flex flex-col sm:flex-row gap-2">
+                               <div className="flex flex-col sm:flex-row gap-2">
                                 {isValidSubscription(subscription) && (
                                   <Button
                                     onClick={() => setSelectedItem({type: 'subscription', id: subscription.id})}
@@ -231,6 +261,14 @@ export const MyTickets: React.FC = () => {
                                     Show QR Code
                                   </Button>
                                 )}
+                                <Button
+                                  onClick={handleManageSubscription}
+                                  variant="outline"
+                                  className="w-full sm:w-auto text-sm"
+                                  size="sm"
+                                >
+                                  Manage Subscription
+                                </Button>
                               </div>
                             </div>
                           </CardContent>
