@@ -68,6 +68,23 @@ const NavBar = () => {
     }
   };
 
+  // Check if we're in a PWA context
+  const isPWA = () => {
+    return window.matchMedia('(display-mode: standalone)').matches || 
+           (window.navigator as any).standalone || 
+           document.referrer.includes('android-app://');
+  };
+
+  const handleNavigation = (path: string) => {
+    if (isPWA() && path === '/tickets') {
+      // For PWA, open the tickets page in system browser to handle Stripe payments
+      window.open(`${window.location.origin}${path}`, '_blank');
+    } else {
+      // For regular browser or other pages, use normal navigation
+      window.location.href = path;
+    }
+  };
+
   const navItems = [
     { label: "Feed", id: "feed", path: "/" },
     { label: "Get Tickets", id: "tickets", path: "/tickets" },
@@ -128,8 +145,7 @@ const NavBar = () => {
                     variant="ghost"
                     onClick={() => {
                       if (item.path) {
-                        // Force page reload for PWA compatibility
-                        window.location.href = item.path;
+                        handleNavigation(item.path);
                       } else {
                         scrollToSection(item.id);
                       }
@@ -284,8 +300,7 @@ const NavBar = () => {
                 variant="ghost"
                 onClick={() => {
                   if (item.path) {
-                    // Force page reload for PWA compatibility
-                    window.location.href = item.path;
+                    handleNavigation(item.path);
                   } else {
                     scrollToSection(item.id);
                   }
