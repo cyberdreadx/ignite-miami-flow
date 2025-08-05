@@ -156,14 +156,13 @@ const NavBar = () => {
             )}
           </div>
 
-          {/* Mobile menu button - Hide on mobile since we use bottom nav */}
-          <div className="sm:hidden">
+          {/* Mobile menu button */}
+          <div className="md:hidden">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setIsOpen(!isOpen)}
               aria-label="Toggle menu"
-              className="hidden"
             >
               {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
@@ -171,9 +170,9 @@ const NavBar = () => {
         </div>
       </div>
 
-      {/* Mobile Navigation - Hide on small screens where bottom nav is used */}
+      {/* Mobile Navigation */}
       {isOpen && (
-        <div className="md:hidden bg-background/95 backdrop-blur-lg border-b border-white/10 hidden">
+        <div className="md:hidden bg-background/95 backdrop-blur-lg border-b border-white/10">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             {navItems.map((item) => (
               <Button
