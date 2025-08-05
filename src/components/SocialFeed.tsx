@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -41,6 +42,7 @@ export const SocialFeed = () => {
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const fetchPosts = async () => {
     try {
@@ -206,7 +208,7 @@ export const SocialFeed = () => {
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
         <h2 className="text-2xl font-bold">Join the SkateBurn Community</h2>
         <p className="text-muted-foreground">Sign in to see posts and join the conversation</p>
-        <Button onClick={() => window.location.href = '/auth'}>
+        <Button onClick={() => navigate('/auth')}>
           Sign In
         </Button>
       </div>
