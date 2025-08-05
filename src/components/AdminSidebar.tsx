@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { 
   Users, 
   MessageSquare, 
@@ -38,6 +38,7 @@ const generalItems = [
 
 export function AdminSidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const currentPath = location.pathname + location.hash;
 
   const isActive = (path: string) => {
@@ -67,12 +68,21 @@ export function AdminSidebar() {
                       <button
                         className={`w-full text-left ${getNavCls({ isActive: isActive(item.url) })}`}
                         onClick={() => {
+                          // If not on admin page, navigate there first
+                          if (!location.pathname.startsWith('/admin')) {
+                            navigate(item.url);
+                            return;
+                          }
+                          
                           const elementId = item.url.split("#")[1];
                           const element = document.getElementById(elementId);
                           if (element) {
                             element.scrollIntoView({ behavior: "smooth", block: "start" });
                             // Update URL without triggering navigation
                             window.history.pushState({}, "", item.url);
+                          } else {
+                            // If element not found, navigate to ensure it loads
+                            navigate(item.url);
                           }
                         }}
                       >

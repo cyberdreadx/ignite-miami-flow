@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { Play } from 'lucide-react';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 
 interface MediaDisplayProps {
   mediaUrls: string[] | null;
@@ -89,12 +90,24 @@ export const MediaDisplay = ({ mediaUrls, mediaTypes, className = '' }: MediaDis
             {isVideo ? (
               <VideoPlayer src={url} index={index} />
             ) : (
-              <img
-                src={url}
-                alt="Post media"
-                className="w-full h-96 sm:h-[400px] md:h-[600px] object-cover cursor-pointer transition-transform group-hover:scale-105"
-                onClick={() => window.open(url, '_blank')}
-              />
+              <Dialog>
+                <DialogTrigger asChild>
+                  <img
+                    src={url}
+                    alt="Post media"
+                    className="w-full h-96 sm:h-[400px] md:h-[600px] object-cover cursor-pointer transition-transform group-hover:scale-105"
+                  />
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl max-h-[90vh] p-0">
+                  <div className="relative">
+                    <img
+                      src={url}
+                      alt="Post media"
+                      className="w-full h-auto max-h-[85vh] object-contain"
+                    />
+                  </div>
+                </DialogContent>
+              </Dialog>
             )}
           </div>
         );
