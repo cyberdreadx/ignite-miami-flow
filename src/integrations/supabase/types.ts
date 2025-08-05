@@ -111,6 +111,45 @@ export type Database = {
           },
         ]
       }
+      media_passes: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          instagram_handle: string
+          pass_type: string
+          photographer_name: string
+          status: string | null
+          stripe_session_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          instagram_handle: string
+          pass_type: string
+          photographer_name: string
+          status?: string | null
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          instagram_handle?: string
+          pass_type?: string
+          photographer_name?: string
+          status?: string | null
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       posts: {
         Row: {
           content: string

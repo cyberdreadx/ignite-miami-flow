@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,9 +7,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
-import { Camera, Flame, Users, Shield } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Camera, Flame, Users, Shield, CheckCircle, XCircle } from "lucide-react";
 import NavBar from "@/components/NavBar";
+import { supabase } from "@/integrations/supabase/client";
 
 const Photographers = () => {
   const [passType, setPassType] = useState("30");
@@ -21,6 +22,31 @@ const Photographers = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Handle success/cancel from payment redirect
+  useEffect(() => {
+    const success = searchParams.get("success");
+    const canceled = searchParams.get("canceled");
+    const passTypeParam = searchParams.get("pass_type");
+
+    if (success === "true" && passTypeParam) {
+      toast({
+        title: "Payment Successful!",
+        description: `Your ${passTypeParam === "30" ? "$30" : "$150"} media pass has been purchased. Check your email for details.`,
+      });
+      // Clear URL parameters
+      window.history.replaceState({}, '', '/photographers');
+    } else if (canceled === "true") {
+      toast({
+        title: "Payment Canceled",
+        description: "Your payment was canceled. You can try again anytime.",
+        variant: "destructive",
+      });
+      // Clear URL parameters
+      window.history.replaceState({}, '', '/photographers');
+    }
+  }, [searchParams, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,15 +73,30 @@ const Photographers = () => {
     setIsLoading(true);
 
     try {
-      // TODO: Implement Stripe payment integration
-      toast({
-        title: "Form Submitted",
-        description: "Payment integration coming soon. Your information has been recorded.",
+      // Call the media pass payment edge function
+      const { data, error } = await supabase.functions.invoke('create-media-pass-payment', {
+        body: {
+          passType,
+          name,
+          instagramHandle
+        }
       });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      if (data?.url) {
+        // Redirect to Stripe checkout
+        window.open(data.url, '_blank');
+      } else {
+        throw new Error('No checkout URL received');
+      }
     } catch (error) {
+      console.error('Payment error:', error);
       toast({
-        title: "Error",
-        description: "Something went wrong. Please try again.",
+        title: "Payment Error",
+        description: error instanceof Error ? error.message : "Something went wrong. Please try again.",
         variant: "destructive",
       });
     } finally {
