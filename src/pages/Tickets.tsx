@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useSearchParams } from 'react-router-dom';
+import { SystemTester } from '@/components/SystemTester';
 import NavBar from '@/components/NavBar';
 
 interface Event {
@@ -352,6 +353,17 @@ const Tickets = () => {
             </div>
           </motion.div>
         )}
+
+        {/* System Tester */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="mt-12"
+        >
+          <h2 className="text-2xl font-bold mb-6 text-center">System Testing</h2>
+          <SystemTester />
+        </motion.div>
       </div>
       </div>
     </motion.div>
