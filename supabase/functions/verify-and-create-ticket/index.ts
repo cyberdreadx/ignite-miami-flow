@@ -82,8 +82,20 @@ serve(async (req) => {
 
     // Generate QR code token
     const qrToken = `QR_${Math.random().toString(36).substr(2, 8).toUpperCase()}_${Date.now()}`;
+    
+    // Get the current active event to determine validity period
+    const { data: event } = await supabase
+      .from('events')
+      .select('*')
+      .eq('is_active', true)
+      .single();
+
+    // Calculate validity: 2 days after the next Tuesday event
     const validUntil = new Date();
-    validUntil.setDate(validUntil.getDate() + 2); // Valid for 2 days only
+    const dayOfWeek = validUntil.getDay(); // 0 = Sunday, 1 = Monday, ..., 2 = Tuesday
+    const daysUntilTuesday = dayOfWeek <= 2 ? (2 - dayOfWeek) : (9 - dayOfWeek); // Next Tuesday
+    validUntil.setDate(validUntil.getDate() + daysUntilTuesday + 2); // Event date + 2 days
+    validUntil.setHours(23, 59, 59, 999); // End of day
 
     // Get user profile for proper name display
     const { data: profile } = await supabase
