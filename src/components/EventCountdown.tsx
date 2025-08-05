@@ -13,8 +13,27 @@ export const EventCountdown = () => {
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [isEventPassed, setIsEventPassed] = useState(false);
 
-  // Set next SkateBurn event date - you can update this date
-  const nextEventDate = new Date('2025-08-08T19:00:00'); // Example: Friday 7PM
+  // Calculate next Tuesday at 7:00 PM
+  const getNextTuesday = () => {
+    const now = new Date();
+    const nextTuesday = new Date();
+    
+    // Get current day (0 = Sunday, 1 = Monday, 2 = Tuesday, etc.)
+    const currentDay = now.getDay();
+    const daysUntilTuesday = currentDay === 2 ? 7 : (2 - currentDay + 7) % 7;
+    
+    nextTuesday.setDate(now.getDate() + daysUntilTuesday);
+    nextTuesday.setHours(19, 0, 0, 0); // 7:00 PM
+    
+    // If it's Tuesday and past 7 PM, get next Tuesday
+    if (currentDay === 2 && now.getHours() >= 19) {
+      nextTuesday.setDate(nextTuesday.getDate() + 7);
+    }
+    
+    return nextTuesday;
+  };
+
+  const nextEventDate = getNextTuesday();
 
   useEffect(() => {
     const calculateTimeLeft = () => {
@@ -77,38 +96,42 @@ export const EventCountdown = () => {
 
   return (
     <Card className="bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20">
-      <CardContent className="p-6">
-        <div className="text-center space-y-4">
-          <div className="space-y-2">
-            <h3 className="text-xl font-bold text-primary">🔥 Next SkateBurn Event</h3>
-            <div className="flex items-center justify-center gap-2 text-muted-foreground">
-              <Calendar className="w-4 h-4" />
-              <span>{formatEventDate()}</span>
-              <Clock className="w-4 h-4 ml-2" />
-              <span>{formatEventTime()}</span>
+      <CardContent className="p-4">
+        <div className="text-center space-y-3">
+          <div className="space-y-1">
+            <h3 className="text-lg font-bold text-primary">🔥 Next SkateBurn Event</h3>
+            <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <Calendar className="w-3 h-3" />
+                <span>{formatEventDate()}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                <span>{formatEventTime()}</span>
+              </div>
             </div>
           </div>
           
-          <div className="grid grid-cols-4 gap-4">
-            <div className="bg-background/50 rounded-lg p-3 border">
-              <div className="text-2xl font-bold text-primary">{timeLeft.days}</div>
+          <div className="grid grid-cols-4 gap-3">
+            <div className="bg-background/50 rounded-lg p-2 border">
+              <div className="text-xl font-bold text-primary">{timeLeft.days}</div>
               <div className="text-xs text-muted-foreground uppercase tracking-wide">Days</div>
             </div>
-            <div className="bg-background/50 rounded-lg p-3 border">
-              <div className="text-2xl font-bold text-primary">{timeLeft.hours}</div>
+            <div className="bg-background/50 rounded-lg p-2 border">
+              <div className="text-xl font-bold text-primary">{timeLeft.hours}</div>
               <div className="text-xs text-muted-foreground uppercase tracking-wide">Hours</div>
             </div>
-            <div className="bg-background/50 rounded-lg p-3 border">
-              <div className="text-2xl font-bold text-primary">{timeLeft.minutes}</div>
+            <div className="bg-background/50 rounded-lg p-2 border">
+              <div className="text-xl font-bold text-primary">{timeLeft.minutes}</div>
               <div className="text-xs text-muted-foreground uppercase tracking-wide">Minutes</div>
             </div>
-            <div className="bg-background/50 rounded-lg p-3 border">
-              <div className="text-2xl font-bold text-primary">{timeLeft.seconds}</div>
+            <div className="bg-background/50 rounded-lg p-2 border">
+              <div className="text-xl font-bold text-primary">{timeLeft.seconds}</div>
               <div className="text-xs text-muted-foreground uppercase tracking-wide">Seconds</div>
             </div>
           </div>
           
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             Get ready to drop in! 🛹✨
           </p>
         </div>
