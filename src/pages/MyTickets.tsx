@@ -39,6 +39,9 @@ export const MyTickets: React.FC = () => {
   const fetchUserTickets = async () => {
     if (!user) return;
 
+    console.log('Fetching tickets for user ID:', user.id);
+    console.log('User email:', user.email);
+
     try {
       const [ticketsResponse, subscriptionsResponse] = await Promise.all([
         supabase
@@ -55,6 +58,9 @@ export const MyTickets: React.FC = () => {
 
       if (ticketsResponse.error) throw ticketsResponse.error;
       if (subscriptionsResponse.error) throw subscriptionsResponse.error;
+
+      console.log('Found tickets:', ticketsResponse.data);
+      console.log('Found subscriptions:', subscriptionsResponse.data);
 
       setTickets(ticketsResponse.data || []);
       setSubscriptions(subscriptionsResponse.data || []);
