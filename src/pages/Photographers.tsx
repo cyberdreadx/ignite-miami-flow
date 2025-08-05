@@ -122,7 +122,7 @@ const Photographers = () => {
             {/* Media Pass Benefits */}
             <Card className="bg-card/10 backdrop-blur-lg border border-white/10">
               <CardHeader>
-                <CardTitle className="text-2xl font-graffiti text-glow-yellow">
+                <CardTitle className="text-2xl font-normal text-glow-yellow">
                   Media Pass Includes
                 </CardTitle>
               </CardHeader>
@@ -149,7 +149,7 @@ const Photographers = () => {
             {/* Pass Options */}
             <Card className="bg-card/10 backdrop-blur-lg border border-white/10">
               <CardHeader>
-                <CardTitle className="text-2xl font-graffiti text-glow-yellow">
+                <CardTitle className="text-2xl font-normal text-glow-yellow">
                   Pass Options & Usage Rights
                 </CardTitle>
               </CardHeader>
@@ -187,7 +187,7 @@ const Photographers = () => {
           {/* Guidelines */}
           <Card className="bg-card/10 backdrop-blur-lg border border-white/10 my-8">
             <CardHeader>
-              <CardTitle className="text-2xl font-graffiti text-glow-yellow">
+              <CardTitle className="text-2xl font-normal text-glow-yellow">
                 Media Conduct & Guidelines
               </CardTitle>
             </CardHeader>
