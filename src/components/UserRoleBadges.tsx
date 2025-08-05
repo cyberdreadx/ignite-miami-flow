@@ -93,7 +93,7 @@ export const UserRoleBadges = ({ userId, className = "" }: UserRoleBadgesProps) 
                 <Badge 
                   variant="secondary"
                   className={`
-                    w-6 h-6 p-0 rounded-full text-xs font-bold flex items-center justify-center
+                    w-4 h-4 p-0 rounded-full text-[10px] font-bold flex items-center justify-center
                     cursor-help transition-all duration-200
                     ${ROLE_COLORS[role]}
                   `}

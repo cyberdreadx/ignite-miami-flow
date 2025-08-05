@@ -9,8 +9,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Heart, MessageCircle, Pin, Trash2 } from 'lucide-react';
+import { Heart, MessageCircle, Pin, Trash2, MoreHorizontal } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { formatDistanceToNow } from 'date-fns';
 import { MediaUpload, MediaFile, uploadMediaFiles } from '@/components/MediaUpload';
 import { MediaDisplay } from '@/components/MediaDisplay';
@@ -232,8 +233,8 @@ export const SocialFeed = () => {
               <div key={post.id} className="space-y-0 bg-background border-b border-border/20">
                 {/* Header */}
               <div className="max-w-2xl mx-auto px-4 py-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3 flex-1 min-w-0">
+                <div className="flex items-start justify-between">
+                  <div className="flex space-x-3 flex-1 min-w-0">
                     <Avatar className="h-8 w-8 flex-shrink-0">
                       {post.author_avatar && (
                         <AvatarImage src={post.author_avatar} alt={post.author_name} />
@@ -242,13 +243,15 @@ export const SocialFeed = () => {
                         {post.author_name?.charAt(0)?.toUpperCase() || 'U'}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
-                      <p className="font-semibold text-sm truncate">{post.author_name}</p>
-                      <UserRoleBadges userId={post.user_id} className="flex-shrink-0" />
-                      <span className="text-xs text-muted-foreground hidden sm:inline">•</span>
-                      <span className="text-xs text-muted-foreground hidden sm:inline">
-                        {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
-                      </span>
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-sm">{post.author_name}</p>
+                        <span className="text-xs text-muted-foreground">•</span>
+                        <span className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                        </span>
+                      </div>
+                      <UserRoleBadges userId={post.user_id} />
                     </div>
                   </div>
                   <div className="flex items-center gap-1 flex-shrink-0">
@@ -331,8 +334,8 @@ export const SocialFeed = () => {
             <div key={post.id} className="bg-background border-b border-border/20">
               {/* Header */}
               <div className="max-w-2xl mx-auto px-4 py-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3 flex-1 min-w-0">
+                <div className="flex items-start justify-between">
+                  <div className="flex space-x-3 flex-1 min-w-0">
                     <Avatar className="h-8 w-8 flex-shrink-0">
                       {post.author_avatar && (
                         <AvatarImage src={post.author_avatar} alt={post.author_name} />
@@ -341,42 +344,52 @@ export const SocialFeed = () => {
                         {post.author_name?.charAt(0)?.toUpperCase() || 'U'}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
-                      <p className="font-semibold text-sm truncate">{post.author_name}</p>
-                      <UserRoleBadges userId={post.user_id} className="flex-shrink-0" />
-                      <span className="text-xs text-muted-foreground hidden sm:inline">•</span>
-                      <span className="text-xs text-muted-foreground hidden sm:inline">
-                        {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
-                      </span>
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-sm">{post.author_name}</p>
+                        <span className="text-xs text-muted-foreground">•</span>
+                        <span className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                        </span>
+                      </div>
+                      <UserRoleBadges userId={post.user_id} />
                     </div>
                   </div>
-                  <div className="flex items-center gap-1 flex-shrink-0">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <Badge variant="secondary" className="text-xs h-5">
                       <Pin className="h-3 w-3 mr-1" />
                       <span className="hidden sm:inline">Pinned</span>
                     </Badge>
-                    <div className="flex gap-1 ml-2">
-                      {user?.id === post.user_id && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeletePost(post.id)}
-                          className="text-destructive hover:text-destructive h-8 w-8 p-0"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                      {isAdmin && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handlePin(post.id, post.pinned)}
-                          className="h-8 w-8 p-0"
-                        >
-                          <Pin className={`h-4 w-4 ${post.pinned ? 'fill-current' : ''}`} />
-                        </Button>
-                      )}
-                    </div>
+                    {(user?.id === post.user_id || isAdmin) && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {isAdmin && (
+                            <DropdownMenuItem onClick={() => handlePin(post.id, post.pinned)}>
+                              <Pin className="h-4 w-4 mr-2" />
+                              {post.pinned ? 'Unpin' : 'Pin'}
+                            </DropdownMenuItem>
+                          )}
+                          {user?.id === post.user_id && (
+                            <DropdownMenuItem 
+                              onClick={() => handleDeletePost(post.id)}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   </div>
                 </div>
               </div>
@@ -483,8 +496,8 @@ export const SocialFeed = () => {
             <div key={post.id} className="bg-background border-b border-border/20">
               {/* Header */}
               <div className="max-w-2xl mx-auto px-4 py-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3 flex-1 min-w-0">
+                <div className="flex items-start justify-between">
+                  <div className="flex space-x-3 flex-1 min-w-0">
                     <Avatar className="h-8 w-8 flex-shrink-0">
                       {post.author_avatar && (
                         <AvatarImage src={post.author_avatar} alt={post.author_name} />
@@ -493,37 +506,47 @@ export const SocialFeed = () => {
                         {post.author_name?.charAt(0)?.toUpperCase() || 'U'}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex items-center gap-2 flex-1 min-w-0 overflow-hidden">
-                      <p className="font-semibold text-sm truncate">{post.author_name}</p>
-                      <UserRoleBadges userId={post.user_id} className="flex-shrink-0" />
-                      <span className="text-xs text-muted-foreground hidden sm:inline">•</span>
-                      <span className="text-xs text-muted-foreground hidden sm:inline">
-                        {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
-                      </span>
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-sm">{post.author_name}</p>
+                        <span className="text-xs text-muted-foreground">•</span>
+                        <span className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                        </span>
+                      </div>
+                      <UserRoleBadges userId={post.user_id} />
                     </div>
                   </div>
-                  <div className="flex gap-1 flex-shrink-0">
-                    {user?.id === post.user_id && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeletePost(post.id)}
-                        className="text-destructive hover:text-destructive h-8 w-8 p-0"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                    {isAdmin && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handlePin(post.id, post.pinned)}
-                        className="h-8 w-8 p-0"
-                      >
-                        <Pin className={`h-4 w-4 ${post.pinned ? 'fill-current' : ''}`} />
-                      </Button>
-                    )}
-                  </div>
+                  {(user?.id === post.user_id || isAdmin) && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {isAdmin && (
+                          <DropdownMenuItem onClick={() => handlePin(post.id, post.pinned)}>
+                            <Pin className="h-4 w-4 mr-2" />
+                            {post.pinned ? 'Unpin' : 'Pin'}
+                          </DropdownMenuItem>
+                        )}
+                        {user?.id === post.user_id && (
+                          <DropdownMenuItem 
+                            onClick={() => handleDeletePost(post.id)}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
                 </div>
               </div>
 
