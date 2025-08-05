@@ -28,10 +28,10 @@ serve(async (req) => {
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
     if (userError || !userData.user) throw new Error("User not authenticated");
 
-    const { ticket_id, subscription_id } = await req.json();
+    const { ticket_id, subscription_id, media_pass_id } = await req.json();
     
-    if (!ticket_id && !subscription_id) {
-      throw new Error("Either ticket_id or subscription_id is required");
+    if (!ticket_id && !subscription_id && !media_pass_id) {
+      throw new Error("Either ticket_id, subscription_id, or media_pass_id is required");
     }
 
     let result;
@@ -96,7 +96,7 @@ serve(async (req) => {
           type: "ticket"
         };
       }
-    } else {
+    } else if (subscription_id) {
       // Generate QR code for subscription
       const { data: subscription, error: subError } = await supabaseClient
         .from("subscriptions")
@@ -144,6 +144,74 @@ serve(async (req) => {
           qr_code_token: qrToken,
           qr_code_data: qrData,
           type: "subscription"
+        };
+      }
+    } else {
+      // Generate QR code for media pass
+      const { data: mediaPass, error: mediaPassError } = await supabaseClient
+        .from("media_passes")
+        .select("*")
+        .eq("id", media_pass_id)
+        .eq("user_id", userData.user.id)
+        .single();
+
+      if (mediaPassError || !mediaPass) throw new Error("Media pass not found");
+      
+      if (mediaPass.qr_code_token) {
+        // Return existing QR code
+        result = {
+          qr_code_token: mediaPass.qr_code_token,
+          qr_code_data: mediaPass.qr_code_data,
+          type: "media_pass"
+        };
+      } else {
+        // Generate new QR code token
+        const { data: tokenData } = await supabaseClient.rpc("generate_qr_token");
+        const qrToken = tokenData;
+        
+        // Get user profile for proper name display
+        const { data: profile } = await supabaseClient
+          .from('profiles')
+          .select('full_name, email')
+          .eq('user_id', userData.user.id)
+          .single();
+
+        const userName = profile?.full_name || profile?.email || userData.user.email;
+        
+        // Calculate validity (30 days from creation for media passes)
+        const validUntil = new Date();
+        validUntil.setDate(validUntil.getDate() + 30);
+        
+        // Create QR code data
+        const qrData = JSON.stringify({
+          type: "media_pass",
+          id: mediaPass.id,
+          user_id: userData.user.id,
+          user_name: userName,
+          token: qrToken,
+          pass_type: mediaPass.pass_type,
+          photographer_name: mediaPass.photographer_name,
+          instagram_handle: mediaPass.instagram_handle,
+          amount: mediaPass.amount,
+          valid_until: validUntil.toISOString()
+        });
+
+        // Update media pass with QR code data
+        const { error: updateError } = await supabaseClient
+          .from("media_passes")
+          .update({
+            qr_code_token: qrToken,
+            qr_code_data: qrData,
+            valid_until: validUntil.toISOString()
+          })
+          .eq("id", media_pass_id);
+
+        if (updateError) throw new Error("Failed to update media pass with QR code");
+
+        result = {
+          qr_code_token: qrToken,
+          qr_code_data: qrData,
+          type: "media_pass"
         };
       }
     }

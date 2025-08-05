@@ -119,10 +119,13 @@ export type Database = {
           instagram_handle: string
           pass_type: string
           photographer_name: string
+          qr_code_data: string | null
+          qr_code_token: string | null
           status: string | null
           stripe_session_id: string | null
           updated_at: string
           user_id: string | null
+          valid_until: string | null
         }
         Insert: {
           amount: number
@@ -131,10 +134,13 @@ export type Database = {
           instagram_handle: string
           pass_type: string
           photographer_name: string
+          qr_code_data?: string | null
+          qr_code_token?: string | null
           status?: string | null
           stripe_session_id?: string | null
           updated_at?: string
           user_id?: string | null
+          valid_until?: string | null
         }
         Update: {
           amount?: number
@@ -143,10 +149,13 @@ export type Database = {
           instagram_handle?: string
           pass_type?: string
           photographer_name?: string
+          qr_code_data?: string | null
+          qr_code_token?: string | null
           status?: string | null
           stripe_session_id?: string | null
           updated_at?: string
           user_id?: string | null
+          valid_until?: string | null
         }
         Relationships: []
       }

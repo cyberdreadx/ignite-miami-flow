@@ -8,12 +8,14 @@ import { Loader2, QrCode, Download } from 'lucide-react';
 interface QRCodeDisplayProps {
   ticketId?: string;
   subscriptionId?: string;
-  type: 'ticket' | 'subscription';
+  mediaPassId?: string;
+  type: 'ticket' | 'subscription' | 'media_pass';
 }
 
 export const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({ 
   ticketId, 
   subscriptionId, 
+  mediaPassId,
   type 
 }) => {
   const [qrCodeData, setQrCodeData] = useState<string>('');
@@ -25,11 +27,18 @@ export const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({
   const generateQRCode = async () => {
     setLoading(true);
     try {
+      const payload: any = {};
+      
+      if (ticketId) {
+        payload.ticket_id = ticketId;
+      } else if (subscriptionId) {
+        payload.subscription_id = subscriptionId;
+      } else if (mediaPassId) {
+        payload.media_pass_id = mediaPassId;
+      }
+
       const { data, error } = await supabase.functions.invoke('generate-qr-code', {
-        body: {
-          ticket_id: ticketId,
-          subscription_id: subscriptionId
-        }
+        body: payload
       });
 
       if (error) throw error;
@@ -71,17 +80,17 @@ export const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({
   };
 
   useEffect(() => {
-    if ((ticketId || subscriptionId) && !qrCodeData) {
+    if ((ticketId || subscriptionId || mediaPassId) && !qrCodeData) {
       generateQRCode();
     }
-  }, [ticketId, subscriptionId]);
+  }, [ticketId, subscriptionId, mediaPassId]);
 
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <QrCode className="w-5 h-5" />
-          {type === 'ticket' ? 'Event Ticket' : 'Monthly Pass'} QR Code
+          {type === 'ticket' ? 'Event Ticket' : type === 'subscription' ? 'Monthly Pass' : 'Media Pass'} QR Code
         </CardTitle>
       </CardHeader>
       <CardContent className="text-center space-y-4">

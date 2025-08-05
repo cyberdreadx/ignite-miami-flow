@@ -191,6 +191,93 @@ serve(async (req) => {
       });
     }
 
+    // If not a subscription, check if it's a media pass
+    const { data: mediaPass, error: mediaPassError } = await supabaseClient
+      .from("media_passes")
+      .select("*")
+      .eq("qr_code_token", qr_code_token)
+      .single();
+
+    console.log("Media pass query result:", { mediaPass, mediaPassError });
+
+    if (!mediaPassError && mediaPass) {
+      // Get user profile separately
+      const { data: profile } = await supabaseClient
+        .from("profiles")
+        .select("full_name, email")
+        .eq("user_id", mediaPass.user_id)
+        .single();
+
+      const userName = profile?.full_name || profile?.email || "Unknown";
+      
+      // Check media pass validity
+      const now = new Date();
+      const validUntil = mediaPass.valid_until ? new Date(mediaPass.valid_until) : null;
+      
+      if (mediaPass.status !== "paid") {
+        return new Response(JSON.stringify({
+          valid: false,
+          reason: "This media pass payment is not confirmed",
+          type: "media_pass",
+          media_pass_info: {
+            id: mediaPass.id,
+            pass_type: mediaPass.pass_type,
+            photographer_name: mediaPass.photographer_name,
+            instagram_handle: mediaPass.instagram_handle,
+            amount: mediaPass.amount,
+            user_name: userName,
+            created_at: mediaPass.created_at,
+            valid_until: mediaPass.valid_until,
+            status: mediaPass.status
+          }
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+
+      if (validUntil && now > validUntil) {
+        return new Response(JSON.stringify({
+          valid: false,
+          reason: "This media pass has expired",
+          type: "media_pass",
+          media_pass_info: {
+            id: mediaPass.id,
+            pass_type: mediaPass.pass_type,
+            photographer_name: mediaPass.photographer_name,
+            instagram_handle: mediaPass.instagram_handle,
+            amount: mediaPass.amount,
+            user_name: userName,
+            created_at: mediaPass.created_at,
+            valid_until: mediaPass.valid_until,
+            status: mediaPass.status
+          }
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+
+      return new Response(JSON.stringify({
+        valid: true,
+        type: "media_pass",
+        media_pass_info: {
+          id: mediaPass.id,
+          pass_type: mediaPass.pass_type,
+          photographer_name: mediaPass.photographer_name,
+          instagram_handle: mediaPass.instagram_handle,
+          amount: mediaPass.amount,
+          user_name: userName,
+          created_at: mediaPass.created_at,
+          valid_until: mediaPass.valid_until,
+          status: mediaPass.status
+        }
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
     // QR code not found
     return new Response(JSON.stringify({
       valid: false,
