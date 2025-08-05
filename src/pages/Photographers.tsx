@@ -104,6 +104,55 @@ const Photographers = () => {
     }
   };
 
+  // Show sign-in prompt if user is not authenticated
+  if (!user) {
+    return (
+      <>
+        <NavBar />
+        <div className="min-h-screen bg-gradient-dark pt-24 px-6">
+          <div className="max-w-2xl mx-auto">
+            <div className="text-center">
+              <div className="mb-8">
+                <Camera className="w-16 h-16 text-primary mx-auto mb-4" />
+                <h1 className="text-4xl font-graffiti bg-gradient-fire bg-clip-text text-transparent mb-4">
+                  📸 SKATEBURN MEDIA PASS
+                </h1>
+                <p className="text-glow-yellow text-xl mb-8">
+                  Capture the Magic of Fire & Flow
+                </p>
+              </div>
+              
+              <Card className="bg-card/10 backdrop-blur-lg border border-white/10">
+                <CardContent className="p-8 text-center">
+                  <Shield className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
+                  <h2 className="text-2xl font-semibold text-foreground mb-4">
+                    Sign In Required
+                  </h2>
+                  <p className="text-muted-foreground mb-6">
+                    You need to be signed in to access media pass applications. 
+                    Create an account or sign in to continue.
+                  </p>
+                  <div className="space-y-3">
+                    <Button 
+                      onClick={() => navigate("/auth")} 
+                      size="lg" 
+                      className="w-full"
+                    >
+                      Sign In to Continue
+                    </Button>
+                    <p className="text-sm text-muted-foreground">
+                      Don't have an account? Sign up is available on the auth page.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <NavBar />
