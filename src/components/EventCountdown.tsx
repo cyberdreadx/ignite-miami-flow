@@ -12,39 +12,14 @@ export const EventCountdown = () => {
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [isEventPassed, setIsEventPassed] = useState(false);
 
-  // Calculate next Tuesday at 7:00 PM
-  const getNextTuesday = () => {
-    const now = new Date();
-    const nextTuesday = new Date();
-    
-    // Get current day (0 = Sunday, 1 = Monday, 2 = Tuesday, etc.)
-    const currentDay = now.getDay();
-    
-    // Calculate days until next Tuesday
-    let daysUntilTuesday;
-    if (currentDay === 2) {
-      // It's Tuesday - check if event time has passed
-      if (now.getHours() >= 19) {
-        // Past 7 PM, so next Tuesday is in 7 days
-        daysUntilTuesday = 7;
-      } else {
-        // Before 7 PM, so today is the event day
-        daysUntilTuesday = 0;
-      }
-    } else {
-      // Not Tuesday - calculate days until next Tuesday
-      daysUntilTuesday = (2 - currentDay + 7) % 7;
-      if (daysUntilTuesday === 0) daysUntilTuesday = 7; // If result is 0, next Tuesday is 7 days away
-    }
-    
-    nextTuesday.setDate(now.getDate() + daysUntilTuesday);
-    nextTuesday.setHours(19, 0, 0, 0); // 7:00 PM
-    
-    return nextTuesday;
+  // Calculate August 19th at 7:00 PM
+  const getNextEvent = () => {
+    const eventDate = new Date(2025, 7, 19, 19, 0, 0, 0); // August 19th, 2025 at 7:00 PM (month is 0-indexed)
+    return eventDate;
   };
 
   useEffect(() => {
-    const nextEventDate = getNextTuesday();
+    const nextEventDate = getNextEvent();
     
     const calculateTimeLeft = () => {
       const now = new Date().getTime();
@@ -74,7 +49,7 @@ export const EventCountdown = () => {
     return () => clearInterval(timer);
   }, []); // Empty dependency array to prevent infinite loop
 
-  const nextEventDate = getNextTuesday();
+  const nextEventDate = getNextEvent();
 
   const formatEventDate = () => {
     return nextEventDate.toLocaleDateString('en-US', {
