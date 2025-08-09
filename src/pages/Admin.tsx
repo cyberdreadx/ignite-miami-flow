@@ -31,6 +31,7 @@ import {
   Ticket
 } from 'lucide-react';
 import { MultiRoleManager } from '@/components/MultiRoleManager';
+import { AdminEventDateCard } from '@/components/AdminEventDateCard';
 
 interface Post {
   id: string;
@@ -769,6 +770,10 @@ const Admin = () => {
 
           {/* Content */}
           <div className="p-4 space-y-6">
+            {/* Event Scheduler */}
+            <div id="events">
+              <AdminEventDateCard />
+            </div>
             {/* Stats Overview */}
             <div id="dashboard" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <Card>

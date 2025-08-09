@@ -86,6 +86,7 @@ export type Database = {
           id: string
           is_active: boolean
           location: string
+          start_at: string | null
           subtitle: string | null
           time: string
           title: string
@@ -97,6 +98,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           location: string
+          start_at?: string | null
           subtitle?: string | null
           time: string
           title: string
@@ -108,6 +110,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           location?: string
+          start_at?: string | null
           subtitle?: string | null
           time?: string
           title?: string

@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { Calendar, Clock } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { formatInTimeZone } from "date-fns-tz";
 
 interface TimeLeft {
   days: number;
@@ -11,19 +13,34 @@ interface TimeLeft {
 export const EventCountdown = () => {
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [isEventPassed, setIsEventPassed] = useState(false);
+  const [eventDate, setEventDate] = useState<Date | null>(null);
+  const TIME_ZONE = 'America/New_York';
 
-  // Calculate August 19th at 7:00 PM
-  const getNextEvent = () => {
-    const eventDate = new Date(2025, 7, 19, 19, 0, 0, 0); // August 19th, 2025 at 7:00 PM (month is 0-indexed)
-    return eventDate;
-  };
+useEffect(() => {
+    const fetchEvent = async () => {
+      const { data } = await supabase
+        .from('events')
+        .select('start_at')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .maybeSingle();
+
+      if (data?.start_at) {
+        setEventDate(new Date(data.start_at as string));
+      } else {
+        // Fallback to Aug 19, 2025 7:00 PM ET
+        setEventDate(new Date('2025-08-19T19:00:00-04:00'));
+      }
+    };
+    fetchEvent();
+  }, []);
 
   useEffect(() => {
-    const nextEventDate = getNextEvent();
-    
+    if (!eventDate) return;
+
     const calculateTimeLeft = () => {
       const now = new Date().getTime();
-      const eventTime = nextEventDate.getTime();
+      const eventTime = eventDate.getTime();
       const difference = eventTime - now;
 
       if (difference > 0) {
@@ -47,28 +64,21 @@ export const EventCountdown = () => {
     const timer = setInterval(calculateTimeLeft, 1000);
 
     return () => clearInterval(timer);
-  }, []); // Empty dependency array to prevent infinite loop
+  }, [eventDate]);
 
-  const nextEventDate = getNextEvent();
+  const nextEventDate = eventDate;
 
-  const formatEventDate = () => {
-    return nextEventDate.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+const formatEventDate = () => {
+    if (!nextEventDate) return '';
+    return formatInTimeZone(nextEventDate, TIME_ZONE, 'EEEE, yyyy MMMM d');
   };
 
-  const formatEventTime = () => {
-    return nextEventDate.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    });
+const formatEventTime = () => {
+    if (!nextEventDate) return '';
+    return formatInTimeZone(nextEventDate, TIME_ZONE, 'h:mm a');
   };
 
-  if (isEventPassed) {
+  if (nextEventDate && isEventPassed) {
     return (
       <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-green-500/10 via-background to-emerald-500/10 border border-green-500/30 shadow-lg">
         {/* Background decoration */}
