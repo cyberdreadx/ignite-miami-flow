@@ -362,9 +362,9 @@ const Admin = () => {
 
   const fetchMediaPassAnalytics = async () => {
     try {
+      // Use secure admin function to get media pass data
       const { data, error } = await supabase
-        .from('media_passes')
-        .select('amount, status, pass_type, created_at');
+        .rpc('get_all_media_passes_admin');
 
       if (error) {
         console.error('Error fetching media pass analytics:', error);
@@ -409,10 +409,13 @@ const Admin = () => {
           .select('amount, created_at, status')
           .gte('created_at', thirtyDaysAgo.toISOString()),
         supabase
-          .from('media_passes')
-          .select('amount, created_at, status')
-          .gte('created_at', thirtyDaysAgo.toISOString())
+          .rpc('get_all_media_passes_admin')
       ]);
+
+      // Filter media passes to only last 30 days since the function returns all
+      const filteredPasses = (passesResult.data || []).filter(pass => 
+        new Date(pass.created_at) >= thirtyDaysAgo
+      );
 
       // Group by date
       const salesByDate: { [key: string]: SalesData } = {};
@@ -430,7 +433,7 @@ const Admin = () => {
       });
 
       // Process media passes
-      (passesResult.data || []).forEach(pass => {
+      filteredPasses.forEach(pass => {
         if (pass.status === 'paid') {
           const date = new Date(pass.created_at).toISOString().split('T')[0];
           if (!salesByDate[date]) {

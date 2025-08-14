@@ -460,6 +460,25 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_all_media_passes_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          amount: number
+          created_at: string
+          id: string
+          instagram_handle: string
+          pass_type: string
+          photographer_name: string
+          qr_code_token: string
+          status: string
+          stripe_session_id: string
+          updated_at: string
+          user_email: string
+          user_id: string
+          user_name: string
+          valid_until: string
+        }[]
+      }
       get_all_profiles_admin: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -499,6 +518,19 @@ export type Database = {
           location: string
           role: string
           user_id: string
+        }[]
+      }
+      get_my_media_passes: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          created_at: string
+          id: string
+          instagram_handle: string
+          pass_type: string
+          photographer_name: string
+          qr_code_token: string
+          status: string
+          valid_until: string
         }[]
       }
       get_posts_with_counts: {
