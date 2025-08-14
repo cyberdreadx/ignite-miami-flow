@@ -1,8 +1,12 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
+
+// Cache for user roles badges to prevent redundant API calls
+const badgeCache = new Map<string, { roles: AppRole[]; timestamp: number }>();
+const BADGE_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 interface UserRoleBadgesProps {
   userId: string;
@@ -47,6 +51,19 @@ export const UserRoleBadges = ({ userId, className = "" }: UserRoleBadgesProps) 
 
   useEffect(() => {
     const fetchUserRoles = async () => {
+      if (!userId) {
+        setLoading(false);
+        return;
+      }
+
+      // Check cache first
+      const cached = badgeCache.get(userId);
+      if (cached && Date.now() - cached.timestamp < BADGE_CACHE_DURATION) {
+        setRoles(cached.roles);
+        setLoading(false);
+        return;
+      }
+
       try {
         // Use the get_user_roles function that's accessible to everyone
         const { data, error } = await supabase
@@ -59,6 +76,9 @@ export const UserRoleBadges = ({ userId, className = "" }: UserRoleBadgesProps) 
 
         const userRoles = data?.map(r => r.role as AppRole) || [];
         setRoles(userRoles);
+        
+        // Cache the result
+        badgeCache.set(userId, { roles: userRoles, timestamp: Date.now() });
       } catch (error) {
         console.error('Error fetching user roles:', error);
       } finally {
@@ -66,9 +86,7 @@ export const UserRoleBadges = ({ userId, className = "" }: UserRoleBadgesProps) 
       }
     };
 
-    if (userId) {
-      fetchUserRoles();
-    }
+    fetchUserRoles();
   }, [userId]);
 
   if (loading) {
@@ -124,4 +142,4 @@ export const UserRoleBadges = ({ userId, className = "" }: UserRoleBadgesProps) 
   );
 };
 
-export default UserRoleBadges;
+export default React.memo(UserRoleBadges);

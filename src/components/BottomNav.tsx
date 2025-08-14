@@ -1,3 +1,4 @@
+import React from "react";
 import { Home, Ticket, User, Scan, ShoppingBag } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -79,4 +80,4 @@ const BottomNav = () => {
   );
 };
 
-export default BottomNav;
+export default React.memo(BottomNav);

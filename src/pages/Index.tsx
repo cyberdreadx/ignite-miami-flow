@@ -1,3 +1,4 @@
+import React from "react";
 import { motion } from "framer-motion";
 import NavBar from "@/components/NavBar";
 import { SocialFeed } from "@/components/SocialFeed";
@@ -37,4 +38,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default React.memo(Index);
