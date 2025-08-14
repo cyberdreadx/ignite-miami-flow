@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -88,10 +89,21 @@ const likeVariants = {
   }
 };
 
-export const SocialFeed = () => {
-  const [posts, setPosts] = useState<Post[]>([]);
+// Query function for fetching posts
+const fetchPosts = async (): Promise<Post[]> => {
+  const { data: postsData, error: postsError } = await supabase
+    .rpc('get_posts_with_counts');
+
+  if (postsError) {
+    console.error('Error fetching posts:', postsError);
+    throw new Error(postsError.message);
+  }
+
+  return postsData || [];
+};
+
+export const SocialFeed = React.memo(() => {
   const [newPost, setNewPost] = useState('');
-  const [loading, setLoading] = useState(true);
   const [posting, setPosting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [selectedMedia, setSelectedMedia] = useState<MediaFile[]>([]);
@@ -100,36 +112,66 @@ export const SocialFeed = () => {
   const { isAdmin } = useUserRole();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  const fetchPosts = async () => {
-    try {
-      const { data: postsData, error: postsError } = await supabase
-        .rpc('get_posts_with_counts');
+  // Use React Query for posts with better caching
+  const { 
+    data: posts = [], 
+    isLoading: loading, 
+    error 
+  } = useQuery({
+    queryKey: ['posts'],
+    queryFn: fetchPosts,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
+  });
 
-      if (postsError) {
-        console.error('Error fetching posts:', postsError);
-        setLoading(false);
-        return;
-      }
-
-      setPosts(postsData || []);
-    } catch (error) {
-      console.error('Error in fetchPosts:', error);
-    } finally {
-      setLoading(false);
+  // Create post mutation
+  const createPostMutation = useMutation({
+    mutationFn: async ({ content, mediaUrls, mediaTypes }: { 
+      content: string | null; 
+      mediaUrls: string[] | null; 
+      mediaTypes: string[] | null 
+    }) => {
+      const { error } = await supabase.rpc('create_post', {
+        post_content: content,
+        media_urls: mediaUrls,
+        media_types: mediaTypes
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      // Invalidate and refetch posts
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      setNewPost('');
+      setSelectedMedia([]);
+      setClearMediaFiles(true);
+      setTimeout(() => setClearMediaFiles(false), 100);
+      toast({
+        title: 'Post created!',
+        description: 'Your post has been shared with the community.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error creating post',
+        description: error.message || 'An unexpected error occurred.',
+        variant: 'destructive',
+      });
+    },
+    onSettled: () => {
+      setPosting(false);
     }
-  };
+  });
 
-  useEffect(() => {
-    fetchPosts();
-  }, []);
-
-  const handleCreatePost = async (e: React.FormEvent) => {
+  const handleCreatePost = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if ((!newPost.trim() && selectedMedia.length === 0) || !user) return;
 
     setPosting(true);
     setUploadProgress(0);
+    
     try {
       let mediaUrls: string[] = [];
       let mediaTypes: string[] = [];
@@ -142,44 +184,26 @@ export const SocialFeed = () => {
         mediaTypes = uploadResult.types;
       }
 
-      const { error } = await supabase.rpc('create_post', {
-        post_content: newPost.trim() || null,
-        media_urls: mediaUrls.length > 0 ? mediaUrls : null,
-        media_types: mediaTypes.length > 0 ? mediaTypes : null
+      createPostMutation.mutate({
+        content: newPost.trim() || null,
+        mediaUrls: mediaUrls.length > 0 ? mediaUrls : null,
+        mediaTypes: mediaTypes.length > 0 ? mediaTypes : null
       });
-
-      if (error) {
-        toast({
-          title: 'Error creating post',
-          description: error.message,
-          variant: 'destructive',
-        });
-      } else {
-        setNewPost('');
-        setSelectedMedia([]);
-        setClearMediaFiles(true);
-        setTimeout(() => setClearMediaFiles(false), 100);
-        fetchPosts();
-        toast({
-          title: 'Post created!',
-          description: 'Your post has been shared with the community.',
-        });
-      }
     } catch (error) {
       toast({
-        title: 'Error creating post',
-        description: 'An unexpected error occurred.',
+        title: 'Error uploading media',
+        description: 'Failed to upload media files.',
         variant: 'destructive',
       });
+      setPosting(false);
     }
-    setPosting(false);
-  };
+  }, [newPost, selectedMedia, user, createPostMutation, toast]);
 
-  const handleMediaChange = (files: MediaFile[]) => {
+  const handleMediaChange = useCallback((files: MediaFile[]) => {
     setSelectedMedia(files);
-  };
+  }, []);
 
-  const handleLike = async (postId: string, currentlyLiked: boolean) => {
+  const handleLike = useCallback(async (postId: string, currentlyLiked: boolean) => {
     if (!user) return;
 
     try {
@@ -188,14 +212,15 @@ export const SocialFeed = () => {
       });
 
       if (!error) {
-        fetchPosts();
+        // Invalidate posts query to refetch data
+        queryClient.invalidateQueries({ queryKey: ['posts'] });
       }
     } catch (error) {
       console.error('Error toggling like:', error);
     }
-  };
+  }, [user, queryClient]);
 
-  const handlePin = async (postId: string, currentlyPinned: boolean) => {
+  const handlePin = useCallback(async (postId: string, currentlyPinned: boolean) => {
     if (!isAdmin) return;
 
     try {
@@ -210,7 +235,8 @@ export const SocialFeed = () => {
           variant: 'destructive',
         });
       } else {
-        fetchPosts();
+        // Invalidate posts query to refetch data
+        queryClient.invalidateQueries({ queryKey: ['posts'] });
         toast({
           title: currentlyPinned ? 'Post unpinned' : 'Post pinned',
           description: currentlyPinned ? 'Post removed from top of feed.' : 'Post pinned to top of feed.',
@@ -223,9 +249,9 @@ export const SocialFeed = () => {
         variant: 'destructive',
       });
     }
-  };
+  }, [isAdmin, queryClient, toast]);
 
-  const handleDeletePost = async (postId: string) => {
+  const handleDeletePost = useCallback(async (postId: string) => {
     if (!user) return;
 
     if (!confirm('Are you sure you want to delete this post?')) return;
@@ -244,7 +270,8 @@ export const SocialFeed = () => {
           variant: 'destructive',
         });
       } else {
-        fetchPosts();
+        // Invalidate posts query to refetch data
+        queryClient.invalidateQueries({ queryKey: ['posts'] });
         toast({
           title: 'Post deleted',
           description: 'Your post has been deleted successfully.',
@@ -257,7 +284,7 @@ export const SocialFeed = () => {
         variant: 'destructive',
       });
     }
-  };
+  }, [user, queryClient, toast]);
 
   const pinnedPosts = posts.filter(post => post.pinned);
   const regularPosts = posts.filter(post => !post.pinned).sort((a, b) => 
@@ -397,9 +424,13 @@ export const SocialFeed = () => {
               postId={post.id}
               commentCount={post.comment_count}
               onCommentCountChange={(newCount) => {
-                setPosts(prev => prev.map(p => 
-                  p.id === post.id ? { ...p, comment_count: newCount } : p
-                ));
+                // Optimistically update the cache
+                queryClient.setQueryData(['posts'], (oldData: Post[] | undefined) => {
+                  if (!oldData) return oldData;
+                  return oldData.map(p => 
+                    p.id === post.id ? { ...p, comment_count: newCount } : p
+                  );
+                });
               }}
             />
           </div>
@@ -609,4 +640,6 @@ export const SocialFeed = () => {
       )}
     </motion.div>
   );
-};
+});
+
+SocialFeed.displayName = 'SocialFeed';
