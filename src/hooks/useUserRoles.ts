@@ -21,10 +21,9 @@ export const useUserRoles = (userId?: string) => {
 
       try {
         setError(null);
+        // Use the get_user_roles function that was created earlier
         const { data, error: supabaseError } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', targetUserId);
+          .rpc('get_user_roles', { _user_id: targetUserId });
 
         if (supabaseError) {
           throw supabaseError;

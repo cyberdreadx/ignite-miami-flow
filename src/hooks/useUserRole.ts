@@ -28,18 +28,18 @@ export const useUserRole = () => {
 
       try {
         console.log('Fetching role for user:', user.id, user.email);
-        console.log('About to query profiles table with email:', user.email);
+        console.log('About to query profiles table with user_id:', user.id);
 
-        // Try querying by email as backup since auth.uid() context issues
+        // Query by user_id since that's what the RLS policy allows
         const { data, error } = await supabase
           .from('profiles')
           .select('role, email, user_id')
-          .eq('email', user.email)
+          .eq('user_id', user.id)
           .maybeSingle();
 
         console.log('Raw query result - data:', data);
         console.log('Raw query result - error:', error);
-        console.log('User email used in query:', user.email);
+        console.log('User ID used in query:', user.id);
 
         if (error) {
           console.error('Database error fetching user role:', error);

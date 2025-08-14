@@ -48,10 +48,9 @@ export const UserRoleBadges = ({ userId, className = "" }: UserRoleBadgesProps) 
   useEffect(() => {
     const fetchUserRoles = async () => {
       try {
+        // Use the get_user_roles function that's accessible to everyone
         const { data, error } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', userId);
+          .rpc('get_user_roles', { _user_id: userId });
 
         if (error) {
           console.error('Error fetching user roles:', error);
