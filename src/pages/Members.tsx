@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import NavBar from "@/components/NavBar";
 import { MemberDirectory } from "@/components/MemberDirectory";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import { useApprovalStatus } from "@/hooks/useApprovalStatus";
 import ApprovalStatus from "@/components/ApprovalStatus";
 

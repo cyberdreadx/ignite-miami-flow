@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import { useApprovalStatus } from "@/hooks/useApprovalStatus";
 import { Clock, XCircle, CheckCircle } from "lucide-react";
 

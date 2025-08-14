@@ -1,8 +1,8 @@
 import React from "react";
 import { Home, Ticket, User, Scan, ShoppingBag } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
-import { useUserRole } from "@/hooks/useUserRole";
+import { useAuth } from "@/contexts/AuthContext";
+import { useUserRole } from "@/contexts/UserRoleContext";
 import { Button } from "@/components/ui/button";
 
 const BottomNav = () => {

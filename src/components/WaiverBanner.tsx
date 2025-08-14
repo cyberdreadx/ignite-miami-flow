@@ -3,7 +3,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { FileText, X } from 'lucide-react';
 import { useWaiver } from '@/hooks/useWaiver';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { WaiverModal } from './WaiverModal';
 
 export const WaiverBanner: React.FC = () => {

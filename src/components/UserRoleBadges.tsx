@@ -4,9 +4,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 
-// Cache for user roles badges to prevent redundant API calls
-const badgeCache = new Map<string, { roles: AppRole[]; timestamp: number }>();
-const BADGE_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+import { useUserRoles } from "@/contexts/UserRoleContext";
 
 interface UserRoleBadgesProps {
   userId: string;
@@ -46,48 +44,7 @@ const ROLE_FULL_NAMES: Record<AppRole, string> = {
 };
 
 export const UserRoleBadges = ({ userId, className = "" }: UserRoleBadgesProps) => {
-  const [roles, setRoles] = useState<AppRole[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchUserRoles = async () => {
-      if (!userId) {
-        setLoading(false);
-        return;
-      }
-
-      // Check cache first
-      const cached = badgeCache.get(userId);
-      if (cached && Date.now() - cached.timestamp < BADGE_CACHE_DURATION) {
-        setRoles(cached.roles);
-        setLoading(false);
-        return;
-      }
-
-      try {
-        // Use the get_user_roles function that's accessible to everyone
-        const { data, error } = await supabase
-          .rpc('get_user_roles', { _user_id: userId });
-
-        if (error) {
-          console.error('Error fetching user roles:', error);
-          return;
-        }
-
-        const userRoles = data?.map(r => r.role as AppRole) || [];
-        setRoles(userRoles);
-        
-        // Cache the result
-        badgeCache.set(userId, { roles: userRoles, timestamp: Date.now() });
-      } catch (error) {
-        console.error('Error fetching user roles:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserRoles();
-  }, [userId]);
+  const { roles, loading } = useUserRoles(userId);
 
   if (loading) {
     return (
