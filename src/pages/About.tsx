@@ -20,6 +20,7 @@ import {
   Crown
 } from "lucide-react";
 import { useRef } from "react";
+import firePerformerBg from "@/assets/fire-performer-bg.png";
 
 const About = () => {
   const navigate = useNavigate();
@@ -92,16 +93,22 @@ const About = () => {
     <div ref={containerRef} className="relative min-h-screen bg-background overflow-hidden">
       <NavBar />
       
-      {/* Parallax Background */}
+      {/* Fire Performer Background */}
       <motion.div 
-        className="fixed inset-0 bg-gradient-mesh opacity-30 -z-10"
+        className="fixed inset-0 -z-10"
         style={{ y: backgroundY }}
-      />
+      >
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(/lovable-uploads/4ce48732-086e-4dd7-8c60-444377496357.png)` }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background/90" />
+      </motion.div>
       
       {/* Hero Section with Parallax */}
-      <section className="relative min-h-screen flex items-center justify-center">
+      <section className="relative min-h-screen flex items-center justify-center pt-20">
         <motion.div 
-          className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/80 to-background"
+          className="absolute inset-0 bg-gradient-to-b from-transparent via-background/20 to-background/60"
           style={{ opacity: fadeOpacity }}
         />
         
@@ -110,7 +117,7 @@ const About = () => {
           style={{ y: contentY }}
         >
           <motion.div 
-            className="flex flex-col items-center mb-16"
+            className="flex flex-col items-center mb-16 pt-8"
             style={{ y: logoY }}
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -119,7 +126,7 @@ const About = () => {
             <motion.img 
               src="/lovable-uploads/f40780ef-982b-41a4-99b9-49357cc44738.png" 
               alt="SkateBurn Miami" 
-              className="h-32 w-32 mb-8 drop-shadow-2xl"
+              className="h-40 w-40 mb-8 drop-shadow-2xl"
               whileHover={{ scale: 1.1, rotate: 5 }}
               transition={{ type: "spring", stiffness: 300 }}
             />
@@ -257,10 +264,10 @@ const About = () => {
                   whileHover={{ y: -10, scale: 1.02 }}
                   className="group"
                 >
-                  <div className="relative h-full bg-gradient-to-b from-background/80 to-primary/5 backdrop-blur-sm rounded-3xl border border-primary/20 p-8 hover:border-primary/40 transition-all duration-500">
-                    <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl"></div>
+                  <Card className="relative h-full bg-gradient-to-b from-card/80 to-card/40 backdrop-blur-lg border-primary/20 hover:border-primary/40 transition-all duration-500 hover:shadow-glow">
+                    <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-xl"></div>
                     
-                    <div className="relative text-center">
+                    <CardContent className="relative text-center p-8">
                       <motion.div
                         whileHover={{ rotate: 360, scale: 1.1 }}
                         transition={{ duration: 0.6, type: "spring" }}
@@ -269,10 +276,10 @@ const About = () => {
                         <value.icon className="h-16 w-16 text-primary mx-auto" />
                       </motion.div>
                       
-                      <h3 className="text-2xl font-bold mb-4 text-foreground">{value.title}</h3>
-                      <p className="text-muted-foreground leading-relaxed">{value.description}</p>
-                    </div>
-                  </div>
+                      <CardTitle className="text-2xl font-bold mb-4 bg-gradient-fire bg-clip-text text-transparent">{value.title}</CardTitle>
+                      <CardDescription className="text-muted-foreground leading-relaxed text-base">{value.description}</CardDescription>
+                    </CardContent>
+                  </Card>
                 </motion.div>
               ))}
             </div>
@@ -303,10 +310,10 @@ const About = () => {
                   whileHover={{ scale: 1.02, y: -5 }}
                   className="group"
                 >
-                  <div className="relative h-full bg-gradient-to-br from-background/90 to-secondary/10 backdrop-blur-sm rounded-3xl border border-primary/20 p-8 hover:border-primary/40 transition-all duration-500">
-                    <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-10 transition-opacity duration-500 rounded-3xl"></div>
+                  <Card className="relative h-full bg-gradient-to-br from-card/90 to-card/40 backdrop-blur-lg border-primary/20 hover:border-primary/40 transition-all duration-500 hover:shadow-glow">
+                    <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-10 transition-opacity duration-500 rounded-xl"></div>
                     
-                    <div className="relative">
+                    <CardContent className="relative p-8">
                       <div className="flex items-center gap-4 mb-6">
                         <motion.div
                           whileHover={{ scale: 1.2, rotate: 10 }}
@@ -314,11 +321,11 @@ const About = () => {
                         >
                           <feature.icon className="h-12 w-12 text-primary" />
                         </motion.div>
-                        <h3 className="text-2xl font-bold text-foreground">{feature.title}</h3>
+                        <CardTitle className="text-2xl font-bold bg-gradient-neon bg-clip-text text-transparent">{feature.title}</CardTitle>
                       </div>
-                      <p className="text-muted-foreground text-lg leading-relaxed">{feature.description}</p>
-                    </div>
-                  </div>
+                      <CardDescription className="text-muted-foreground text-lg leading-relaxed">{feature.description}</CardDescription>
+                    </CardContent>
+                  </Card>
                 </motion.div>
               ))}
             </div>
@@ -354,20 +361,20 @@ const About = () => {
                   whileHover={{ scale: 1.1, y: -10 }}
                   className="group"
                 >
-                  <div className="relative text-center p-8 bg-gradient-to-b from-primary/10 to-secondary/10 backdrop-blur-sm rounded-3xl border border-primary/20 hover:border-primary/40 transition-all duration-500">
-                    <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-3xl"></div>
+                  <Card className="relative text-center bg-gradient-to-b from-card/60 to-card/20 backdrop-blur-lg border-primary/20 hover:border-primary/40 transition-all duration-500 hover:shadow-glow">
+                    <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-xl"></div>
                     
-                    <div className="relative">
+                    <CardContent className="relative p-8">
                       <motion.div
                         whileHover={{ rotate: 360 }}
                         transition={{ duration: 0.6 }}
                       >
                         <stat.icon className="h-12 w-12 text-primary mx-auto mb-4" />
                       </motion.div>
-                      <div className="text-5xl font-bold text-primary mb-2">{stat.value}</div>
+                      <div className="text-5xl font-bold bg-gradient-fire bg-clip-text text-transparent mb-2">{stat.value}</div>
                       <div className="text-sm text-muted-foreground font-medium uppercase tracking-wider">{stat.label}</div>
-                    </div>
-                  </div>
+                    </CardContent>
+                  </Card>
                 </motion.div>
               ))}
             </div>
@@ -518,7 +525,8 @@ const About = () => {
                     meet your people, or simply catch the flame — you're welcome here.
                   </motion.p>
                   
-                  <motion.div
+                   <motion.div
+                    className="flex justify-center"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     initial={{ opacity: 0, y: 30 }}
@@ -529,7 +537,7 @@ const About = () => {
                     <Button 
                       size="lg" 
                       onClick={() => navigate('/')} 
-                      className="text-xl px-12 py-6 h-auto rounded-2xl"
+                      className="text-xl px-12 py-6 h-auto rounded-2xl mx-auto"
                       variant="fire"
                     >
                       Join the Community
