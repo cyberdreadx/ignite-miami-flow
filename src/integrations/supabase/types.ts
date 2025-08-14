@@ -460,6 +460,47 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_all_profiles_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          approval_status: string
+          avatar_url: string
+          bio: string
+          created_at: string
+          email: string
+          full_name: string
+          instagram_handle: string
+          last_active: string
+          location: string
+          role: string
+          show_contact_info: boolean
+          show_in_directory: boolean
+          updated_at: string
+          user_id: string
+        }[]
+      }
+      get_author_info: {
+        Args: { author_user_id: string }
+        Returns: {
+          avatar_url: string
+          full_name: string
+          role: string
+          user_id: string
+        }[]
+      }
+      get_directory_profiles: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          avatar_url: string
+          bio: string
+          created_at: string
+          full_name: string
+          last_active: string
+          location: string
+          role: string
+          user_id: string
+        }[]
+      }
       get_posts_with_counts: {
         Args: Record<PropertyKey, never>
         Returns: {

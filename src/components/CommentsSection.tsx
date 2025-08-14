@@ -59,20 +59,19 @@ export const CommentsSection = ({ postId, commentCount, onCommentCountChange }: 
         return;
       }
 
-      // Get user profiles separately for each comment
+      // Get user profiles using secure function for each comment
       const commentsWithProfiles = await Promise.all(
         (data || []).map(async (comment) => {
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('full_name, role, avatar_url, email')
-            .eq('user_id', comment.user_id)
-            .single();
+          const { data: authorData } = await supabase
+            .rpc('get_author_info', { author_user_id: comment.user_id });
 
+          const profile = authorData && authorData.length > 0 ? authorData[0] : null;
+          
           return {
             ...comment,
-            author_name: profileData?.full_name || profileData?.email || 'Anonymous',
-            author_role: profileData?.role || 'user',
-            author_avatar: profileData?.avatar_url
+            author_name: profile?.full_name || 'Anonymous',
+            author_role: profile?.role || 'user',
+            author_avatar: profile?.avatar_url
           };
         })
       );

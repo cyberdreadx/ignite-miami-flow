@@ -14,11 +14,9 @@ import { format } from 'date-fns';
 interface Member {
   user_id: string;
   full_name: string;
-  email: string;
   avatar_url?: string;
   bio?: string;
   location?: string;
-  instagram_handle?: string;
   role: string;
   last_active?: string;
   created_at: string;
@@ -44,12 +42,9 @@ export const MemberDirectory: React.FC = () => {
 
   const fetchMembers = async () => {
     try {
+      // Use the secure function that only exposes safe directory data
       const { data, error } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, email, avatar_url, bio, location, instagram_handle, role, last_active, created_at')
-        .eq('approval_status', 'approved')
-        .eq('show_in_directory', true)
-        .order('last_active', { ascending: false });
+        .rpc('get_directory_profiles');
 
       if (error) throw error;
       setMembers(data || []);
@@ -195,14 +190,14 @@ export const MemberDirectory: React.FC = () => {
                     <Avatar className="h-12 w-12">
                       <AvatarImage src={member.avatar_url} />
                       <AvatarFallback>
-                        {getMemberInitials(member.full_name || member.email)}
+                        {getMemberInitials(member.full_name || 'User')}
                       </AvatarFallback>
                     </Avatar>
                     
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="font-semibold truncate">
-                          {member.full_name || member.email}
+                          {member.full_name || 'Anonymous User'}
                         </h3>
                         <Badge variant={getRoleBadgeVariant(member.role)}>
                           {member.role}
@@ -220,13 +215,6 @@ export const MemberDirectory: React.FC = () => {
                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <MapPin className="h-3 w-3" />
                             <span className="truncate">{member.location}</span>
-                          </div>
-                        )}
-                        
-                        {member.instagram_handle && (
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Instagram className="h-3 w-3" />
-                            <span className="truncate">@{member.instagram_handle}</span>
                           </div>
                         )}
                         
