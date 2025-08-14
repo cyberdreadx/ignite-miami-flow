@@ -30,12 +30,24 @@ interface UserSubscription {
   qr_code_token?: string;
 }
 
+interface UserMediaPass {
+  id: string;
+  pass_type: string;
+  photographer_name: string;
+  instagram_handle: string;
+  status: string;
+  valid_until: string;
+  created_at: string;
+  qr_code_token?: string;
+}
+
 export const MyTickets: React.FC = () => {
   const [tickets, setTickets] = useState<UserTicket[]>([]);
   const [subscriptions, setSubscriptions] = useState<UserSubscription[]>([]);
+  const [mediaPasses, setMediaPasses] = useState<UserMediaPass[]>([]);
   const [loading, setLoading] = useState(true);
   const [recovering, setRecovering] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<{type: 'ticket' | 'subscription', id: string} | null>(null);
+  const [selectedItem, setSelectedItem] = useState<{type: 'ticket' | 'subscription' | 'media_pass', id: string} | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -43,7 +55,7 @@ export const MyTickets: React.FC = () => {
     if (!user) return;
 
     try {
-      const [ticketsResponse, subscriptionsResponse] = await Promise.all([
+      const [ticketsResponse, subscriptionsResponse, mediaPassesResponse] = await Promise.all([
         supabase
           .from('tickets')
           .select('*')
@@ -53,14 +65,18 @@ export const MyTickets: React.FC = () => {
           .from('subscriptions')
           .select('*')
           .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
+          .order('created_at', { ascending: false }),
+        supabase
+          .rpc('get_my_media_passes')
       ]);
 
       if (ticketsResponse.error) throw ticketsResponse.error;
       if (subscriptionsResponse.error) throw subscriptionsResponse.error;
+      if (mediaPassesResponse.error) throw mediaPassesResponse.error;
 
       setTickets(ticketsResponse.data || []);
       setSubscriptions(subscriptionsResponse.data || []);
+      setMediaPasses(mediaPassesResponse.data || []);
     } catch (error) {
       console.error('Error fetching tickets:', error);
       toast({
@@ -168,6 +184,12 @@ export const MyTickets: React.FC = () => {
     return new Date(subscription.current_period_end) > new Date();
   };
 
+  const isValidMediaPass = (mediaPass: UserMediaPass) => {
+    if (mediaPass.status !== 'paid') return false;
+    if (!mediaPass.valid_until) return true;
+    return new Date(mediaPass.valid_until) > new Date();
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen bg-background">
@@ -222,6 +244,7 @@ export const MyTickets: React.FC = () => {
                     <QRCodeDisplay
                       ticketId={selectedItem.type === 'ticket' ? selectedItem.id : undefined}
                       subscriptionId={selectedItem.type === 'subscription' ? selectedItem.id : undefined}
+                      mediaPassId={selectedItem.type === 'media_pass' ? selectedItem.id : undefined}
                       type={selectedItem.type}
                     />
                   </motion.div>
@@ -281,7 +304,60 @@ export const MyTickets: React.FC = () => {
                   </div>
                 )}
 
-                {/* Individual Tickets */}
+                {/* Media Passes */}
+                {mediaPasses.length > 0 && (
+                  <div>
+                    <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                      📸 Media Passes
+                    </h2>
+                    <div className="space-y-4">
+                      {mediaPasses.map((mediaPass) => (
+                        <Card key={mediaPass.id} className="hover:shadow-md transition-shadow">
+                          <CardContent className="p-4 sm:p-6">
+                            <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
+                              <div className="flex-1 space-y-2">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                  <h3 className="font-semibold text-base">{mediaPass.pass_type} Media Pass</h3>
+                                  {getStatusBadge(mediaPass.status)}
+                                </div>
+                                <div className="space-y-1 text-sm">
+                                  <p className="text-muted-foreground">
+                                    Photographer: {mediaPass.photographer_name}
+                                  </p>
+                                  {mediaPass.instagram_handle && (
+                                    <p className="text-muted-foreground">
+                                      Instagram: @{mediaPass.instagram_handle}
+                                    </p>
+                                  )}
+                                  {mediaPass.valid_until && (
+                                    <p className="text-muted-foreground">
+                                      Valid until: {new Date(mediaPass.valid_until).toLocaleDateString()}
+                                    </p>
+                                  )}
+                                  <p className="text-xs text-muted-foreground">
+                                    Purchased: {new Date(mediaPass.created_at).toLocaleDateString()}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex flex-col sm:flex-row gap-2">
+                                {isValidMediaPass(mediaPass) && (
+                                  <Button
+                                    onClick={() => setSelectedItem({type: 'media_pass', id: mediaPass.id})}
+                                    variant={selectedItem?.id === mediaPass.id ? 'default' : 'outline'}
+                                    className="w-full sm:w-auto text-sm"
+                                    size="sm"
+                                  >
+                                    Show QR Code
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 {tickets.length > 0 && (
                   <div>
                     <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
@@ -342,7 +418,7 @@ export const MyTickets: React.FC = () => {
                   </div>
                 )}
 
-                {tickets.length === 0 && subscriptions.length === 0 && (
+                {tickets.length === 0 && subscriptions.length === 0 && mediaPasses.length === 0 && (
                   <div className="text-center py-12">
                     <Calendar className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                     <h3 className="text-lg font-semibold mb-2">No tickets yet</h3>
