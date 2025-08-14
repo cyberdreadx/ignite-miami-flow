@@ -27,28 +27,34 @@ export const useUserRole = () => {
       }
 
       try {
-        console.log('Fetching role for user:', user.id, user.email);
-        console.log('About to query profiles table with user_id:', user.id);
+        console.log('Fetching roles for user:', user.id, user.email);
 
-        // Query by user_id since that's what the RLS policy allows
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('role, email, user_id')
-          .eq('user_id', user.id)
-          .maybeSingle();
+        // Get all user roles using the new multi-role system
+        const { data: rolesData, error: rolesError } = await supabase
+          .rpc('get_user_roles', { _user_id: user.id });
 
-        console.log('Raw query result - data:', data);
-        console.log('Raw query result - error:', error);
-        console.log('User ID used in query:', user.id);
+        console.log('User roles data:', rolesData);
+        console.log('User roles error:', rolesError);
 
-        if (error) {
-          console.error('Database error fetching user role:', error);
+        if (rolesError) {
+          console.error('Database error fetching user roles:', rolesError);
           setRole('user'); // Default to user role
-        } else if (data) {
-          console.log('Found profile! Role:', data.role, 'Email:', data.email);
-          setRole(data.role || 'user');
+        } else if (rolesData && rolesData.length > 0) {
+          // Set role based on highest priority: admin > moderator > other roles > user
+          const roles = rolesData.map(r => r.role);
+          console.log('Found roles:', roles);
+          
+          if (roles.includes('admin')) {
+            setRole('admin');
+          } else if (roles.includes('moderator')) {
+            setRole('moderator');
+          } else {
+            // Use the first non-user role, or 'user' if no others
+            const nonUserRoles = roles.filter(r => r !== 'user');
+            setRole(nonUserRoles.length > 0 ? nonUserRoles[0] : 'user');
+          }
         } else {
-          console.log('No profile found for user_id:', user.id);
+          console.log('No roles found for user_id:', user.id);
           setRole('user');
         }
       } catch (error) {
