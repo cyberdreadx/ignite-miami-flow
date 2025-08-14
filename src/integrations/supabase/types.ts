@@ -520,6 +520,36 @@ export type Database = {
         Args: { new_status: string; target_user_id: string }
         Returns: boolean
       }
+      verify_media_pass_qr: {
+        Args: { token: string }
+        Returns: {
+          instagram_handle: string
+          is_valid: boolean
+          pass_status: string
+          pass_type: string
+          photographer_name: string
+          valid_until: string
+        }[]
+      }
+      verify_qr_token: {
+        Args: { token: string }
+        Returns: {
+          event_id: string
+          is_valid: boolean
+          ticket_status: string
+          used_at: string
+          used_by: string
+          valid_until: string
+        }[]
+      }
+      verify_subscription_qr: {
+        Args: { token: string }
+        Returns: {
+          current_period_end: string
+          is_valid: boolean
+          subscription_status: string
+        }[]
+      }
     }
     Enums: {
       app_role:

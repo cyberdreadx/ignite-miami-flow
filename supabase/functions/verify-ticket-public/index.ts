@@ -27,104 +27,60 @@ serve(async (req) => {
 
     console.log("Public verification for QR code:", token);
 
-    // First check if it's a ticket
-    const { data: ticket, error: ticketError } = await supabaseClient
-      .from("tickets")
-      .select("*")
-      .eq("qr_code_token", token)
-      .single();
+    // First check if it's a ticket using secure verification
+    const { data: ticketData, error: ticketError } = await supabaseClient
+      .rpc("verify_qr_token", { token });
 
-    console.log("Ticket query result:", { ticket, ticketError });
+    console.log("Ticket verification result:", { ticketData, ticketError });
 
-    if (!ticketError && ticket) {
-      // Get user profile separately
-      const { data: profile, error: profileError } = await supabaseClient
-        .from("profiles")
-        .select("full_name, email")
-        .eq("user_id", ticket.user_id)
-        .single();
-
-      console.log("Profile query result:", { profile, profileError, user_id: ticket.user_id });
-
-      const userName = profile?.full_name || profile?.email || "Unknown";
-      const userEmail = profile?.email || "Unknown";
+    if (!ticketError && ticketData && ticketData.length > 0) {
+      const verification = ticketData[0];
       
-      console.log("Returning ticket verification success for:", userName);
-      
-      // Return complete ticket data for verification page
-      return new Response(JSON.stringify({
-        success: true,
-        ticket: {
-          id: ticket.id,
-          user_id: ticket.user_id,
-          amount: ticket.amount,
-          status: ticket.status,
-          created_at: ticket.created_at,
-          valid_until: ticket.valid_until,
-          used_at: ticket.used_at,
-          used_by: ticket.used_by,
-          qr_code_token: ticket.qr_code_token,
-          user_email: userEmail,
-          user_name: userName
-        }
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
-    }
-
-    // If not a ticket, check if it's a subscription
-    const { data: subscription, error: subError } = await supabaseClient
-      .from("subscriptions")
-      .select("*")
-      .eq("qr_code_token", token)
-      .single();
-
-    console.log("Subscription query result:", { subscription, subError });
-
-    if (!subError && subscription) {
-      // Get user profile separately
-      const { data: profile } = await supabaseClient
-        .from("profiles")
-        .select("full_name, email")
-        .eq("user_id", subscription.user_id)
-        .single();
-
-      const userName = profile?.full_name || profile?.email || "Unknown";
-      
-      // Check subscription validity
-      const now = new Date();
-      const currentPeriodEnd = subscription.current_period_end ? new Date(subscription.current_period_end) : null;
-      
-      if (subscription.status !== "active") {
+      if (verification.is_valid) {
+        console.log("Returning ticket verification success");
+        
+        // Return minimal verification data without sensitive payment info
         return new Response(JSON.stringify({
-          valid: false,
-          reason: "This subscription is not active",
-          type: "subscription",
-          subscription_info: {
-            id: subscription.id,
-            status: subscription.status,
-            user_name: userName,
-            current_period_end: subscription.current_period_end,
-            created_at: subscription.created_at
+          success: true,
+          ticket: {
+            is_valid: verification.is_valid,
+            status: verification.ticket_status,
+            event_id: verification.event_id,
+            valid_until: verification.valid_until,
+            used_at: verification.used_at,
+            used_by: verification.used_by
           }
         }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 200,
         });
       }
+    }
 
-      if (currentPeriodEnd && now > currentPeriodEnd) {
+    // If not a ticket, check if it's a subscription using secure verification
+    const { data: subscriptionData, error: subError } = await supabaseClient
+      .rpc("verify_subscription_qr", { token });
+
+    console.log("Subscription verification result:", { subscriptionData, subError });
+
+    if (!subError && subscriptionData && subscriptionData.length > 0) {
+      const verification = subscriptionData[0];
+      
+      if (!verification.is_valid) {
+        let reason = "This subscription is not valid";
+        if (verification.subscription_status !== "active") {
+          reason = "This subscription is not active";
+        } else if (verification.current_period_end && new Date() > new Date(verification.current_period_end)) {
+          reason = "This monthly pass has expired";
+        }
+        
         return new Response(JSON.stringify({
           valid: false,
-          reason: "This monthly pass has expired",
+          reason: reason,
           type: "subscription",
           subscription_info: {
-            id: subscription.id,
-            status: subscription.status,
-            user_name: userName,
-            current_period_end: subscription.current_period_end,
-            created_at: subscription.created_at
+            status: verification.subscription_status,
+            current_period_end: verification.current_period_end
           }
         }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -136,11 +92,8 @@ serve(async (req) => {
         valid: true,
         type: "subscription",
         subscription_info: {
-          id: subscription.id,
-          status: subscription.status,
-          user_name: userName,
-          current_period_end: subscription.current_period_end,
-          created_at: subscription.created_at
+          status: verification.subscription_status,
+          current_period_end: verification.current_period_end
         }
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -148,66 +101,33 @@ serve(async (req) => {
       });
     }
 
-    // If not a subscription, check if it's a media pass
-    const { data: mediaPass, error: mediaPassError } = await supabaseClient
-      .from("media_passes")
-      .select("*")
-      .eq("qr_code_token", token)
-      .single();
+    // If not a subscription, check if it's a media pass using secure verification
+    const { data: mediaPassData, error: mediaPassError } = await supabaseClient
+      .rpc("verify_media_pass_qr", { token });
 
-    console.log("Media pass query result:", { mediaPass, mediaPassError });
+    console.log("Media pass verification result:", { mediaPassData, mediaPassError });
 
-    if (!mediaPassError && mediaPass) {
-      // Get user profile separately
-      const { data: profile } = await supabaseClient
-        .from("profiles")
-        .select("full_name, email")
-        .eq("user_id", mediaPass.user_id)
-        .single();
-
-      const userName = profile?.full_name || profile?.email || "Unknown";
+    if (!mediaPassError && mediaPassData && mediaPassData.length > 0) {
+      const verification = mediaPassData[0];
       
-      // Check media pass validity
-      const now = new Date();
-      const validUntil = mediaPass.valid_until ? new Date(mediaPass.valid_until) : null;
-      
-      if (mediaPass.status !== "paid") {
+      if (!verification.is_valid) {
+        let reason = "This media pass is not valid";
+        if (verification.pass_status !== "paid") {
+          reason = "This media pass payment is not confirmed";
+        } else if (verification.valid_until && new Date() > new Date(verification.valid_until)) {
+          reason = "This media pass has expired";
+        }
+        
         return new Response(JSON.stringify({
           valid: false,
-          reason: "This media pass payment is not confirmed",
+          reason: reason,
           type: "media_pass",
           media_pass_info: {
-            id: mediaPass.id,
-            pass_type: mediaPass.pass_type,
-            photographer_name: mediaPass.photographer_name,
-            instagram_handle: mediaPass.instagram_handle,
-            amount: mediaPass.amount,
-            user_name: userName,
-            created_at: mediaPass.created_at,
-            valid_until: mediaPass.valid_until,
-            status: mediaPass.status
-          }
-        }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        });
-      }
-
-      if (validUntil && now > validUntil) {
-        return new Response(JSON.stringify({
-          valid: false,
-          reason: "This media pass has expired",
-          type: "media_pass",
-          media_pass_info: {
-            id: mediaPass.id,
-            pass_type: mediaPass.pass_type,
-            photographer_name: mediaPass.photographer_name,
-            instagram_handle: mediaPass.instagram_handle,
-            amount: mediaPass.amount,
-            user_name: userName,
-            created_at: mediaPass.created_at,
-            valid_until: mediaPass.valid_until,
-            status: mediaPass.status
+            pass_type: verification.pass_type,
+            photographer_name: verification.photographer_name,
+            instagram_handle: verification.instagram_handle,
+            valid_until: verification.valid_until,
+            status: verification.pass_status
           }
         }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -219,15 +139,11 @@ serve(async (req) => {
         valid: true,
         type: "media_pass",
         media_pass_info: {
-          id: mediaPass.id,
-          pass_type: mediaPass.pass_type,
-          photographer_name: mediaPass.photographer_name,
-          instagram_handle: mediaPass.instagram_handle,
-          amount: mediaPass.amount,
-          user_name: userName,
-          created_at: mediaPass.created_at,
-          valid_until: mediaPass.valid_until,
-          status: mediaPass.status
+          pass_type: verification.pass_type,
+          photographer_name: verification.photographer_name,
+          instagram_handle: verification.instagram_handle,
+          valid_until: verification.valid_until,
+          status: verification.pass_status
         }
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
