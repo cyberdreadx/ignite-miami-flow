@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)"
@@ -442,9 +442,9 @@ export type Database = {
     Functions: {
       create_post: {
         Args: {
-          post_content: string
-          media_urls?: string[]
           media_types?: string[]
+          media_urls?: string[]
+          post_content: string
         }
         Returns: string
       }
@@ -452,8 +452,8 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: {
           current_uid: string
-          profile_exists: boolean
           profile_data: Json
+          profile_exists: boolean
         }[]
       }
       generate_qr_token: {
@@ -463,20 +463,20 @@ export type Database = {
       get_posts_with_counts: {
         Args: Record<PropertyKey, never>
         Returns: {
-          id: string
-          content: string
-          created_at: string
-          updated_at: string
-          pinned: boolean
-          like_count: number
-          comment_count: number
-          user_liked: boolean
+          author_avatar: string
           author_name: string
           author_role: string
-          author_avatar: string
-          media_urls: string[]
+          comment_count: number
+          content: string
+          created_at: string
+          id: string
+          like_count: number
           media_types: string[]
+          media_urls: string[]
+          pinned: boolean
+          updated_at: string
           user_id: string
+          user_liked: boolean
         }[]
       }
       get_user_roles: {
@@ -491,8 +491,8 @@ export type Database = {
       }
       has_role: {
         Args: {
-          _user_id: string
           _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
         }
         Returns: boolean
       }
@@ -517,7 +517,7 @@ export type Database = {
         Returns: boolean
       }
       update_user_approval: {
-        Args: { target_user_id: string; new_status: string }
+        Args: { new_status: string; target_user_id: string }
         Returns: boolean
       }
     }
