@@ -448,6 +448,10 @@ export type Database = {
         }
         Returns: string
       }
+      current_user_has_admin_or_moderator_role: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       debug_auth_uid: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -506,6 +510,10 @@ export type Database = {
           role: string
           user_id: string
         }[]
+      }
+      get_current_user_role_from_profiles: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       get_directory_profiles: {
         Args: Record<PropertyKey, never>
