@@ -1,5 +1,5 @@
 import React from "react";
-import { Home, Ticket, User, Scan, ShoppingBag } from "lucide-react";
+import { Home, Ticket, User, Scan, ShoppingBag, Gift } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/contexts/UserRoleContext";
@@ -28,6 +28,12 @@ const BottomNav = () => {
       label: "My Tickets", 
       path: "/my-tickets", 
       icon: ShoppingBag,
+      show: !!user 
+    },
+    { 
+      label: "Affiliate", 
+      path: "/affiliate", 
+      icon: Gift,
       show: !!user 
     },
     { 
