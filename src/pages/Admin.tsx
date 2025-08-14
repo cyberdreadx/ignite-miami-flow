@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { MultiRoleManager } from '@/components/MultiRoleManager';
 import { AdminEventDateCard } from '@/components/AdminEventDateCard';
+import EventTicketAnalytics from '@/components/EventTicketAnalytics';
 
 interface Post {
   id: string;
@@ -145,7 +146,7 @@ const Admin = () => {
   const [allUsers, setAllUsers] = useState<AllUser[]>([]);
   const [reportedPosts, setReportedPosts] = useState<ReportedPost[]>([]);
   const [deletionRequests, setDeletionRequests] = useState<DeletionRequest[]>([]);
-  const [ticketPurchases, setTicketPurchases] = useState<TicketPurchase[]>([]);
+  
   const [ticketAnalytics, setTicketAnalytics] = useState<TicketAnalytics | null>(null);
   const [mediaPassAnalytics, setMediaPassAnalytics] = useState<MediaPassAnalytics | null>(null);
   const [salesData, setSalesData] = useState<SalesData[]>([]);
@@ -253,7 +254,6 @@ const Admin = () => {
       fetchTicketAnalytics();
       fetchMediaPassAnalytics();
       fetchSalesData();
-      fetchTicketPurchases();
     }
   }, [user, isAdmin]);
 
@@ -577,96 +577,7 @@ const Admin = () => {
     }
   };
 
-  const fetchTicketPurchases = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('tickets')
-        .select(`
-          id,
-          user_id,
-          amount,
-          status,
-          created_at,
-          stripe_session_id,
-          valid_until,
-          used_at,
-          used_by
-        `)
-        .order('created_at', { ascending: false })
-        .limit(50);
 
-      if (error) {
-        console.error('Error fetching ticket purchases:', error);
-        return;
-      }
-
-      // Fetch user profiles separately
-      const userIds = [...new Set((data || []).map(ticket => ticket.user_id))];
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select('user_id, email, full_name')
-        .in('user_id', userIds);
-
-      if (profilesError) {
-        console.error('Error fetching profiles:', profilesError);
-        return;
-      }
-
-      // Map tickets with user data
-      const mappedPurchases = (data || []).map((ticket: any) => {
-        const profile = profilesData?.find(p => p.user_id === ticket.user_id);
-        return {
-          id: ticket.id,
-          user_id: ticket.user_id,
-          amount: ticket.amount,
-          status: ticket.status,
-          created_at: ticket.created_at,
-          stripe_session_id: ticket.stripe_session_id,
-          valid_until: ticket.valid_until,
-          used_at: ticket.used_at,
-          used_by: ticket.used_by,
-          user_email: profile?.email || 'Unknown',
-          user_name: profile?.full_name || profile?.email || 'Unknown User',
-        };
-      });
-      
-      setTicketPurchases(mappedPurchases);
-    } catch (error) {
-      console.error('Error in fetchTicketPurchases:', error);
-    }
-  };
-
-  const handleUnuseTicket = async (ticketId: string) => {
-    try {
-      const { error } = await supabase
-        .from('tickets')
-        .update({
-          used_at: null,
-          used_by: null
-        })
-        .eq('id', ticketId);
-
-      if (error) {
-        toast({
-          title: 'Error resetting ticket',
-          description: error.message,
-          variant: 'destructive',
-        });
-      } else {
-        fetchTicketPurchases(); // Refresh the list
-        toast({
-          title: 'Ticket Reset Successfully ✅',
-          description: 'The ticket has been marked as unused and is valid again.',
-        });
-      }
-    } catch (error) {
-      toast({
-        title: 'Error resetting ticket',
-        description: 'An unexpected error occurred.',
-        variant: 'destructive',
-      });
-    }
-  };
 
   const handleDeletionRequestAction = async (requestId: string, action: 'approved' | 'denied') => {
     try {
@@ -1038,112 +949,10 @@ const Admin = () => {
                </CardContent>
              </Card>
 
-             {/* Ticket Purchases */}
-            <Card id="ticket-purchases">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Ticket className="h-5 w-5" />
-                  Ticket Purchases
-                  <Badge variant="secondary">{ticketPurchases.length}</Badge>
-                </CardTitle>
-                <CardDescription>
-                  View all ticket purchases and transaction details
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4 max-h-96 overflow-y-auto">
-                  {ticketPurchases.map((purchase) => (
-                    <div
-                      key={purchase.id}
-                      className="flex flex-col lg:flex-row lg:items-center lg:justify-between p-4 border rounded-lg space-y-3 lg:space-y-0"
-                    >
-                      <div className="flex items-center space-x-4">
-                        <Avatar className="h-10 w-10 flex-shrink-0">
-                          <AvatarFallback>
-                            {purchase.user_name?.charAt(0) || purchase.user_email?.charAt(0) || 'U'}
-                          </AvatarFallback>
-                        </Avatar>
-                        
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-2 mb-1">
-                            <p className="font-medium truncate">{purchase.user_name}</p>
-                            <Badge 
-                              variant={purchase.status === 'paid' ? 'default' : 'outline'}
-                              className={`text-xs capitalize ${
-                                purchase.status === 'paid' ? 'bg-green-100 text-green-800' :
-                                purchase.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                'bg-red-100 text-red-800'
-                              }`}
-                            >
-                              {purchase.status}
-                            </Badge>
-                            {purchase.used_at && (
-                              <Badge variant="secondary" className="text-xs">
-                                Used
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-sm text-muted-foreground truncate">{purchase.user_email}</p>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-                            <span>${(purchase.amount / 100).toFixed(2)}</span>
-                            <span>•</span>
-                            <span>{formatDistanceToNow(new Date(purchase.created_at), { addSuffix: true })}</span>
-                            {purchase.valid_until && (
-                              <>
-                                <span>•</span>
-                                <span>Valid until {new Date(purchase.valid_until).toLocaleDateString()}</span>
-                              </>
-                            )}
-                          </div>
-                          {purchase.stripe_session_id && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Session: {purchase.stripe_session_id.slice(-8)}
-                            </p>
-                          )}
-                          {purchase.used_at && (
-                            <p className="text-xs text-orange-600 mt-1">
-                              Used: {new Date(purchase.used_at).toLocaleString()} {purchase.used_by && `by ${purchase.used_by}`}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                        <div className="text-right">
-                          <div className="text-lg font-bold">
-                            ${(purchase.amount / 100).toFixed(2)}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {purchase.status === 'paid' ? 'Paid' : 'Pending'}
-                          </div>
-                        </div>
-                        
-                        {purchase.used_at && purchase.status === 'paid' && (
-                          <Button
-                            onClick={() => handleUnuseTicket(purchase.id)}
-                            variant="outline"
-                            size="sm"
-                            className="text-orange-600 hover:text-orange-700 text-xs"
-                          >
-                            Reset Ticket
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {ticketPurchases.length === 0 && (
-                    <div className="text-center py-8">
-                      <Ticket className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-muted-foreground">No ticket purchases yet.</p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Ticket purchase information will appear here once users start buying tickets.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+              {/* Event-based Ticket Analytics */}
+             <div id="ticket-purchases">
+               <EventTicketAnalytics />
+             </div>
 
              {/* Users Management */}
             <Card id="users">
