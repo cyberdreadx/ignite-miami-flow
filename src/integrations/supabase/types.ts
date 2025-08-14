@@ -47,6 +47,69 @@ export type Database = {
         }
         Relationships: []
       }
+      affiliate_codes: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          is_active: boolean
+          total_earnings: number | null
+          total_uses: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          total_earnings?: number | null
+          total_uses?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          total_earnings?: number | null
+          total_uses?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      affiliate_earnings: {
+        Row: {
+          created_at: string
+          id: string
+          last_payout_at: string | null
+          total_earned: number | null
+          total_referrals: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_payout_at?: string | null
+          total_earned?: number | null
+          total_referrals?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_payout_at?: string | null
+          total_earned?: number | null
+          total_referrals?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       comments: {
         Row: {
           content: string
@@ -282,6 +345,51 @@ export type Database = {
         }
         Relationships: []
       }
+      referrals: {
+        Row: {
+          affiliate_code_id: string
+          affiliate_earning: number
+          created_at: string
+          discount_amount: number
+          id: string
+          referred_user_id: string | null
+          ticket_id: string | null
+        }
+        Insert: {
+          affiliate_code_id: string
+          affiliate_earning: number
+          created_at?: string
+          discount_amount: number
+          id?: string
+          referred_user_id?: string | null
+          ticket_id?: string | null
+        }
+        Update: {
+          affiliate_code_id?: string
+          affiliate_earning?: number
+          created_at?: string
+          discount_amount?: number
+          id?: string
+          referred_user_id?: string | null
+          ticket_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referrals_affiliate_code_id_fkey"
+            columns: ["affiliate_code_id"]
+            isOneToOne: false
+            referencedRelation: "affiliate_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referrals_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriptions: {
         Row: {
           created_at: string
@@ -326,11 +434,14 @@ export type Database = {
       }
       tickets: {
         Row: {
+          affiliate_code_used: string | null
           amount: number
           created_at: string
           currency: string | null
+          discount_applied: number | null
           event_id: string | null
           id: string
+          original_amount: number | null
           qr_code_data: string | null
           qr_code_token: string | null
           status: string | null
@@ -343,11 +454,14 @@ export type Database = {
           valid_until: string | null
         }
         Insert: {
+          affiliate_code_used?: string | null
           amount: number
           created_at?: string
           currency?: string | null
+          discount_applied?: number | null
           event_id?: string | null
           id?: string
+          original_amount?: number | null
           qr_code_data?: string | null
           qr_code_token?: string | null
           status?: string | null
@@ -360,11 +474,14 @@ export type Database = {
           valid_until?: string | null
         }
         Update: {
+          affiliate_code_used?: string | null
           amount?: number
           created_at?: string
           currency?: string | null
+          discount_applied?: number | null
           event_id?: string | null
           id?: string
+          original_amount?: number | null
           qr_code_data?: string | null
           qr_code_token?: string | null
           status?: string | null
@@ -459,6 +576,10 @@ export type Database = {
           profile_data: Json
           profile_exists: boolean
         }[]
+      }
+      generate_affiliate_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       generate_qr_token: {
         Args: Record<PropertyKey, never>
@@ -584,6 +705,14 @@ export type Database = {
       process_account_deletion: {
         Args: { request_id: string }
         Returns: boolean
+      }
+      process_affiliate_referral: {
+        Args: {
+          p_affiliate_code: string
+          p_referred_user_id?: string
+          p_ticket_id: string
+        }
+        Returns: Json
       }
       promote_user_to_admin: {
         Args: { user_email: string }
