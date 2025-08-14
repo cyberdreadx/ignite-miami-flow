@@ -589,6 +589,15 @@ export type Database = {
         Args: { post_id: string }
         Returns: boolean
       }
+      update_media_pass_status: {
+        Args: {
+          new_status: string
+          pass_id: string
+          qr_data?: string
+          qr_token?: string
+        }
+        Returns: boolean
+      }
       update_user_approval: {
         Args: { new_status: string; target_user_id: string }
         Returns: boolean
