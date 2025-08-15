@@ -1,4 +1,7 @@
 project_id = "zbggiyxzgpgvcegamuda"
 
+[functions.create-ticket-payment]
+verify_jwt = true
+
 [functions.verify-ticket-public]
 verify_jwt = false
