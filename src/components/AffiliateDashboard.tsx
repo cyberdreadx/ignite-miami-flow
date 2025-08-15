@@ -202,7 +202,7 @@ const AffiliateDashboard = () => {
 
   const shareAffiliateLink = async (code: string) => {
     const link = `${window.location.origin}/tickets?ref=${code}`;
-    const text = `Get $1 off your SkateBurn ticket with my code: ${code}! 🔥`;
+    const text = `Get your SkateBurn ticket with my code: ${code}! 🔥`;
     
     if (navigator.share) {
       try {
@@ -277,7 +277,7 @@ const AffiliateDashboard = () => {
         <div>
           <h1 className="text-3xl font-bold">Affiliate Dashboard</h1>
           <p className="text-muted-foreground">
-            Earn $1 for every friend you refer (up to $10 each). They save $1 on their ticket!
+            Earn $1 for every friend you refer! Share your codes and start earning.
           </p>
         </div>
         <Button onClick={generateAffiliateCode} disabled={generating}>
@@ -478,7 +478,7 @@ const AffiliateDashboard = () => {
                       +${(referral.affiliate_earning / 100).toFixed(2)}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      ${(referral.discount_amount / 100).toFixed(2)} discount applied
+                      Referral bonus earned
                     </p>
                   </div>
                 </div>
