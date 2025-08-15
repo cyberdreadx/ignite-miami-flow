@@ -8,7 +8,8 @@ import {
   Shield,
   Home,
   Settings,
-  BarChart3
+  BarChart3,
+  DollarSign
 } from "lucide-react";
 
 import {
@@ -26,6 +27,7 @@ import {
 const adminItems = [
   { title: "Dashboard", url: "/admin", icon: BarChart3, id: "dashboard" },
   { title: "Analytics", url: "/admin#analytics", icon: TrendingUp, id: "analytics" },
+  { title: "Affiliates", url: "/admin#affiliates", icon: DollarSign, id: "affiliates" },
   { title: "Users", url: "/admin#users", icon: Users, id: "users" },
   { title: "Posts", url: "/admin#posts", icon: MessageSquare, id: "posts" },
   { title: "Pending", url: "/admin#pending", icon: Clock, id: "pending" },

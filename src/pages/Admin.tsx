@@ -33,6 +33,7 @@ import {
 import { MultiRoleManager } from '@/components/MultiRoleManager';
 import { AdminEventDateCard } from '@/components/AdminEventDateCard';
 import EventTicketAnalytics from '@/components/EventTicketAnalytics';
+import AdminAffiliateManager from '@/components/AdminAffiliateManager';
 
 interface Post {
   id: string;
@@ -954,7 +955,12 @@ const Admin = () => {
                <EventTicketAnalytics />
              </div>
 
-             {/* Users Management */}
+             {/* Affiliates Management */}
+             <div id="affiliates">
+               <AdminAffiliateManager />
+             </div>
+
+              {/* Users Management */}
             <Card id="users">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
