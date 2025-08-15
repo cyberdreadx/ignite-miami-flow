@@ -9,7 +9,8 @@ import {
   Home,
   Settings,
   BarChart3,
-  DollarSign
+  DollarSign,
+  Receipt
 } from "lucide-react";
 
 import {
@@ -27,6 +28,7 @@ import {
 const adminItems = [
   { title: "Dashboard", url: "/admin", icon: BarChart3, id: "dashboard" },
   { title: "Analytics", url: "/admin#analytics", icon: TrendingUp, id: "analytics" },
+  { title: "Expenses", url: "/admin#expenses", icon: Receipt, id: "expenses" },
   { title: "Affiliates", url: "/admin#affiliates", icon: DollarSign, id: "affiliates" },
   { title: "Users", url: "/admin#users", icon: Users, id: "users" },
   { title: "Posts", url: "/admin#posts", icon: MessageSquare, id: "posts" },
