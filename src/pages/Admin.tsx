@@ -33,6 +33,7 @@ import {
 import { MultiRoleManager } from '@/components/MultiRoleManager';
 import { AdminEventDateCard } from '@/components/AdminEventDateCard';
 import EventTicketAnalytics from '@/components/EventTicketAnalytics';
+import EnhancedEventAnalytics from '@/components/EnhancedEventAnalytics';
 import AdminAffiliateManager from '@/components/AdminAffiliateManager';
 
 interface Post {
@@ -950,9 +951,9 @@ const Admin = () => {
                </CardContent>
              </Card>
 
-              {/* Event-based Ticket Analytics */}
+              {/* Enhanced Event Analytics with Charts */}
              <div id="ticket-purchases">
-               <EventTicketAnalytics />
+               <EnhancedEventAnalytics />
              </div>
 
              {/* Affiliates Management */}
