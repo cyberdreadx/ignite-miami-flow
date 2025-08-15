@@ -49,17 +49,12 @@ serve(async (req) => {
 
     // Parse request body
     console.log("Parsing request body...");
-    const { amount, affiliateCode, discount } = await req.json();
+    const { amount, affiliateCode } = await req.json();
     if (!amount || amount < 1000) { // Minimum $10 in cents
       console.error(`Invalid amount: ${amount}`);
       throw new Error("Invalid amount. Minimum $10 required.");
     }
     console.log(`Amount validated: $${amount / 100}`);
-    
-    // Calculate final amount after discount
-    const discountAmount = discount || 0;
-    const finalAmount = Math.max(0, amount - discountAmount);
-    console.log(`Discount: $${discountAmount / 100}, Final amount: $${finalAmount / 100}`);
 
     // Initialize Stripe
     console.log("Initializing Stripe...");
@@ -91,7 +86,7 @@ serve(async (req) => {
               name: "SkateBurn Event Ticket",
               description: "Sliding scale donation ticket for skate events"
             },
-            unit_amount: finalAmount,
+            unit_amount: amount,
           },
           quantity: 1,
         },
@@ -104,8 +99,6 @@ serve(async (req) => {
         ticket_type: "single_event",
         user_email: user.email,
         affiliate_code: affiliateCode || "",
-        original_amount: amount.toString(),
-        discount_applied: discountAmount.toString(),
       },
     });
 

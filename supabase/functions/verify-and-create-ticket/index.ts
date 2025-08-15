@@ -132,8 +132,6 @@ serve(async (req) => {
 
     // Extract affiliate information from metadata
     const affiliateCode = session.metadata?.affiliate_code;
-    const originalAmount = session.metadata?.original_amount ? parseInt(session.metadata.original_amount) : session.amount_total;
-    const discountApplied = session.metadata?.discount_applied ? parseInt(session.metadata.discount_applied) : 0;
 
     // Create the ticket
     const { data: ticket, error: ticketError } = await supabase
@@ -142,8 +140,6 @@ serve(async (req) => {
         user_id: userId,
         stripe_session_id: sessionId,
         amount: session.amount_total,
-        original_amount: originalAmount,
-        discount_applied: discountApplied,
         affiliate_code_used: affiliateCode || null,
         currency: session.currency,
         status: 'paid',

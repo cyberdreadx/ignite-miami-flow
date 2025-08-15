@@ -35,7 +35,7 @@ const Tickets = () => {
   const [donationAmount, setDonationAmount] = useState(1);
   const [donationInputValue, setDonationInputValue] = useState('1');
   const [affiliateCode, setAffiliateCode] = useState('');
-  const [affiliateDiscount, setAffiliateDiscount] = useState(0);
+  const [affiliateCodeValid, setAffiliateCodeValid] = useState(false);
   const [validatingCode, setValidatingCode] = useState(false);
   const [processingTicket, setProcessingTicket] = useState(false);
   const [processingPass, setProcessingPass] = useState(false);
@@ -211,7 +211,7 @@ const Tickets = () => {
 
   const validateAffiliateCode = async (code: string) => {
     if (!code.trim()) {
-      setAffiliateDiscount(0);
+      setAffiliateCodeValid(false);
       return;
     }
 
@@ -225,22 +225,22 @@ const Tickets = () => {
         .single();
 
       if (error || !data) {
-        setAffiliateDiscount(0);
+        setAffiliateCodeValid(false);
         toast({
           title: 'Invalid Affiliate Code',
           description: 'The affiliate code you entered is not valid or has expired.',
           variant: 'destructive',
         });
       } else {
-        setAffiliateDiscount(100); // $1 discount in cents
+        setAffiliateCodeValid(true);
         toast({
           title: 'Affiliate Code Applied! 🎉',
-          description: 'You\'ll save $1 on your ticket purchase.',
+          description: 'Your purchase will support this affiliate.',
         });
       }
     } catch (error) {
       console.error('Error validating affiliate code:', error);
-      setAffiliateDiscount(0);
+      setAffiliateCodeValid(false);
     } finally {
       setValidatingCode(false);
     }
@@ -249,7 +249,7 @@ const Tickets = () => {
   const handleAffiliateCodeChange = (value: string) => {
     setAffiliateCode(value);
     if (value.trim() === '') {
-      setAffiliateDiscount(0);
+      setAffiliateCodeValid(false);
     }
   };
 
@@ -264,8 +264,7 @@ const Tickets = () => {
       const { data, error } = await supabase.functions.invoke('create-ticket-payment', {
         body: { 
           amount: slidingAmount * 100, // Convert to cents
-          affiliateCode: affiliateCode.trim() || null,
-          discount: affiliateDiscount
+          affiliateCode: affiliateCode.trim() || null
         },
       });
 
@@ -502,11 +501,11 @@ const Tickets = () => {
                       {validatingCode ? 'Checking...' : 'Apply'}
                     </Button>
                   </div>
-                  {affiliateDiscount > 0 && (
+                  {affiliateCodeValid && (
                     <Alert className="border-green-200 bg-green-50 text-green-800">
                       <CheckCircle className="h-4 w-4" />
                       <AlertDescription>
-                        Affiliate code applied! You'll save ${(affiliateDiscount / 100).toFixed(2)} on your ticket.
+                        Affiliate code applied! Your purchase will support this affiliate.
                       </AlertDescription>
                     </Alert>
                   )}
@@ -514,19 +513,15 @@ const Tickets = () => {
 
                 {/* Price Summary */}
                 <div className="space-y-2 pt-4 border-t">
-                  <div className="flex justify-between text-sm">
-                    <span>Ticket price:</span>
-                    <span>${slidingAmount}</span>
-                  </div>
-                  {affiliateDiscount > 0 && (
-                    <div className="flex justify-between text-sm text-green-600">
-                      <span>Affiliate discount:</span>
-                      <span>-${(affiliateDiscount / 100).toFixed(2)}</span>
+                  {affiliateCodeValid && (
+                    <div className="text-sm text-green-600 bg-green-50 p-2 rounded">
+                      Supporting affiliate: {affiliateCode}
                     </div>
                   )}
-                  <div className="flex justify-between font-semibold border-t pt-2">
+                  
+                  <div className="flex justify-between font-semibold">
                     <span>Total:</span>
-                    <span>${Math.max(0, slidingAmount - (affiliateDiscount / 100)).toFixed(2)}</span>
+                    <span>${slidingAmount.toFixed(2)}</span>
                   </div>
                 </div>
                 
