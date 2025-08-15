@@ -85,25 +85,66 @@ serve(async (req) => {
     
     // Calculate validity: 2 days after the relevant event
     const now = new Date();
-    const aug5 = new Date('2025-08-05');
-    const aug19 = new Date('2025-08-19');
     let eventDate;
+    let eventId = null;
 
-    // Determine which event this ticket is for
-    if (now.toDateString() === aug5.toDateString()) {
-      // If buying today (Aug 5th), it's for today's event
-      eventDate = aug5;
-    } else if (now < aug5) {
-      // Before Aug 5th, ticket is for Aug 5th event
-      eventDate = aug5;
-    } else if (now < aug19) {
-      // Between Aug 5 and Aug 19, ticket is for Aug 19th event
-      eventDate = aug19;
-    } else {
-      // After Aug 19, find next Tuesday
-      eventDate = new Date(aug19);
-      while (eventDate <= now) {
-        eventDate.setDate(eventDate.getDate() + 7); // Add 7 days for next Tuesday
+    // Get the active event that this ticket should be associated with
+    // First, try to find an event that's currently active and matches today's date
+    const { data: events, error: eventsError } = await supabase
+      .from('events')
+      .select('id, start_at, title')
+      .eq('is_active', true)
+      .order('start_at', { ascending: true });
+
+    if (!eventsError && events && events.length > 0) {
+      // Find the most appropriate event for this ticket
+      const currentEvent = events.find(event => {
+        if (!event.start_at) return false;
+        const eventStart = new Date(event.start_at);
+        const eventDay = eventStart.toDateString();
+        const today = now.toDateString();
+        return eventDay === today;
+      });
+
+      if (currentEvent) {
+        eventId = currentEvent.id;
+        eventDate = new Date(currentEvent.start_at);
+      } else {
+        // If no event for today, find the next upcoming event
+        const futureEvent = events.find(event => {
+          if (!event.start_at) return false;
+          const eventStart = new Date(event.start_at);
+          return eventStart > now;
+        });
+        
+        if (futureEvent) {
+          eventId = futureEvent.id;
+          eventDate = new Date(futureEvent.start_at);
+        }
+      }
+    }
+
+    // Fallback to hardcoded dates if no events found
+    if (!eventDate) {
+      const aug5 = new Date('2025-08-05');
+      const aug19 = new Date('2025-08-19');
+      
+      // Determine which event this ticket is for
+      if (now.toDateString() === aug5.toDateString()) {
+        // If buying today (Aug 5th), it's for today's event
+        eventDate = aug5;
+      } else if (now < aug5) {
+        // Before Aug 5th, ticket is for Aug 5th event
+        eventDate = aug5;
+      } else if (now < aug19) {
+        // Between Aug 5 and Aug 19, ticket is for Aug 19th event
+        eventDate = aug19;
+      } else {
+        // After Aug 19, find next Tuesday
+        eventDate = new Date(aug19);
+        while (eventDate <= now) {
+          eventDate.setDate(eventDate.getDate() + 7); // Add 7 days for next Tuesday
+        }
       }
     }
 
@@ -138,6 +179,7 @@ serve(async (req) => {
       .from('tickets')
       .insert({
         user_id: userId,
+        event_id: eventId, // Now properly associate with event
         stripe_session_id: sessionId,
         amount: session.amount_total,
         affiliate_code_used: affiliateCode || null,
