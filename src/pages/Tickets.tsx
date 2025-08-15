@@ -34,6 +34,9 @@ const Tickets = () => {
   const [inputValue, setInputValue] = useState('10');
   const [donationAmount, setDonationAmount] = useState(1);
   const [donationInputValue, setDonationInputValue] = useState('1');
+  const [affiliateCode, setAffiliateCode] = useState('');
+  const [affiliateDiscount, setAffiliateDiscount] = useState(0);
+  const [validatingCode, setValidatingCode] = useState(false);
   const [processingTicket, setProcessingTicket] = useState(false);
   const [processingPass, setProcessingPass] = useState(false);
   const [processingDonation, setProcessingDonation] = useState(false);
@@ -43,6 +46,15 @@ const Tickets = () => {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const { hasCompletedWaiver, loading: waiverLoading, markWaiverCompleted } = useWaiver();
+
+  // Check for affiliate code in URL
+  useEffect(() => {
+    const refCode = searchParams.get('ref');
+    if (refCode) {
+      setAffiliateCode(refCode);
+      validateAffiliateCode(refCode);
+    }
+  }, [searchParams]);
 
   // Check for payment success/cancel messages and handle ticket creation
   useEffect(() => {
@@ -197,12 +209,64 @@ const Tickets = () => {
     return success;
   };
 
+  const validateAffiliateCode = async (code: string) => {
+    if (!code.trim()) {
+      setAffiliateDiscount(0);
+      return;
+    }
+
+    setValidatingCode(true);
+    try {
+      const { data, error } = await supabase
+        .from('affiliate_codes')
+        .select('id, code, is_active')
+        .eq('code', code.toUpperCase())
+        .eq('is_active', true)
+        .single();
+
+      if (error || !data) {
+        setAffiliateDiscount(0);
+        toast({
+          title: 'Invalid Affiliate Code',
+          description: 'The affiliate code you entered is not valid or has expired.',
+          variant: 'destructive',
+        });
+      } else {
+        setAffiliateDiscount(100); // $1 discount in cents
+        toast({
+          title: 'Affiliate Code Applied! 🎉',
+          description: 'You\'ll save $1 on your ticket purchase.',
+        });
+      }
+    } catch (error) {
+      console.error('Error validating affiliate code:', error);
+      setAffiliateDiscount(0);
+    } finally {
+      setValidatingCode(false);
+    }
+  };
+
+  const handleAffiliateCodeChange = (value: string) => {
+    setAffiliateCode(value);
+    if (value.trim() === '') {
+      setAffiliateDiscount(0);
+    }
+  };
+
+  const applyAffiliateCode = () => {
+    validateAffiliateCode(affiliateCode);
+  };
+
   const proceedWithTicketPurchase = async () => {
     setProcessingTicket(true);
     try {
       console.log('Invoking create-ticket-payment function...');
       const { data, error } = await supabase.functions.invoke('create-ticket-payment', {
-        body: { amount: slidingAmount * 100 }, // Convert to cents
+        body: { 
+          amount: slidingAmount * 100, // Convert to cents
+          affiliateCode: affiliateCode.trim() || null,
+          discount: affiliateDiscount
+        },
       });
 
       console.log('Function response:', { data, error });
@@ -416,6 +480,53 @@ const Tickets = () => {
                     <p className="text-sm text-muted-foreground mt-1">
                       Pay what you can, starting at $10
                     </p>
+                  </div>
+                </div>
+
+                {/* Affiliate Code Section */}
+                <div className="space-y-3 pt-4 border-t">
+                  <Label htmlFor="affiliate-code">Have an affiliate code?</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="affiliate-code"
+                      placeholder="Enter code"
+                      value={affiliateCode}
+                      onChange={(e) => handleAffiliateCodeChange(e.target.value.toUpperCase())}
+                      className="font-mono"
+                    />
+                    <Button 
+                      variant="outline" 
+                      onClick={applyAffiliateCode}
+                      disabled={validatingCode || !affiliateCode.trim()}
+                    >
+                      {validatingCode ? 'Checking...' : 'Apply'}
+                    </Button>
+                  </div>
+                  {affiliateDiscount > 0 && (
+                    <Alert className="border-green-200 bg-green-50 text-green-800">
+                      <CheckCircle className="h-4 w-4" />
+                      <AlertDescription>
+                        Affiliate code applied! You'll save ${(affiliateDiscount / 100).toFixed(2)} on your ticket.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+
+                {/* Price Summary */}
+                <div className="space-y-2 pt-4 border-t">
+                  <div className="flex justify-between text-sm">
+                    <span>Ticket price:</span>
+                    <span>${slidingAmount}</span>
+                  </div>
+                  {affiliateDiscount > 0 && (
+                    <div className="flex justify-between text-sm text-green-600">
+                      <span>Affiliate discount:</span>
+                      <span>-${(affiliateDiscount / 100).toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between font-semibold border-t pt-2">
+                    <span>Total:</span>
+                    <span>${Math.max(0, slidingAmount - (affiliateDiscount / 100)).toFixed(2)}</span>
                   </div>
                 </div>
                 

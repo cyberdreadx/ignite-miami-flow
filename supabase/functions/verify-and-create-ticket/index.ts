@@ -130,6 +130,11 @@ serve(async (req) => {
       valid_until: validUntil.toISOString()
     };
 
+    // Extract affiliate information from metadata
+    const affiliateCode = session.metadata?.affiliate_code;
+    const originalAmount = session.metadata?.original_amount ? parseInt(session.metadata.original_amount) : session.amount_total;
+    const discountApplied = session.metadata?.discount_applied ? parseInt(session.metadata.discount_applied) : 0;
+
     // Create the ticket
     const { data: ticket, error: ticketError } = await supabase
       .from('tickets')
@@ -137,6 +142,9 @@ serve(async (req) => {
         user_id: userId,
         stripe_session_id: sessionId,
         amount: session.amount_total,
+        original_amount: originalAmount,
+        discount_applied: discountApplied,
+        affiliate_code_used: affiliateCode || null,
         currency: session.currency,
         status: 'paid',
         qr_code_token: qrToken,
@@ -152,6 +160,28 @@ serve(async (req) => {
     }
 
     console.log(`Ticket created successfully: ${ticket.id}`);
+
+    // Process affiliate referral if code was used
+    if (affiliateCode && affiliateCode.trim() !== '') {
+      try {
+        console.log(`Processing affiliate referral for code: ${affiliateCode}`);
+        const { data: referralResult, error: referralError } = await supabase
+          .rpc('process_affiliate_referral', {
+            p_affiliate_code: affiliateCode,
+            p_ticket_id: ticket.id,
+            p_referred_user_id: userId
+          });
+
+        if (referralError) {
+          console.error('Error processing affiliate referral:', referralError);
+        } else {
+          console.log('Affiliate referral processed successfully:', referralResult);
+        }
+      } catch (error) {
+        console.error('Error in affiliate referral processing:', error);
+        // Don't fail the ticket creation if referral processing fails
+      }
+    }
 
     return new Response(JSON.stringify({ 
       success: true, 
