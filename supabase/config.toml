@@ -3,5 +3,32 @@ project_id = "zbggiyxzgpgvcegamuda"
 [functions.create-ticket-payment]
 verify_jwt = true
 
+[functions.create-donation-payment]
+verify_jwt = true
+
+[functions.create-media-pass-payment]
+verify_jwt = true
+
+[functions.create-monthly-subscription]
+verify_jwt = true
+
+[functions.customer-portal]
+verify_jwt = true
+
+[functions.generate-qr-code]
+verify_jwt = true
+
+[functions.recover-missing-media-passes]
+verify_jwt = true
+
+[functions.recover-missing-tickets]
+verify_jwt = true
+
+[functions.validate-qr-code]
+verify_jwt = false
+
+[functions.verify-and-create-ticket]
+verify_jwt = false
+
 [functions.verify-ticket-public]
 verify_jwt = false

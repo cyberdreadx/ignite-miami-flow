@@ -7,74 +7,66 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Helper logging function for debugging
+const logStep = (step: string, details?: any) => {
+  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
+  console.log(`[CREATE-TICKET-PAYMENT] ${step}${detailsStr}`);
+};
+
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Create Supabase client using the anon key for user authentication
-  const supabaseClient = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-  );
-
   try {
-    console.log("Function started - processing ticket payment");
+    logStep("Function started - processing ticket payment");
 
-    // Check for Stripe secret key
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) {
-      console.error("STRIPE_SECRET_KEY is missing");
-      throw new Error("Payment processing is not configured");
-    }
-    console.log("Stripe key found");
+    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
+    logStep("Stripe key found");
 
-    // Retrieve authenticated user
+    // Create Supabase client for user authentication
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    );
+
+    logStep("Authenticating user...");
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      console.error("No authorization header");
-      throw new Error("Authentication required");
-    }
-    
+    if (!authHeader) throw new Error("No authorization header provided");
+
     const token = authHeader.replace("Bearer ", "");
-    console.log("Authenticating user...");
-    const { data } = await supabaseClient.auth.getUser(token);
-    const user = data.user;
-    if (!user?.email) {
-      console.error("User authentication failed");
-      throw new Error("User not authenticated or email not available");
-    }
-    console.log(`User authenticated: ${user.email}`);
+    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
+    if (userError) throw new Error(`User authentication failed: ${userError.message}`);
+    const user = userData.user;
+    if (!user?.email) throw new Error("User not authenticated or email not available");
+    logStep("User authenticated", { email: user.email });
 
-    // Parse request body
-    console.log("Parsing request body...");
+    logStep("Parsing request body...");
     const { amount, affiliateCode } = await req.json();
-    if (!amount || amount < 1000) { // Minimum $10 in cents
-      console.error(`Invalid amount: ${amount}`);
-      throw new Error("Invalid amount. Minimum $10 required.");
+    if (!amount || amount < 1000) { // $10.00 minimum for tickets
+      throw new Error("Invalid amount. Minimum ticket price is $10.00");
     }
-    console.log(`Amount validated: $${amount / 100}`);
+    logStep("Amount validated", { amount: `$${amount / 100}`, affiliateCode });
 
-    // Initialize Stripe
-    console.log("Initializing Stripe...");
-    const stripe = new Stripe(stripeKey, {
-      apiVersion: "2023-10-16",
+    logStep("Initializing Stripe...");
+    const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
+
+    logStep("Checking for existing customer...");
+    const customers = await stripe.customers.list({
+      email: user.email,
+      limit: 1,
     });
 
-    // Check if a Stripe customer record exists for this user
-    console.log("Checking for existing customer...");
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     let customerId;
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
-      console.log(`Found existing customer: ${customerId}`);
+      logStep("Found existing customer", { customerId });
     } else {
-      console.log("No existing customer found");
+      logStep("No existing customer found");
     }
 
-    // Create a one-time payment session
-    console.log("Creating Stripe checkout session...");
+    logStep("Creating Stripe checkout session...");
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
@@ -82,9 +74,9 @@ serve(async (req) => {
         {
           price_data: {
             currency: "usd",
-            product_data: { 
+            product_data: {
               name: "SkateBurn Event Ticket",
-              description: "Sliding scale donation ticket for skate events"
+              description: "Entry ticket for SkateBurn fire performance event",
             },
             unit_amount: amount,
           },
@@ -95,21 +87,22 @@ serve(async (req) => {
       success_url: `${req.headers.get("origin")}/tickets?success=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get("origin")}/tickets?canceled=true`,
       metadata: {
+        type: "ticket",
         user_id: user.id,
-        ticket_type: "single_event",
         user_email: user.email,
         affiliate_code: affiliateCode || "",
       },
     });
 
-    console.log(`Stripe session created successfully: ${session.id}`);
+    logStep("Stripe session created successfully", { sessionId: session.id });
+
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error("Error creating ticket payment:", errorMessage);
+    logStep("ERROR in create-ticket-payment", { message: errorMessage });
     return new Response(JSON.stringify({ error: errorMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
