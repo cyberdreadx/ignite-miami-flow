@@ -1,8 +1,9 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Camera, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import QrScanner from 'react-qr-scanner';
 
 interface QRScannerProps {
   onScan: (data: string) => void;
@@ -13,92 +14,34 @@ interface QRScannerProps {
 const QRScanner = ({ onScan, isOpen, onClose }: QRScannerProps) => {
   const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState<string>('');
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
 
-  // Cleanup on unmount or when dialog closes
-  useEffect(() => {
-    if (!isOpen) {
-      stopCamera();
-    }
-    
-    return () => {
-      stopCamera();
-    };
-  }, [isOpen]);
-
-  const startCamera = async () => {
-    console.log('Starting camera...');
-    setError('');
-    
-    try {
-      // Check if getUserMedia is supported
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error('Camera not supported on this device');
-      }
-
-      const constraints = {
-        video: {
-          facingMode: 'environment', // Use back camera
-          width: { ideal: 640 },
-          height: { ideal: 480 }
-        }
-      };
-
-      console.log('Requesting camera access with constraints:', constraints);
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      console.log('Camera access granted, stream:', stream);
-      
-      streamRef.current = stream;
-      
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        console.log('Video srcObject set');
-        setIsScanning(true);
-        
-        // Force play after a short delay for iOS
-        setTimeout(() => {
-          if (videoRef.current) {
-            videoRef.current.play().catch(e => {
-              console.error('Error playing video:', e);
-            });
-          }
-        }, 100);
-      }
-    } catch (error) {
-      console.error('Error accessing camera:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to access camera';
-      setError(errorMessage);
-      toast.error(`Camera Error: ${errorMessage}`);
+  const handleScan = (data: any) => {
+    if (data) {
+      console.log('QR code scanned:', data.text);
+      onScan(data.text);
+      toast.success('QR code scanned successfully!');
     }
   };
 
-  const stopCamera = () => {
-    console.log('Stopping camera...');
-    
-    // Stop all tracks
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => {
-        console.log('Stopping track:', track.kind);
-        track.stop();
-      });
-      streamRef.current = null;
-    }
-    
-    // Clear video element
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-      videoRef.current.pause();
-    }
-    
+  const handleError = (err: any) => {
+    console.error('QR Scanner error:', err);
+    setError('Camera access denied or not available');
+    toast.error('Camera access denied or not available');
+  };
+
+  const startScanning = () => {
+    setIsScanning(true);
+    setError('');
+  };
+
+  const stopScanning = () => {
     setIsScanning(false);
     setError('');
-    console.log('Camera stopped');
   };
 
   const handleClose = () => {
     console.log('Closing scanner...');
-    stopCamera();
+    stopScanning();
     onClose();
   };
 
@@ -128,38 +71,18 @@ const QRScanner = ({ onScan, isOpen, onClose }: QRScannerProps) => {
               <p className="text-muted-foreground mb-4">
                 Click the button below to start scanning QR codes
               </p>
-              <Button onClick={startCamera} disabled={!!error}>
+              <Button onClick={startScanning} disabled={!!error}>
                 Start Camera
               </Button>
             </div>
           ) : (
             <div className="relative bg-black rounded-lg overflow-hidden">
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                muted
-                webkit-playsinline="true"
-                controls={false}
-                className="w-full h-64 object-cover"
-                style={{ 
-                  transform: 'scaleX(-1)',
-                  WebkitTransform: 'scaleX(-1)'
-                }}
-                onLoadedMetadata={() => {
-                  console.log('Video metadata loaded, attempting play...');
-                  if (videoRef.current) {
-                    videoRef.current.play().catch(e => {
-                      console.error('Error playing video:', e);
-                    });
-                  }
-                }}
-                onCanPlay={() => {
-                  console.log('Video can play');
-                }}
-                onError={(e) => {
-                  console.error('Video error:', e);
-                }}
+              <QrScanner
+                delay={300}
+                onScan={handleScan}
+                onError={handleError}
+                style={{ width: '100%', height: '300px' }}
+                facingMode="environment"
               />
               <div className="absolute inset-0 border-2 border-primary rounded-lg pointer-events-none">
                 <div className="absolute top-4 left-4 w-6 h-6 border-l-2 border-t-2 border-primary"></div>
@@ -181,7 +104,7 @@ const QRScanner = ({ onScan, isOpen, onClose }: QRScannerProps) => {
               {isScanning ? 'Stop & Close' : 'Cancel'}
             </Button>
             {isScanning && (
-              <Button onClick={stopCamera} variant="secondary" className="flex-1">
+              <Button onClick={stopScanning} variant="secondary" className="flex-1">
                 Stop Camera
               </Button>
             )}
