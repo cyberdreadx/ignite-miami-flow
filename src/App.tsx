@@ -60,7 +60,7 @@ const App = () => (
            <Route path="/my-tickets" element={<MyTickets />} />
            <Route path="/affiliate" element={<Affiliate />} />
             <Route path="/validate" element={<ValidateTicket />} />
-            <Route path="/verify" element={<VerifyTicket />} />
+            <Route path="/verify" element={<PublicTicketView />} />
             <Route path="/ticket" element={<PublicTicketView />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
