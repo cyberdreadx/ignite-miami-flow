@@ -67,7 +67,11 @@ serve(async (req) => {
 
         const userName = profile?.full_name || profile?.email || userData.user.email;
         
-        // Create QR code data (JSON string with verification info)
+        // Create QR code URL that points to public verification page
+        const baseUrl = req.headers.get("origin") || "https://25d21c34-b6fc-441b-9054-fae609c5f6e2.lovableproject.com";
+        const qrCodeUrl = `${baseUrl}/ticket?token=${qrToken}`;
+        
+        // Store additional data as JSON for internal use
         const qrData = JSON.stringify({
           type: "ticket",
           id: ticket.id,
@@ -93,6 +97,7 @@ serve(async (req) => {
         result = {
           qr_code_token: qrToken,
           qr_code_data: qrData,
+          qr_code_url: qrCodeUrl,
           type: "ticket"
         };
       }
@@ -119,6 +124,10 @@ serve(async (req) => {
         const { data: tokenData } = await supabaseClient.rpc("generate_qr_token");
         const qrToken = tokenData;
         
+        // Create QR code URL that points to public verification page
+        const baseUrl = req.headers.get("origin") || "https://25d21c34-b6fc-441b-9054-fae609c5f6e2.lovableproject.com";
+        const qrCodeUrl = `${baseUrl}/ticket?token=${qrToken}`;
+        
         // Create QR code data
         const qrData = JSON.stringify({
           type: "subscription",
@@ -143,6 +152,7 @@ serve(async (req) => {
         result = {
           qr_code_token: qrToken,
           qr_code_data: qrData,
+          qr_code_url: qrCodeUrl,
           type: "subscription"
         };
       }
@@ -201,6 +211,10 @@ serve(async (req) => {
           validUntil = nextTuesday;
         }
         
+        // Create QR code URL that points to public verification page
+        const baseUrl = req.headers.get("origin") || "https://25d21c34-b6fc-441b-9054-fae609c5f6e2.lovableproject.com";
+        const qrCodeUrl = `${baseUrl}/ticket?token=${qrToken}`;
+        
         // Create QR code data
         const qrData = JSON.stringify({
           type: "media_pass",
@@ -230,6 +244,7 @@ serve(async (req) => {
         result = {
           qr_code_token: qrToken,
           qr_code_data: qrData,
+          qr_code_url: qrCodeUrl,
           type: "media_pass"
         };
       }
