@@ -273,7 +273,7 @@ const Photographers = () => {
                     <div className="flex flex-col items-center space-y-4">
                       <div className="bg-white/10 rounded-lg p-4 w-full flex justify-center">
                         <img 
-                          src="/lovable-uploads/7ae4542c-245a-41d9-8301-b991fcffdffa.png"
+                          src="/lovable-uploads/905893c3-c50a-4c5c-aa1e-94e5dd440e12.png"
                           alt="SkateBurn Official Logo"
                           className="max-w-full h-auto max-h-32 object-contain"
                         />
@@ -284,8 +284,8 @@ const Photographers = () => {
                         className="w-full"
                         onClick={() => {
                           const link = document.createElement('a');
-                          link.href = '/lovable-uploads/7ae4542c-245a-41d9-8301-b991fcffdffa.png';
-                          link.download = 'skateburn-logo.png';
+                          link.href = '/lovable-uploads/905893c3-c50a-4c5c-aa1e-94e5dd440e12.png';
+                          link.download = 'skateburn-graffiti-logo.png';
                           document.body.appendChild(link);
                           link.click();
                           document.body.removeChild(link);
