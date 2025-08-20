@@ -39,17 +39,38 @@ serve(async (req) => {
       if (verification.is_valid) {
         console.log("Returning ticket verification success");
         
-        // Return minimal verification data without sensitive payment info
+        // Fetch additional ticket details for display
+        const { data: ticketDetails } = await supabaseClient
+          .from('tickets')
+          .select(`
+            id, amount, event_id, created_at, valid_until, used_at, used_by,
+            profiles:user_id (full_name, email)
+          `)
+          .eq('qr_code_token', token)
+          .single();
+
         return new Response(JSON.stringify({
-          success: true,
-          ticket: {
-            is_valid: verification.is_valid,
-            status: verification.ticket_status,
-            event_id: verification.event_id,
-            valid_until: verification.valid_until,
+          valid: true,
+          type: 'ticket',
+          ticket_info: {
+            id: ticketDetails?.id,
+            amount: ticketDetails?.amount,
+            event_id: ticketDetails?.event_id,
+            user_name: ticketDetails?.profiles?.full_name || ticketDetails?.profiles?.email || 'Unknown User',
+            created_at: ticketDetails?.created_at,
+            valid_until: ticketDetails?.valid_until,
             used_at: verification.used_at,
             used_by: verification.used_by
           }
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      } else {
+        return new Response(JSON.stringify({
+          valid: false,
+          reason: "This ticket is not valid or has been used",
+          type: 'ticket'
         }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 200,
@@ -88,12 +109,25 @@ serve(async (req) => {
         });
       }
 
+      // Fetch subscription details for display
+      const { data: subscriptionDetails } = await supabaseClient
+        .from('subscriptions')
+        .select(`
+          id, status, current_period_end, created_at,
+          profiles:user_id (full_name, email)
+        `)
+        .eq('qr_code_token', token)
+        .single();
+
       return new Response(JSON.stringify({
         valid: true,
-        type: "subscription",
+        type: 'subscription',
         subscription_info: {
+          id: subscriptionDetails?.id,
           status: verification.subscription_status,
-          current_period_end: verification.current_period_end
+          user_name: subscriptionDetails?.profiles?.full_name || subscriptionDetails?.profiles?.email || 'Unknown User',
+          current_period_end: verification.current_period_end,
+          created_at: subscriptionDetails?.created_at
         }
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -135,15 +169,28 @@ serve(async (req) => {
         });
       }
 
+      // Fetch media pass details for display  
+      const { data: mediaPassDetails } = await supabaseClient
+        .from('media_passes')
+        .select(`
+          id, pass_type, photographer_name, instagram_handle, amount, valid_until, created_at,
+          profiles:user_id (full_name, email)
+        `)
+        .eq('qr_code_token', token)
+        .single();
+
       return new Response(JSON.stringify({
         valid: true,
-        type: "media_pass",
+        type: 'media_pass',
         media_pass_info: {
           pass_type: verification.pass_type,
           photographer_name: verification.photographer_name,
           instagram_handle: verification.instagram_handle,
           valid_until: verification.valid_until,
-          status: verification.pass_status
+          status: verification.pass_status,
+          user_name: mediaPassDetails?.profiles?.full_name || mediaPassDetails?.profiles?.email || 'Unknown User',
+          created_at: mediaPassDetails?.created_at,
+          amount: mediaPassDetails?.amount
         }
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -151,10 +198,10 @@ serve(async (req) => {
       });
     }
 
-    // QR code not found
+    // QR code not found or invalid
     return new Response(JSON.stringify({
-      success: false,
-      error: "This QR code is not valid or has been deactivated"
+      valid: false,
+      reason: "This QR code is not valid or has been deactivated"
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
@@ -163,8 +210,8 @@ serve(async (req) => {
   } catch (error) {
     console.error("Error in public ticket verification:", error);
     return new Response(JSON.stringify({ 
-      success: false,
-      error: "Unable to verify ticket at this time" 
+      valid: false,
+      reason: "Unable to verify ticket at this time" 
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
