@@ -44,9 +44,16 @@ serve(async (req) => {
           .from('tickets')
           .select(`
             id, amount, event_id, created_at, valid_until, used_at, used_by,
-            profiles:user_id (full_name, email)
+            user_id
           `)
           .eq('qr_code_token', token)
+          .single();
+
+        // Fetch user profile data separately
+        const { data: userProfile } = await supabaseClient
+          .from('profiles')
+          .select('full_name, email')
+          .eq('user_id', ticketDetails?.user_id)
           .single();
 
         return new Response(JSON.stringify({
@@ -56,7 +63,7 @@ serve(async (req) => {
             id: ticketDetails?.id,
             amount: ticketDetails?.amount,
             event_id: ticketDetails?.event_id,
-            user_name: ticketDetails?.profiles?.full_name || ticketDetails?.profiles?.email || 'Unknown User',
+            user_name: userProfile?.full_name || userProfile?.email || 'Unknown User',
             created_at: ticketDetails?.created_at,
             valid_until: ticketDetails?.valid_until,
             used_at: verification.used_at,
@@ -112,11 +119,15 @@ serve(async (req) => {
       // Fetch subscription details for display
       const { data: subscriptionDetails } = await supabaseClient
         .from('subscriptions')
-        .select(`
-          id, status, current_period_end, created_at,
-          profiles:user_id (full_name, email)
-        `)
+        .select('id, status, current_period_end, created_at, user_id')
         .eq('qr_code_token', token)
+        .single();
+
+      // Fetch user profile data separately
+      const { data: userProfile } = await supabaseClient
+        .from('profiles')
+        .select('full_name, email')
+        .eq('user_id', subscriptionDetails?.user_id)
         .single();
 
       return new Response(JSON.stringify({
@@ -125,7 +136,7 @@ serve(async (req) => {
         subscription_info: {
           id: subscriptionDetails?.id,
           status: verification.subscription_status,
-          user_name: subscriptionDetails?.profiles?.full_name || subscriptionDetails?.profiles?.email || 'Unknown User',
+          user_name: userProfile?.full_name || userProfile?.email || 'Unknown User',
           current_period_end: verification.current_period_end,
           created_at: subscriptionDetails?.created_at
         }
@@ -174,9 +185,16 @@ serve(async (req) => {
         .from('media_passes')
         .select(`
           id, pass_type, photographer_name, instagram_handle, amount, valid_until, created_at,
-          profiles:user_id (full_name, email)
+          user_id
         `)
         .eq('qr_code_token', token)
+        .single();
+
+      // Fetch user profile data separately
+      const { data: userProfile } = await supabaseClient
+        .from('profiles')
+        .select('full_name, email')
+        .eq('user_id', mediaPassDetails?.user_id)
         .single();
 
       return new Response(JSON.stringify({
@@ -188,7 +206,7 @@ serve(async (req) => {
           instagram_handle: verification.instagram_handle,
           valid_until: verification.valid_until,
           status: verification.pass_status,
-          user_name: mediaPassDetails?.profiles?.full_name || mediaPassDetails?.profiles?.email || 'Unknown User',
+          user_name: userProfile?.full_name || userProfile?.email || 'Unknown User',
           created_at: mediaPassDetails?.created_at,
           amount: mediaPassDetails?.amount
         }
