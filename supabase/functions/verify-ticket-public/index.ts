@@ -47,27 +47,24 @@ serve(async (req) => {
             user_id
           `)
           .eq('qr_code_token', token)
-          .single();
+          .maybeSingle();
 
         console.log("Ticket details fetched:", { ticketDetails, ticketError });
 
         if (ticketError) {
           console.error("Error fetching ticket details:", ticketError);
-          return new Response(JSON.stringify({
-            valid: false,
-            reason: "Could not fetch ticket details"
-          }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 200,
-          });
         }
 
-        // Fetch user profile data separately
+        if (!ticketDetails) {
+          console.error("No ticket details found for token:", token);
+        }
+
+        // Fetch user profile data separately  
         const { data: userProfile, error: profileError } = await supabaseClient
           .from('profiles')
           .select('full_name, email')
           .eq('user_id', ticketDetails?.user_id)
-          .single();
+          .maybeSingle();
 
         console.log("User profile data:", { userProfile, profileError, user_id: ticketDetails?.user_id });
 
