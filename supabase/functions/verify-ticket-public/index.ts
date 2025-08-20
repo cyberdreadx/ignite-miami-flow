@@ -50,11 +50,13 @@ serve(async (req) => {
           .single();
 
         // Fetch user profile data separately
-        const { data: userProfile } = await supabaseClient
+        const { data: userProfile, error: profileError } = await supabaseClient
           .from('profiles')
           .select('full_name, email')
           .eq('user_id', ticketDetails?.user_id)
           .single();
+
+        console.log("User profile data:", { userProfile, profileError, user_id: ticketDetails?.user_id });
 
         return new Response(JSON.stringify({
           valid: true,

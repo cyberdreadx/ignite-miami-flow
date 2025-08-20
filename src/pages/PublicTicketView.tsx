@@ -41,7 +41,7 @@ export const PublicTicketView: React.FC = () => {
   const [markingAsUsed, setMarkingAsUsed] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
-  const { roles, isAdmin, hasRole } = useUserRoles();
+  const { roles, isAdmin, hasRole, loading: rolesLoading } = useUserRoles();
 
   const token = searchParams.get('token');
 
@@ -288,7 +288,7 @@ export const PublicTicketView: React.FC = () => {
               )}
 
               {/* Moderator Actions */}
-              {isModeratorOrAdmin && ticketDetails.valid && ticketDetails.type === 'ticket' && (
+              {user && isModeratorOrAdmin && ticketDetails.valid && ticketDetails.type === 'ticket' && (
                 <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                   <h3 className="font-semibold text-yellow-800 mb-2">Moderator Actions</h3>
                   <Button 
@@ -309,6 +309,23 @@ export const PublicTicketView: React.FC = () => {
                   <p className="text-xs text-yellow-700 mt-2">
                     This will mark the ticket as used and prevent future entries.
                   </p>
+                </div>
+              )}
+              
+              {/* Login prompt for staff */}
+              {!user && ticketDetails.valid && ticketDetails.type === 'ticket' && (
+                <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <h3 className="font-semibold text-blue-800 mb-2">Staff Access</h3>
+                  <p className="text-sm text-blue-700 mb-3">
+                    Are you a moderator or admin? Log in to access ticket verification controls.
+                  </p>
+                  <Button 
+                    onClick={() => window.location.href = '/auth'}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    Staff Login
+                  </Button>
                 </div>
               )}
             </CardContent>
