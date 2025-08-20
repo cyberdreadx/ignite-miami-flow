@@ -35,49 +35,55 @@ serve(async (req) => {
 
     if (!ticketError && ticketData && ticketData.length > 0) {
       const verification = ticketData[0];
+      console.log("Verification data:", verification);
       
       if (verification.is_valid) {
-        console.log("Returning ticket verification success");
+        console.log("Ticket is valid, fetching details");
         
-        // Fetch additional ticket details for display
+        // Get the actual ticket data
         const { data: ticketDetails, error: ticketError } = await supabaseClient
           .from('tickets')
-          .select(`
-            id, amount, event_id, created_at, valid_until, used_at, used_by,
-            user_id
-          `)
+          .select('id, amount, event_id, created_at, valid_until, used_at, used_by, user_id')
           .eq('qr_code_token', token)
           .maybeSingle();
 
-        console.log("Ticket details fetched:", { ticketDetails, ticketError });
-
-        if (ticketError) {
-          console.error("Error fetching ticket details:", ticketError);
-        }
+        console.log("Ticket details:", { ticketDetails, ticketError });
 
         if (!ticketDetails) {
-          console.error("No ticket details found for token:", token);
+          console.log("No ticket details found");
+          return new Response(JSON.stringify({
+            valid: false,
+            reason: "Ticket details not found"
+          }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200,
+          });
         }
 
-        // Fetch user profile data separately  
+        // Get user profile
         const { data: userProfile, error: profileError } = await supabaseClient
           .from('profiles')
           .select('full_name, email')
-          .eq('user_id', ticketDetails?.user_id)
+          .eq('user_id', ticketDetails.user_id)
           .maybeSingle();
 
-        console.log("User profile data:", { userProfile, profileError, user_id: ticketDetails?.user_id });
+        console.log("User profile:", { userProfile, profileError, user_id: ticketDetails.user_id });
+
+        const userName = userProfile?.full_name || userProfile?.email || 'Unknown User';
+        const amount = ticketDetails.amount || 0;
+
+        console.log("Final data:", { userName, amount, created_at: ticketDetails.created_at });
 
         return new Response(JSON.stringify({
           valid: true,
           type: 'ticket',
           ticket_info: {
-            id: ticketDetails?.id,
-            amount: ticketDetails?.amount || 0,
-            event_id: ticketDetails?.event_id,
-            user_name: userProfile?.full_name || userProfile?.email || 'Unknown User',
-            created_at: ticketDetails?.created_at,
-            valid_until: ticketDetails?.valid_until,
+            id: ticketDetails.id,
+            amount: amount,
+            event_id: ticketDetails.event_id,
+            user_name: userName,
+            created_at: ticketDetails.created_at,
+            valid_until: ticketDetails.valid_until,
             used_at: verification.used_at,
             used_by: verification.used_by
           }
@@ -86,6 +92,7 @@ serve(async (req) => {
           status: 200,
         });
       } else {
+        console.log("Ticket is not valid");
         return new Response(JSON.stringify({
           valid: false,
           reason: "This ticket is not valid or has been used",
