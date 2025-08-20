@@ -31,7 +31,7 @@ serve(async (req) => {
     const { data: ticketData, error: ticketError } = await supabaseClient
       .rpc("verify_qr_token", { token });
 
-    console.log("Ticket verification result:", { ticketData, ticketError });
+    console.log("Ticket verification result:", { ticketData, ticketError, token });
 
     if (!ticketError && ticketData && ticketData.length > 0) {
       const verification = ticketData[0];

@@ -74,20 +74,29 @@ export const PublicTicketView: React.FC = () => {
   }, [token]);
 
   const markTicketAsUsed = async () => {
-    if (!ticketDetails?.ticket_info?.id || !isModeratorOrAdmin) return;
+    if (!ticketDetails?.ticket_info?.id || !isModeratorOrAdmin) {
+      console.log('Mark ticket failed - missing requirements:', { 
+        hasTicketId: !!ticketDetails?.ticket_info?.id, 
+        isModeratorOrAdmin,
+        user: user?.email,
+        roles 
+      });
+      return;
+    }
 
+    console.log('Attempting to mark ticket as used:', { token, userEmail: user?.email });
     setMarkingAsUsed(true);
     try {
-      const { error } = await supabase.functions.invoke('validate-qr-code', {
+      const { data, error } = await supabase.functions.invoke('validate-qr-code', {
         body: {
           qr_code_token: token,
           validator_name: user?.email || 'Door Staff'
         }
       });
 
-      if (error) throw error;
+      console.log('Mark ticket response:', { data, error });
 
-      // Update local state to reflect the ticket is now used
+      if (error) throw error;
       setTicketDetails(prev => prev ? {
         ...prev,
         valid: false,
