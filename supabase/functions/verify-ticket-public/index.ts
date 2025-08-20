@@ -27,84 +27,52 @@ serve(async (req) => {
 
     console.log("Public verification for QR code:", token);
 
-    // First check if it's a ticket using secure verification
-    const { data: ticketData, error: ticketError } = await supabaseClient
-      .rpc("verify_qr_token", { token });
+    // Direct ticket check first
+    const { data: ticketCheck, error: ticketError } = await supabaseClient
+      .from('tickets')
+      .select('id, amount, event_id, created_at, valid_until, used_at, used_by, user_id, status')
+      .eq('qr_code_token', token)
+      .maybeSingle();
 
-    console.log("Ticket verification result:", { ticketData, ticketError, token });
+    console.log("Direct ticket check:", { ticketCheck, ticketError });
 
-    if (!ticketError && ticketData && ticketData.length > 0) {
-      const verification = ticketData[0];
-      console.log("Verification data:", verification);
+    if (ticketCheck && ticketCheck.status === 'paid') {
+      console.log("Found valid paid ticket");
       
-      if (verification.is_valid) {
-        console.log("Ticket is valid, fetching details");
-        
-        // Get the actual ticket data
-        const { data: ticketDetails, error: ticketError } = await supabaseClient
-          .from('tickets')
-          .select('id, amount, event_id, created_at, valid_until, used_at, used_by, user_id')
-          .eq('qr_code_token', token)
-          .maybeSingle();
+      // Get user profile
+      const { data: userProfile, error: profileError } = await supabaseClient
+        .from('profiles')
+        .select('full_name, email')
+        .eq('user_id', ticketCheck.user_id)
+        .maybeSingle();
 
-        console.log("Ticket details:", { ticketDetails, ticketError });
+      console.log("User profile:", { userProfile, profileError, user_id: ticketCheck.user_id });
 
-        if (!ticketDetails) {
-          console.log("No ticket details found");
-          return new Response(JSON.stringify({
-            valid: false,
-            reason: "Ticket details not found"
-          }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 200,
-          });
+      const userName = userProfile?.full_name || userProfile?.email || 'Unknown User';
+      const amount = ticketCheck.amount || 0;
+
+      console.log("Final response data:", { userName, amount, created_at: ticketCheck.created_at });
+
+      return new Response(JSON.stringify({
+        valid: true,
+        type: 'ticket',
+        ticket_info: {
+          id: ticketCheck.id,
+          amount: amount,
+          event_id: ticketCheck.event_id,
+          user_name: userName,
+          created_at: ticketCheck.created_at,
+          valid_until: ticketCheck.valid_until,
+          used_at: ticketCheck.used_at,
+          used_by: ticketCheck.used_by
         }
-
-        // Get user profile
-        const { data: userProfile, error: profileError } = await supabaseClient
-          .from('profiles')
-          .select('full_name, email')
-          .eq('user_id', ticketDetails.user_id)
-          .maybeSingle();
-
-        console.log("User profile:", { userProfile, profileError, user_id: ticketDetails.user_id });
-
-        const userName = userProfile?.full_name || userProfile?.email || 'Unknown User';
-        const amount = ticketDetails.amount || 0;
-
-        console.log("Final data:", { userName, amount, created_at: ticketDetails.created_at });
-
-        return new Response(JSON.stringify({
-          valid: true,
-          type: 'ticket',
-          ticket_info: {
-            id: ticketDetails.id,
-            amount: amount,
-            event_id: ticketDetails.event_id,
-            user_name: userName,
-            created_at: ticketDetails.created_at,
-            valid_until: ticketDetails.valid_until,
-            used_at: verification.used_at,
-            used_by: verification.used_by
-          }
-        }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        });
-      } else {
-        console.log("Ticket is not valid");
-        return new Response(JSON.stringify({
-          valid: false,
-          reason: "This ticket is not valid or has been used",
-          type: 'ticket'
-        }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        });
-      }
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
     }
 
-    // If not a ticket, check if it's a subscription using secure verification
+    // Check if it's a subscription using secure verification
     const { data: subscriptionData, error: subError } = await supabaseClient
       .rpc("verify_subscription_qr", { token });
 
@@ -236,6 +204,7 @@ serve(async (req) => {
     }
 
     // QR code not found or invalid
+    console.log("No valid ticket, subscription, or media pass found");
     return new Response(JSON.stringify({
       valid: false,
       reason: "This QR code is not valid or has been deactivated"
