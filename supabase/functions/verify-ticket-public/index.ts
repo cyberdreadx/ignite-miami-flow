@@ -13,10 +13,11 @@ serve(async (req) => {
   }
 
   try {
-    // Create Supabase client using anon key (public function)
+    // Create Supabase client using service role key for full access
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
     );
 
     const { qr_code_token, qr_token } = await req.json();
