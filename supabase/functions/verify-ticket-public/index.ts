@@ -40,7 +40,7 @@ serve(async (req) => {
         console.log("Returning ticket verification success");
         
         // Fetch additional ticket details for display
-        const { data: ticketDetails } = await supabaseClient
+        const { data: ticketDetails, error: ticketError } = await supabaseClient
           .from('tickets')
           .select(`
             id, amount, event_id, created_at, valid_until, used_at, used_by,
@@ -48,6 +48,19 @@ serve(async (req) => {
           `)
           .eq('qr_code_token', token)
           .single();
+
+        console.log("Ticket details fetched:", { ticketDetails, ticketError });
+
+        if (ticketError) {
+          console.error("Error fetching ticket details:", ticketError);
+          return new Response(JSON.stringify({
+            valid: false,
+            reason: "Could not fetch ticket details"
+          }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200,
+          });
+        }
 
         // Fetch user profile data separately
         const { data: userProfile, error: profileError } = await supabaseClient
@@ -63,7 +76,7 @@ serve(async (req) => {
           type: 'ticket',
           ticket_info: {
             id: ticketDetails?.id,
-            amount: ticketDetails?.amount,
+            amount: ticketDetails?.amount || 0,
             event_id: ticketDetails?.event_id,
             user_name: userProfile?.full_name || userProfile?.email || 'Unknown User',
             created_at: ticketDetails?.created_at,
