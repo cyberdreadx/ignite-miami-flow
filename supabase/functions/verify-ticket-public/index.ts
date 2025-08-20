@@ -38,7 +38,32 @@ serve(async (req) => {
     console.log("Direct ticket check:", { ticketCheck, ticketError });
 
     if (ticketCheck && ticketCheck.status === 'paid') {
-      console.log("Found valid paid ticket");
+      console.log("Found paid ticket, checking if used:", { used_at: ticketCheck.used_at });
+      
+      // Check if ticket has been used
+      if (ticketCheck.used_at) {
+        console.log("Ticket has been used");
+        return new Response(JSON.stringify({
+          valid: false,
+          reason: "This ticket has been used for entry",
+          type: 'ticket',
+          ticket_info: {
+            id: ticketCheck.id,
+            amount: ticketCheck.amount || 0,
+            event_id: ticketCheck.event_id,
+            user_name: 'Used Ticket',
+            created_at: ticketCheck.created_at,
+            valid_until: ticketCheck.valid_until,
+            used_at: ticketCheck.used_at,
+            used_by: ticketCheck.used_by
+          }
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+      
+      console.log("Ticket is valid and unused");
       
       // Get user profile
       const { data: userProfile, error: profileError } = await supabaseClient
