@@ -3,6 +3,10 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { useUserRoles } from '@/contexts/UserRoleContext';
 import { Loader2, CheckCircle, XCircle, User, Calendar, DollarSign, Ticket, CreditCard } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -34,8 +38,14 @@ export const PublicTicketView: React.FC = () => {
   const [ticketDetails, setTicketDetails] = useState<TicketDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
+  const [markingAsUsed, setMarkingAsUsed] = useState(false);
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const { roles, isAdmin, hasRole } = useUserRoles();
 
   const token = searchParams.get('token');
+
+  const isModeratorOrAdmin = isAdmin || hasRole('moderator');
 
   useEffect(() => {
     const fetchTicketDetails = async () => {
@@ -62,6 +72,48 @@ export const PublicTicketView: React.FC = () => {
 
     fetchTicketDetails();
   }, [token]);
+
+  const markTicketAsUsed = async () => {
+    if (!ticketDetails?.ticket_info?.id || !isModeratorOrAdmin) return;
+
+    setMarkingAsUsed(true);
+    try {
+      const { error } = await supabase.functions.invoke('validate-qr-code', {
+        body: {
+          qr_code_token: token,
+          validator_name: user?.email || 'Door Staff'
+        }
+      });
+
+      if (error) throw error;
+
+      // Update local state to reflect the ticket is now used
+      setTicketDetails(prev => prev ? {
+        ...prev,
+        valid: false,
+        reason: "This ticket has been used for entry",
+        ticket_info: prev.ticket_info ? {
+          ...prev.ticket_info,
+          used_at: new Date().toISOString(),
+          used_by: user?.email || 'Door Staff'
+        } : undefined
+      } : null);
+
+      toast({
+        title: "Ticket Marked as Used",
+        description: "The ticket has been successfully marked as used.",
+      });
+    } catch (err) {
+      console.error('Error marking ticket as used:', err);
+      toast({
+        title: "Error",
+        description: "Failed to mark ticket as used. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setMarkingAsUsed(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -157,7 +209,7 @@ export const PublicTicketView: React.FC = () => {
                       <div className="flex items-center gap-3 p-3 bg-background rounded-lg">
                         <DollarSign className="w-5 h-5 text-muted-foreground" />
                         <div>
-                          <p className="font-medium">${(ticketDetails.ticket_info.amount / 100).toFixed(2)}</p>
+                          <p className="font-medium">${ticketDetails.ticket_info.amount ? (ticketDetails.ticket_info.amount / 100).toFixed(2) : '0.00'}</p>
                           <p className="text-sm text-muted-foreground">Ticket Price</p>
                         </div>
                       </div>
@@ -167,7 +219,7 @@ export const PublicTicketView: React.FC = () => {
                           <Calendar className="w-5 h-5 text-muted-foreground" />
                           <div>
                             <p className="font-medium">
-                              {new Date(ticketDetails.ticket_info.valid_until).toLocaleDateString()}
+                              {ticketDetails.ticket_info.valid_until ? new Date(ticketDetails.ticket_info.valid_until).toLocaleDateString() : 'No expiration'}
                             </p>
                             <p className="text-sm text-muted-foreground">Valid Until</p>
                           </div>
@@ -178,7 +230,7 @@ export const PublicTicketView: React.FC = () => {
                         <Calendar className="w-5 h-5 text-muted-foreground" />
                         <div>
                           <p className="font-medium">
-                            {new Date(ticketDetails.ticket_info.created_at).toLocaleDateString()}
+                            {ticketDetails.ticket_info.created_at ? new Date(ticketDetails.ticket_info.created_at).toLocaleDateString() : 'Unknown'}
                           </p>
                           <p className="text-sm text-muted-foreground">Purchase Date</p>
                         </div>
@@ -200,7 +252,7 @@ export const PublicTicketView: React.FC = () => {
                         <Calendar className="w-5 h-5 text-muted-foreground" />
                         <div>
                           <p className="font-medium">
-                            {new Date(ticketDetails.subscription_info.current_period_end).toLocaleDateString()}
+                            {ticketDetails.subscription_info.current_period_end ? new Date(ticketDetails.subscription_info.current_period_end).toLocaleDateString() : 'Unknown'}
                           </p>
                           <p className="text-sm text-muted-foreground">Valid Until</p>
                         </div>
@@ -210,7 +262,7 @@ export const PublicTicketView: React.FC = () => {
                         <Calendar className="w-5 h-5 text-muted-foreground" />
                         <div>
                           <p className="font-medium">
-                            {new Date(ticketDetails.subscription_info.created_at).toLocaleDateString()}
+                            {ticketDetails.subscription_info.created_at ? new Date(ticketDetails.subscription_info.created_at).toLocaleDateString() : 'Unknown'}
                           </p>
                           <p className="text-sm text-muted-foreground">Purchase Date</p>
                         </div>
@@ -229,8 +281,33 @@ export const PublicTicketView: React.FC = () => {
               {!ticketDetails.valid && ticketDetails.ticket_info?.used_at && (
                 <div className="p-3 bg-background rounded-lg">
                   <p className="text-sm text-red-700 text-center">
-                    This ticket was already used on {new Date(ticketDetails.ticket_info.used_at).toLocaleDateString()}
+                    This ticket was already used on {ticketDetails.ticket_info.used_at ? new Date(ticketDetails.ticket_info.used_at).toLocaleDateString() : 'Unknown date'}
                     {ticketDetails.ticket_info.used_by && ` by ${ticketDetails.ticket_info.used_by}`}
+                  </p>
+                </div>
+              )}
+
+              {/* Moderator Actions */}
+              {isModeratorOrAdmin && ticketDetails.valid && ticketDetails.type === 'ticket' && (
+                <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <h3 className="font-semibold text-yellow-800 mb-2">Moderator Actions</h3>
+                  <Button 
+                    onClick={markTicketAsUsed}
+                    disabled={markingAsUsed}
+                    variant="destructive"
+                    className="w-full"
+                  >
+                    {markingAsUsed ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Marking as Used...
+                      </>
+                    ) : (
+                      'Mark as Used'
+                    )}
+                  </Button>
+                  <p className="text-xs text-yellow-700 mt-2">
+                    This will mark the ticket as used and prevent future entries.
                   </p>
                 </div>
               )}
