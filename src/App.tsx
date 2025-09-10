@@ -7,6 +7,8 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { UserRoleProvider } from "./contexts/UserRoleContext";
 import Index from "./pages/Index";
 import Admin from "./pages/AdminRebuild";
+import AdminMembers from "./pages/AdminMembers";
+import AdminAnalytics from "./pages/AdminAnalytics";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import About from "./pages/About";
@@ -48,6 +50,8 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/admin/members" element={<AdminMembers />} />
+          <Route path="/admin/analytics" element={<AdminAnalytics />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/about" element={<About />} />

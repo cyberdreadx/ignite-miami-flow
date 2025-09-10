@@ -27,7 +27,8 @@ import {
 
 const adminItems = [
   { title: "Dashboard", url: "/admin", icon: BarChart3, id: "dashboard" },
-  { title: "Analytics", url: "/admin#analytics", icon: TrendingUp, id: "analytics" },
+  { title: "Members", url: "/admin/members", icon: Users, id: "members" },
+  { title: "Analytics", url: "/admin/analytics", icon: TrendingUp, id: "analytics" },
   { title: "Expenses", url: "/admin#expenses", icon: Receipt, id: "expenses" },
   { title: "Affiliates", url: "/admin#affiliates", icon: DollarSign, id: "affiliates" },
 ];
