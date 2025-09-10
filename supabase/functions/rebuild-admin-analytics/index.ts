@@ -29,8 +29,7 @@ serve(async (req) => {
         amount,
         status,
         stripe_session_id,
-        user_id,
-        profiles!inner(full_name, email)
+        user_id
       `)
       .eq('status', 'paid')
       .order('created_at', { ascending: true });
@@ -38,6 +37,21 @@ serve(async (req) => {
     if (ticketsError) {
       throw new Error(`Failed to fetch tickets: ${ticketsError.message}`);
     }
+
+    // Get user profiles separately to avoid relationship issues
+    const { data: profiles, error: profilesError } = await supabaseClient
+      .from('profiles')
+      .select('user_id, full_name, email');
+
+    if (profilesError) {
+      console.log('Warning: Could not fetch profiles:', profilesError.message);
+    }
+
+    // Create a map for quick profile lookup
+    const profileMap = new Map();
+    profiles?.forEach(profile => {
+      profileMap.set(profile.user_id, profile);
+    });
 
     console.log(`Found ${tickets?.length || 0} paid tickets`);
 
@@ -104,9 +118,10 @@ serve(async (req) => {
       eventStats[eventDate].unique_attendees.add(ticket.user_id);
       
       // Add detailed sale info
+      const profile = profileMap.get(ticket.user_id);
       eventStats[eventDate].sales.push({
         id: ticket.id,
-        user_name: ticket.profiles?.full_name || ticket.profiles?.email || 'Unknown User',
+        user_name: profile?.full_name || profile?.email || 'Unknown User',
         amount: ticket.amount || 0,
         created_at: ticket.created_at,
         stripe_session_id: ticket.stripe_session_id
