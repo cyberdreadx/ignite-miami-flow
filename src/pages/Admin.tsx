@@ -36,6 +36,7 @@ import EventTicketAnalytics from '@/components/EventTicketAnalytics';
 import EnhancedEventAnalytics from '@/components/EnhancedEventAnalytics';
 import ExpenseTracker from '@/components/ExpenseTracker';
 import AdminAffiliateManager from '@/components/AdminAffiliateManager';
+import { AdminQRCodeFixer } from '@/components/AdminQRCodeFixer';
 
 interface Post {
   id: string;
@@ -687,6 +688,11 @@ const Admin = () => {
 
           {/* Content */}
           <div className="p-4 space-y-6">
+            {/* QR Code Emergency Fix */}
+            <div id="qr-fix">
+              <AdminQRCodeFixer />
+            </div>
+            
             {/* Event Scheduler */}
             <div id="events">
               <AdminEventDateCard />
