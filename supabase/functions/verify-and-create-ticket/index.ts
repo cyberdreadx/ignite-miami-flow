@@ -80,8 +80,15 @@ serve(async (req) => {
       });
     }
 
-    // Generate QR code token
-    const qrToken = `QR_${Math.random().toString(36).substr(2, 8).toUpperCase()}_${Date.now()}`;
+    // Generate QR code token using the proper function
+    const { data: qrToken, error: qrTokenError } = await supabase.rpc('generate_qr_token');
+    
+    if (qrTokenError || !qrToken) {
+      console.error("Error generating QR token:", qrTokenError);
+      throw new Error("Failed to generate QR token");
+    }
+    
+    console.log("Generated QR token:", qrToken);
     
     // Calculate validity: 2 days after the relevant event
     const now = new Date();
