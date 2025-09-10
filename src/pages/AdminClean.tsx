@@ -19,9 +19,7 @@ import {
   LogOut
 } from 'lucide-react';
 import { AdminQRCodeFixer } from '@/components/AdminQRCodeFixer';
-import { AdminEventDateCard } from '@/components/AdminEventDateCard';
-import EventTicketAnalytics from '@/components/EventTicketAnalytics';
-import EnhancedEventAnalytics from '@/components/EnhancedEventAnalytics';
+import { EventAnalyticsTabs } from '@/components/EventAnalyticsTabs';
 import ExpenseTracker from '@/components/ExpenseTracker';
 import AdminAffiliateManager from '@/components/AdminAffiliateManager';
 
@@ -180,67 +178,72 @@ const Admin = () => {
           </div>
 
           {/* Content */}
-          <div className="flex-1 p-6 space-y-8">
+          <div className="flex-1 p-3 md:p-6 space-y-6 md:space-y-8">
             
             {/* Emergency Tools */}
-            <div id="qr-fix">
+            <div id="qr-fix" className="block md:hidden">
               <AdminQRCodeFixer />
             </div>
             
-            {/* Event Management */}
+            {/* Desktop Emergency Tools */}
+            <div id="qr-fix" className="hidden md:block">
+              <AdminQRCodeFixer />
+            </div>
+            
+            {/* Event Analytics - This replaces the confusing SkateBurn Tuesdays card */}
             <div id="events">
-              <AdminEventDateCard />
+              <EventAnalyticsTabs />
             </div>
 
             {/* Quick Stats */}
             <div id="dashboard">
-              <h2 className="text-xl font-semibold mb-4">Overview</h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <h2 className="text-lg md:text-xl font-semibold mb-4">Overview</h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                 <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <CardHeader className="pb-2 px-3 md:px-6">
+                    <CardTitle className="text-xs md:text-sm font-medium flex items-center gap-2">
                       <Ticket className="h-4 w-4" />
                       Tickets Sold
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{quickStats.total_tickets}</div>
+                  <CardContent className="px-3 md:px-6">
+                    <div className="text-xl md:text-2xl font-bold">{quickStats.total_tickets}</div>
                   </CardContent>
                 </Card>
 
                 <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <CardHeader className="pb-2 px-3 md:px-6">
+                    <CardTitle className="text-xs md:text-sm font-medium flex items-center gap-2">
                       <DollarSign className="h-4 w-4" />
                       Revenue
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">${(quickStats.total_revenue / 100).toFixed(0)}</div>
+                  <CardContent className="px-3 md:px-6">
+                    <div className="text-xl md:text-2xl font-bold">${(quickStats.total_revenue / 100).toFixed(0)}</div>
                   </CardContent>
                 </Card>
 
                 <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <CardHeader className="pb-2 px-3 md:px-6">
+                    <CardTitle className="text-xs md:text-sm font-medium flex items-center gap-2">
                       <Users className="h-4 w-4" />
                       Pending
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{quickStats.pending_users}</div>
+                  <CardContent className="px-3 md:px-6">
+                    <div className="text-xl md:text-2xl font-bold">{quickStats.pending_users}</div>
                   </CardContent>
                 </Card>
 
                 <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <CardHeader className="pb-2 px-3 md:px-6">
+                    <CardTitle className="text-xs md:text-sm font-medium flex items-center gap-2">
                       <Camera className="h-4 w-4" />
                       Media Passes
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{quickStats.media_passes}</div>
+                  <CardContent className="px-3 md:px-6">
+                    <div className="text-xl md:text-2xl font-bold">{quickStats.media_passes}</div>
                   </CardContent>
                 </Card>
               </div>
@@ -249,27 +252,27 @@ const Admin = () => {
             {/* Pending Approvals */}
             {pendingUsers.length > 0 && (
               <div id="pending">
-                <h2 className="text-xl font-semibold mb-4">Pending Approvals</h2>
+                <h2 className="text-lg md:text-xl font-semibold mb-4">Pending Approvals</h2>
                 <Card>
                   <CardContent className="p-4">
                     <div className="space-y-3">
                       {pendingUsers.map((user) => (
                         <div key={user.user_id} className="flex items-center justify-between p-3 border rounded-lg">
                           <div>
-                            <div className="font-medium">{user.full_name || user.email}</div>
-                            <div className="text-sm text-muted-foreground flex items-center gap-2">
+                            <div className="font-medium text-sm md:text-base">{user.full_name || user.email}</div>
+                            <div className="text-xs md:text-sm text-muted-foreground flex flex-wrap items-center gap-2">
                               <Badge variant="outline" className="text-xs">
                                 {user.role}
                               </Badge>
                               {user.email}
                             </div>
                           </div>
-                          <div className="flex gap-2">
+                          <div className="flex gap-2 flex-shrink-0">
                             <Button
                               size="sm"
                               variant="outline"
                               onClick={() => handleUserApproval(user.user_id, 'approved')}
-                              className="text-green-600 hover:text-green-700"
+                              className="text-green-600 hover:text-green-700 p-2"
                             >
                               <CheckCircle className="h-4 w-4" />
                             </Button>
@@ -277,7 +280,7 @@ const Admin = () => {
                               size="sm"
                               variant="outline"
                               onClick={() => handleUserApproval(user.user_id, 'rejected')}
-                              className="text-red-600 hover:text-red-700"
+                              className="text-red-600 hover:text-red-700 p-2"
                             >
                               <XCircle className="h-4 w-4" />
                             </Button>
@@ -290,24 +293,15 @@ const Admin = () => {
               </div>
             )}
 
-            {/* Analytics */}
-            <div id="analytics">
-              <h2 className="text-xl font-semibold mb-4">Analytics</h2>
-              <div className="space-y-6">
-                <EventTicketAnalytics />
-                <EnhancedEventAnalytics />
-              </div>
-            </div>
-
             {/* Financial Management */}
             <div id="expenses">
-              <h2 className="text-xl font-semibold mb-4">Expenses</h2>
+              <h2 className="text-lg md:text-xl font-semibold mb-4">Expenses</h2>
               <ExpenseTracker />
             </div>
 
             {/* Affiliate Management */}
             <div id="affiliates">
-              <h2 className="text-xl font-semibold mb-4">Affiliates</h2>
+              <h2 className="text-lg md:text-xl font-semibold mb-4">Affiliates</h2>
               <AdminAffiliateManager />
             </div>
 
