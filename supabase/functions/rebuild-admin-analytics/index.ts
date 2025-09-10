@@ -74,15 +74,24 @@ serve(async (req) => {
     const getEventForTicket = (ticketCreatedAt: string) => {
       const ticketDate = new Date(ticketCreatedAt);
       
-      // Find the NEXT Tuesday after the ticket was bought
-      // Logic: tickets bought UP TO a Tuesday are for that Tuesday
-      // Everything bought AFTER that Tuesday is for the NEXT Tuesday
+      // Find the appropriate Tuesday event for the ticket
+      // Logic: tickets bought from Wednesday after a Tuesday up to the next Tuesday are for the next Tuesday
+      // Tickets bought ON a Tuesday are for that Tuesday
       
       for (let i = 0; i < tuesdayEvents.length; i++) {
         const eventDate = new Date(tuesdayEvents[i].date + 'T23:59:59Z'); // End of Tuesday
         
-        if (ticketDate <= eventDate) {
-          return tuesdayEvents[i];
+        // If this is the first event, all tickets before it go to this event
+        if (i === 0) {
+          if (ticketDate <= eventDate) {
+            return tuesdayEvents[i];
+          }
+        } else {
+          // For subsequent events, check if ticket is after previous Tuesday and up to current Tuesday
+          const previousEventDate = new Date(tuesdayEvents[i - 1].date + 'T23:59:59Z');
+          if (ticketDate > previousEventDate && ticketDate <= eventDate) {
+            return tuesdayEvents[i];
+          }
         }
       }
       
