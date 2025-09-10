@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { UserRoleProvider } from "./contexts/UserRoleContext";
 import Index from "./pages/Index";
-import Admin from "./pages/Admin";
+import Admin from "./pages/AdminClean";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import About from "./pages/About";

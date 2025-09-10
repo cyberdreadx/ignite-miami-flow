@@ -30,10 +30,6 @@ const adminItems = [
   { title: "Analytics", url: "/admin#analytics", icon: TrendingUp, id: "analytics" },
   { title: "Expenses", url: "/admin#expenses", icon: Receipt, id: "expenses" },
   { title: "Affiliates", url: "/admin#affiliates", icon: DollarSign, id: "affiliates" },
-  { title: "Users", url: "/admin#users", icon: Users, id: "users" },
-  { title: "Posts", url: "/admin#posts", icon: MessageSquare, id: "posts" },
-  { title: "Pending", url: "/admin#pending", icon: Clock, id: "pending" },
-  { title: "Moderation", url: "/admin#moderation", icon: Shield, id: "moderation" },
 ];
 
 const generalItems = [
