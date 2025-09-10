@@ -40,26 +40,36 @@ export const EventAnalyticsTabs: React.FC = () => {
     const tuesdays = [];
     const today = new Date();
     
-    // Find the most recent Tuesday
-    let tuesday = new Date(today);
-    const dayOfWeek = tuesday.getDay();
-    const daysFromTuesday = dayOfWeek === 2 ? 0 : dayOfWeek > 2 ? 7 - dayOfWeek + 2 : 2 - dayOfWeek;
-    tuesday.setDate(tuesday.getDate() - (dayOfWeek === 2 ? 0 : dayOfWeek > 2 ? dayOfWeek - 2 : dayOfWeek + 5));
+    // Find the most recent Tuesday (including today if it's Tuesday)
+    let currentTuesday = new Date(today);
+    const dayOfWeek = currentTuesday.getDay(); // 0 = Sunday, 1 = Monday, 2 = Tuesday, etc.
+    
+    // Calculate days to subtract to get to Tuesday
+    let daysToSubtract = 0;
+    if (dayOfWeek === 0) daysToSubtract = 5; // Sunday -> Tuesday (5 days back)
+    else if (dayOfWeek === 1) daysToSubtract = 6; // Monday -> Tuesday (6 days back)  
+    else if (dayOfWeek === 2) daysToSubtract = 0; // Tuesday -> Tuesday (0 days)
+    else if (dayOfWeek === 3) daysToSubtract = 1; // Wednesday -> Tuesday (1 day back)
+    else if (dayOfWeek === 4) daysToSubtract = 2; // Thursday -> Tuesday (2 days back)
+    else if (dayOfWeek === 5) daysToSubtract = 3; // Friday -> Tuesday (3 days back)
+    else if (dayOfWeek === 6) daysToSubtract = 4; // Saturday -> Tuesday (4 days back)
+    
+    currentTuesday.setDate(currentTuesday.getDate() - daysToSubtract);
     
     // Add past 6 Tuesdays
     for (let i = 6; i >= 1; i--) {
-      const pastTuesday = new Date(tuesday);
-      pastTuesday.setDate(tuesday.getDate() - (i * 7));
+      const pastTuesday = new Date(currentTuesday);
+      pastTuesday.setDate(currentTuesday.getDate() - (i * 7));
       tuesdays.push(format(pastTuesday, 'yyyy-MM-dd'));
     }
     
     // Add current Tuesday
-    tuesdays.push(format(tuesday, 'yyyy-MM-dd'));
+    tuesdays.push(format(currentTuesday, 'yyyy-MM-dd'));
     
     // Add next 4 Tuesdays
     for (let i = 1; i <= 4; i++) {
-      const futureTuesday = new Date(tuesday);
-      futureTuesday.setDate(tuesday.getDate() + (i * 7));
+      const futureTuesday = new Date(currentTuesday);
+      futureTuesday.setDate(currentTuesday.getDate() + (i * 7));
       tuesdays.push(format(futureTuesday, 'yyyy-MM-dd'));
     }
     
@@ -168,14 +178,14 @@ export const EventAnalyticsTabs: React.FC = () => {
             Tuesday Events Analytics
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-3 md:p-6">
           <Tabs defaultValue={eventData[6]?.date || eventData[0]?.date} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 lg:grid-cols-11 gap-1 h-auto p-1">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-11 gap-1 h-auto p-1 overflow-x-auto">
               {eventData.map((event) => (
                 <TabsTrigger 
                   key={event.date} 
                   value={event.date}
-                  className="text-xs p-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  className="text-[10px] md:text-xs p-1 md:p-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground whitespace-nowrap min-w-0"
                 >
                   {formatTuesdayLabel(event.date)}
                 </TabsTrigger>
@@ -183,55 +193,55 @@ export const EventAnalyticsTabs: React.FC = () => {
             </TabsList>
 
             {eventData.map((event) => (
-              <TabsContent key={event.date} value={event.date} className="mt-4">
-                <div className="space-y-4">
+              <TabsContent key={event.date} value={event.date} className="mt-3 md:mt-4">
+                <div className="space-y-3 md:space-y-4">
                   {/* Stats for this Tuesday */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
                     <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium flex items-center gap-2">
-                          <Ticket className="h-4 w-4" />
+                      <CardHeader className="pb-1 md:pb-2 px-2 md:px-6">
+                        <CardTitle className="text-xs md:text-sm font-medium flex items-center gap-1 md:gap-2">
+                          <Ticket className="h-3 w-3 md:h-4 md:w-4" />
                           Tickets
                         </CardTitle>
                       </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold">{event.tickets_sold}</div>
+                      <CardContent className="px-2 md:px-6">
+                        <div className="text-lg md:text-2xl font-bold">{event.tickets_sold}</div>
                       </CardContent>
                     </Card>
 
                     <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium flex items-center gap-2">
-                          <DollarSign className="h-4 w-4" />
+                      <CardHeader className="pb-1 md:pb-2 px-2 md:px-6">
+                        <CardTitle className="text-xs md:text-sm font-medium flex items-center gap-1 md:gap-2">
+                          <DollarSign className="h-3 w-3 md:h-4 md:w-4" />
                           Revenue
                         </CardTitle>
                       </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold">${(event.revenue / 100).toFixed(0)}</div>
+                      <CardContent className="px-2 md:px-6">
+                        <div className="text-lg md:text-2xl font-bold">${(event.revenue / 100).toFixed(0)}</div>
                       </CardContent>
                     </Card>
 
                     <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium flex items-center gap-2">
-                          <Users className="h-4 w-4" />
+                      <CardHeader className="pb-1 md:pb-2 px-2 md:px-6">
+                        <CardTitle className="text-xs md:text-sm font-medium flex items-center gap-1 md:gap-2">
+                          <Users className="h-3 w-3 md:h-4 md:w-4" />
                           Attendees
                         </CardTitle>
                       </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold">{event.users_count}</div>
+                      <CardContent className="px-2 md:px-6">
+                        <div className="text-lg md:text-2xl font-bold">{event.users_count}</div>
                       </CardContent>
                     </Card>
 
                     <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium flex items-center gap-2">
-                          <TrendingUp className="h-4 w-4" />
+                      <CardHeader className="pb-1 md:pb-2 px-2 md:px-6">
+                        <CardTitle className="text-xs md:text-sm font-medium flex items-center gap-1 md:gap-2">
+                          <TrendingUp className="h-3 w-3 md:h-4 md:w-4" />
                           Avg. Price
                         </CardTitle>
                       </CardHeader>
-                      <CardContent>
-                        <div className="text-2xl font-bold">
+                      <CardContent className="px-2 md:px-6">
+                        <div className="text-lg md:text-2xl font-bold">
                           ${event.tickets_sold > 0 ? ((event.revenue / 100) / event.tickets_sold).toFixed(0) : '0'}
                         </div>
                       </CardContent>
@@ -241,22 +251,22 @@ export const EventAnalyticsTabs: React.FC = () => {
                   {/* Ticket Sales List */}
                   {ticketSales[event.date] && ticketSales[event.date].length > 0 ? (
                     <Card>
-                      <CardHeader>
-                        <CardTitle className="text-lg">Ticket Sales</CardTitle>
+                      <CardHeader className="px-3 md:px-6">
+                        <CardTitle className="text-base md:text-lg">Ticket Sales</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-2 max-h-64 overflow-y-auto">
                           {ticketSales[event.date].map((sale) => (
                             <div key={sale.id} className="flex justify-between items-center p-2 border rounded">
                               <div>
-                                <div className="font-medium">{sale.user_name}</div>
-                                <div className="text-sm text-muted-foreground">
+                                <div className="font-medium text-sm">{sale.user_name}</div>
+                                <div className="text-xs text-muted-foreground">
                                   {format(new Date(sale.created_at), 'h:mm a')}
                                 </div>
                               </div>
                               <div className="text-right">
-                                <div className="font-medium">${(sale.amount / 100).toFixed(2)}</div>
-                                <Badge variant="outline" className="text-xs">
+                                <div className="font-medium text-sm">${(sale.amount / 100).toFixed(2)}</div>
+                                <Badge variant="outline" className="text-[10px]">
                                   {sale.status}
                                 </Badge>
                               </div>
@@ -267,7 +277,7 @@ export const EventAnalyticsTabs: React.FC = () => {
                     </Card>
                   ) : (
                     <Card>
-                      <CardContent className="p-6 text-center text-muted-foreground">
+                      <CardContent className="p-4 md:p-6 text-center text-muted-foreground text-sm">
                         No ticket sales for this date
                       </CardContent>
                     </Card>
