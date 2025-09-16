@@ -6,3 +6,4 @@ export { default as AdminAffiliateManager } from './AdminAffiliateManager';
 export { default as AdminEventDateCard } from './AdminEventDateCard';
 export { AdminQRCodeFixer } from './AdminQRCodeFixer';
 export { AdminTicketManager } from './AdminTicketManager';
+export { EventDateManager } from './EventDateManager';

@@ -11,7 +11,8 @@ import {
   QrCode, 
   Database,
   ChevronRight,
-  Activity
+  Activity,
+  Calendar
 } from 'lucide-react';
 
 // Import diagnostic components
@@ -21,6 +22,7 @@ import { DataIntegrityFixer } from '@/components/diagnostics/DataIntegrityFixer'
 import { SupabaseFunctionChecker } from '@/components/diagnostics/SupabaseFunctionChecker';
 import { TicketSystemDiagnostic } from '@/components/diagnostics/TicketSystemDiagnostic';
 import { TicketUsageAnalyzer } from '@/components/diagnostics/TicketUsageAnalyzer';
+import { EventDateManager } from '@/components/admin/EventDateManager';
 import { TestDataCleaner } from '@/components/diagnostics/TestDataCleaner';
 
 type DiagnosticTool = {
@@ -81,6 +83,14 @@ const AdminDiagnostics = () => {
       component: <SupabaseFunctionChecker />,
       category: 'secondary',
       status: 'healthy'
+    },
+    {
+      id: 'event-manager',
+      title: 'Event Date Manager',
+      description: 'Manage Tuesday event dates and countdown timers',
+      icon: <Calendar className="w-5 h-5" />,
+      component: <EventDateManager />,
+      category: 'secondary'
     },
     {
       id: 'ticket-system',

@@ -293,6 +293,13 @@ export const AdminOverview: React.FC = () => {
       icon: Activity,
       action: () => window.location.href = '/admin/diagnostics',
       color: 'bg-orange-500'
+    },
+    {
+      title: 'Manage Events',
+      description: 'Update Tuesday event dates',
+      icon: Calendar,
+      action: () => window.location.href = '/admin/diagnostics',
+      color: 'bg-blue-500'
     }
   ];
 

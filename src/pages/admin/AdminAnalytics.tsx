@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/layout/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/navigation/tabs';
-import { Badge } from '@/components/ui/data-display/badge';
-import { Button } from '@/components/ui/forms/button';
-import { Alert, AlertDescription } from '@/components/ui/feedback/alert';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { 
