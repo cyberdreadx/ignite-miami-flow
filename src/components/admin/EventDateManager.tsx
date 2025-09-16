@@ -43,6 +43,12 @@ export const EventDateManager: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<string | null>(null);
   const [showNewForm, setShowNewForm] = useState(false);
+  const [editForm, setEditForm] = useState<NewEventForm>({
+    title: '',
+    description: '',
+    date: '',
+    time: ''
+  });
   const [newEvent, setNewEvent] = useState<NewEventForm>({
     title: '🔥 SkateBurn Tuesdays',
     description: 'Weekly Tuesday night skating session with fire performances, music, and community vibes at the Miami skate park.',
@@ -89,12 +95,15 @@ export const EventDateManager: React.FC = () => {
 
   const createEvent = async () => {
     try {
-      // Combine date and time and assume it's in the Eastern timezone
-      const localDateTime = `${newEvent.date}T${newEvent.time}:00`;
-      const localDate = new Date(localDateTime);
+      // Create a proper Eastern Time date and convert to UTC
+      const easternDateTime = `${newEvent.date} ${newEvent.time}`;
       
-      // Create UTC datetime (assuming the input is already local to the user)
-      const utcDateTime = new Date(localDate.getTime() - (localDate.getTimezoneOffset() * 60000));
+      // Parse the date/time as if it's in Eastern timezone and convert to UTC
+      const easternDate = new Date(`${newEvent.date}T${newEvent.time}:00`);
+      
+      // Since the date constructor interprets as local time, we need to adjust
+      // Create the date string and let the database handle UTC conversion
+      const isoString = `${newEvent.date}T${newEvent.time}:00-04:00`; // EDT offset
 
       const { error } = await supabase
         .from('events')
@@ -103,7 +112,7 @@ export const EventDateManager: React.FC = () => {
           description: newEvent.description,
           time: newEvent.time, // Keep the original time field
           location: 'Miami Skate Park', // Default location
-          start_at: utcDateTime.toISOString(),
+          start_at: isoString,
           is_active: true
         });
 
@@ -156,6 +165,45 @@ export const EventDateManager: React.FC = () => {
         variant: 'destructive'
       });
     }
+  };
+
+  const startEditing = (event: Event) => {
+    // Convert UTC time back to Eastern Time for display using date-fns-tz
+    const utcDate = new Date(event.start_at);
+    
+    setEditForm({
+      title: event.title,
+      description: event.description || '',
+      date: formatInTimeZone(utcDate, TIME_ZONE, 'yyyy-MM-dd'),
+      time: formatInTimeZone(utcDate, TIME_ZONE, 'HH:mm')
+    });
+    setEditing(event.id);
+  };
+
+  const saveEdit = async () => {
+    if (!editing) return;
+    
+    try {
+      // Create ISO string with Eastern Time offset
+      const isoString = `${editForm.date}T${editForm.time}:00-04:00`; // EDT offset
+
+      await updateEvent(editing, {
+        title: editForm.title,
+        description: editForm.description,
+        start_at: isoString
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Failed to update event',
+        description: error.message,
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const cancelEdit = () => {
+    setEditing(null);
+    setEditForm({ title: '', description: '', date: '', time: '' });
   };
 
   const deleteEvent = async (eventId: string) => {
@@ -343,63 +391,124 @@ export const EventDateManager: React.FC = () => {
             return (
               <Card key={event.id} className={status === 'today' ? 'border-green-200 bg-green-50' : ''}>
                 <CardContent className="p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-medium">{event.title}</h4>
-                        {getStatusBadge(status)}
-                        {status === 'today' && (
-                          <div className="flex items-center gap-1 text-green-600">
-                            <Zap className="w-4 h-4" />
-                            <span className="text-sm font-medium">Live!</span>
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-4 h-4" />
-                          <span>{date}</span>
+                  {editing === event.id ? (
+                    /* Edit Form */
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor={`edit-title-${event.id}`}>Event Title</Label>
+                          <Input
+                            id={`edit-title-${event.id}`}
+                            value={editForm.title}
+                            onChange={(e) => setEditForm(prev => ({ ...prev, title: e.target.value }))}
+                            placeholder="Event title"
+                          />
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-4 h-4" />
-                          <span>{time}</span>
+                        
+                        <div>
+                          <Label htmlFor={`edit-date-${event.id}`}>Date</Label>
+                          <Input
+                            id={`edit-date-${event.id}`}
+                            type="date"
+                            value={editForm.date}
+                            onChange={(e) => setEditForm(prev => ({ ...prev, date: e.target.value }))}
+                          />
                         </div>
                       </div>
-                      
-                      <p className="text-sm text-muted-foreground max-w-md">
-                        {event.description}
-                      </p>
-                    </div>
 
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => toggleEventStatus(event.id, event.is_active)}
-                      >
-                        {event.is_active ? (
-                          <>
-                            <CheckCircle className="w-3 h-3 mr-1" />
-                            Active
-                          </>
-                        ) : (
-                          <>
-                            <AlertTriangle className="w-3 h-3 mr-1" />
-                            Inactive
-                          </>
-                        )}
-                      </Button>
-                      
-                      <Button size="sm" variant="outline" onClick={() => setEditing(event.id)}>
-                        <Edit2 className="w-3 h-3" />
-                      </Button>
-                      
-                      <Button size="sm" variant="destructive" onClick={() => deleteEvent(event.id)}>
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
+                      <div>
+                        <Label htmlFor={`edit-time-${event.id}`}>Time (Eastern)</Label>
+                        <Input
+                          id={`edit-time-${event.id}`}
+                          type="time"
+                          value={editForm.time}
+                          onChange={(e) => setEditForm(prev => ({ ...prev, time: e.target.value }))}
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor={`edit-description-${event.id}`}>Description</Label>
+                        <textarea
+                          id={`edit-description-${event.id}`}
+                          className="w-full p-3 border border-input rounded-md resize-none"
+                          rows={3}
+                          value={editForm.description}
+                          onChange={(e) => setEditForm(prev => ({ ...prev, description: e.target.value }))}
+                          placeholder="Event description..."
+                        />
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={saveEdit} disabled={!editForm.title || !editForm.date}>
+                          <Save className="w-3 h-3 mr-1" />
+                          Save
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={cancelEdit}>
+                          <X className="w-3 h-3 mr-1" />
+                          Cancel
+                        </Button>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    /* Display Mode */
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-medium">{event.title}</h4>
+                          {getStatusBadge(status)}
+                          {status === 'today' && (
+                            <div className="flex items-center gap-1 text-green-600">
+                              <Zap className="w-4 h-4" />
+                              <span className="text-sm font-medium">Live!</span>
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="w-4 h-4" />
+                            <span>{date}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Clock className="w-4 h-4" />
+                            <span>{time}</span>
+                          </div>
+                        </div>
+                        
+                        <p className="text-sm text-muted-foreground max-w-md">
+                          {event.description}
+                        </p>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => toggleEventStatus(event.id, event.is_active)}
+                        >
+                          {event.is_active ? (
+                            <>
+                              <CheckCircle className="w-3 h-3 mr-1" />
+                              Active
+                            </>
+                          ) : (
+                            <>
+                              <AlertTriangle className="w-3 h-3 mr-1" />
+                              Inactive
+                            </>
+                          )}
+                        </Button>
+                        
+                        <Button size="sm" variant="outline" onClick={() => startEditing(event)}>
+                          <Edit2 className="w-3 h-3" />
+                        </Button>
+                        
+                        <Button size="sm" variant="destructive" onClick={() => deleteEvent(event.id)}>
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             );

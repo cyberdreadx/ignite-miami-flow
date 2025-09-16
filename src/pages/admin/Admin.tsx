@@ -28,7 +28,9 @@ import {
   Calendar,
   CreditCard,
   Camera,
-  Ticket
+  Ticket,
+  Bell,
+  Home
 } from 'lucide-react';
 import { MultiRoleManager } from '@/components/MultiRoleManager';
 import { AdminEventDateCard } from '@/components/AdminEventDateCard';
@@ -156,6 +158,8 @@ const Admin = () => {
   const [salesData, setSalesData] = useState<SalesData[]>([]);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
   const { user, signOut } = useAuth();
   const { isAdmin, loading: roleLoading } = useUserRole();
   const navigate = useNavigate();
@@ -260,6 +264,13 @@ const Admin = () => {
       fetchSalesData();
     }
   }, [user, isAdmin]);
+
+  // Fetch notifications when other data changes
+  useEffect(() => {
+    if (user && isAdmin) {
+      fetchNotifications();
+    }
+  }, [pendingUsers, deletionRequests, reportedPosts, salesData, user, isAdmin]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -451,6 +462,66 @@ const Admin = () => {
       setSalesData(Object.values(salesByDate).sort((a, b) => a.date.localeCompare(b.date)));
     } catch (error) {
       console.error('Error in fetchSalesData:', error);
+    }
+  };
+
+  const fetchNotifications = async () => {
+    try {
+      const notifications = [];
+      
+      // Add pending users to notifications
+      if (pendingUsers.length > 0) {
+        notifications.push({
+          id: 'pending-users',
+          type: 'pending_users',
+          title: `${pendingUsers.length} Pending User${pendingUsers.length === 1 ? '' : 's'}`,
+          message: `${pendingUsers.length} user${pendingUsers.length === 1 ? '' : 's'} waiting for approval`,
+          timestamp: new Date().toISOString(),
+          priority: 'high'
+        });
+      }
+      
+      // Add deletion requests to notifications
+      if (deletionRequests.length > 0) {
+        notifications.push({
+          id: 'deletion-requests',
+          type: 'deletion_requests',
+          title: `${deletionRequests.length} Deletion Request${deletionRequests.length === 1 ? '' : 's'}`,
+          message: `${deletionRequests.length} account deletion request${deletionRequests.length === 1 ? '' : 's'} pending review`,
+          timestamp: new Date().toISOString(),
+          priority: 'high'
+        });
+      }
+      
+      // Add reported posts to notifications
+      if (reportedPosts.length > 0) {
+        notifications.push({
+          id: 'reported-posts',
+          type: 'reported_posts',
+          title: `${reportedPosts.length} Reported Post${reportedPosts.length === 1 ? '' : 's'}`,
+          message: `${reportedPosts.length} post${reportedPosts.length === 1 ? '' : 's'} reported by community`,
+          timestamp: new Date().toISOString(),
+          priority: 'medium'
+        });
+      }
+      
+      // Add recent sales notification if there are sales today
+      const today = new Date().toISOString().split('T')[0];
+      const todaySales = salesData.find(sale => sale.date === today);
+      if (todaySales && (todaySales.tickets > 0 || todaySales.media_passes > 0)) {
+        notifications.push({
+          id: 'today-sales',
+          type: 'sales',
+          title: 'Sales Today',
+          message: `${todaySales.tickets} tickets, ${todaySales.media_passes} media passes sold today`,
+          timestamp: new Date().toISOString(),
+          priority: 'low'
+        });
+      }
+      
+      setNotifications(notifications);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
     }
   };
 
@@ -666,9 +737,10 @@ const Admin = () => {
               <div className="flex items-center space-x-4">
                 <SidebarTrigger className="md:hidden" />
                 <div className="hidden md:flex items-center space-x-4">
-                  <Button variant="ghost" onClick={() => navigate('/')} className="hidden lg:flex">
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Back to Feed
+                  <Button variant="ghost" onClick={() => navigate('/')} className="flex items-center">
+                    <Home className="h-4 w-4 mr-2" />
+                    <span className="hidden lg:inline">Back to Main Site</span>
+                    <span className="lg:hidden">Home</span>
                   </Button>
                   <div>
                     <h1 className="text-2xl font-bold">Admin Dashboard</h1>
@@ -679,11 +751,111 @@ const Admin = () => {
                   <h1 className="text-xl font-bold">Admin Dashboard</h1>
                 </div>
               </div>
-              <Button variant="outline" onClick={handleSignOut} size="sm">
-                <LogOut className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Sign Out</span>
-              </Button>
+              
+              <div className="flex items-center space-x-2">
+                {/* Mobile Back Button */}
+                <Button variant="ghost" onClick={() => navigate('/')} className="md:hidden" size="sm">
+                  <Home className="h-4 w-4" />
+                </Button>
+                
+                {/* Notification Bell */}
+                <div className="relative">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setShowNotifications(!showNotifications)}
+                    className="relative"
+                  >
+                    <Bell className="h-4 w-4" />
+                    {notifications.length > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        {notifications.length > 9 ? '9+' : notifications.length}
+                      </span>
+                    )}
+                  </Button>
+                  
+                  {/* Notification Dropdown */}
+                  {showNotifications && (
+                    <div className="absolute right-0 mt-2 w-80 bg-card border border-border rounded-lg shadow-lg z-50">
+                      <div className="p-4 border-b border-border">
+                        <h3 className="font-semibold">Notifications</h3>
+                        <p className="text-sm text-muted-foreground">{notifications.length} notification{notifications.length === 1 ? '' : 's'}</p>
+                      </div>
+                      
+                      <div className="max-h-96 overflow-y-auto">
+                        {notifications.length > 0 ? (
+                          notifications.map((notification) => (
+                            <div key={notification.id} className="p-4 border-b border-border last:border-b-0 hover:bg-muted/50 cursor-pointer"
+                                 onClick={() => {
+                                   // Scroll to relevant section
+                                   if (notification.type === 'pending_users') {
+                                     document.getElementById('pending')?.scrollIntoView({ behavior: 'smooth' });
+                                   } else if (notification.type === 'deletion_requests') {
+                                     document.getElementById('deletions')?.scrollIntoView({ behavior: 'smooth' });
+                                   } else if (notification.type === 'reported_posts') {
+                                     document.getElementById('moderation')?.scrollIntoView({ behavior: 'smooth' });
+                                   } else if (notification.type === 'sales') {
+                                     document.getElementById('analytics')?.scrollIntoView({ behavior: 'smooth' });
+                                   }
+                                   setShowNotifications(false);
+                                 }}>
+                              <div className="flex items-start space-x-3">
+                                <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
+                                  notification.priority === 'high' ? 'bg-red-500' :
+                                  notification.priority === 'medium' ? 'bg-yellow-500' : 'bg-blue-500'
+                                }`} />
+                                <div className="flex-1">
+                                  <p className="font-medium text-sm">{notification.title}</p>
+                                  <p className="text-sm text-muted-foreground">{notification.message}</p>
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    {formatDistanceToNow(new Date(notification.timestamp), { addSuffix: true })}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="p-8 text-center">
+                            <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+                            <p className="text-muted-foreground">All caught up!</p>
+                            <p className="text-sm text-muted-foreground">No new notifications</p>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {notifications.length > 0 && (
+                        <div className="p-4 border-t border-border">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="w-full"
+                            onClick={() => {
+                              setNotifications([]);
+                              setShowNotifications(false);
+                            }}
+                          >
+                            Clear All
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                
+                <Button variant="outline" onClick={handleSignOut} size="sm">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">Sign Out</span>
+                </Button>
+              </div>
             </div>
+            
+            {/* Click outside to close notifications */}
+            {showNotifications && (
+              <div 
+                className="fixed inset-0 z-30" 
+                onClick={() => setShowNotifications(false)}
+              />
+            )}
           </div>
 
           {/* Content */}

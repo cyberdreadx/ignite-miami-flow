@@ -27,7 +27,9 @@ import {
   X,
   ChevronRight,
   Bell,
-  Search
+  Search,
+  Home,
+  ArrowLeft
 } from 'lucide-react';
 
 interface NavItem {
@@ -175,6 +177,19 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title, descr
 
         {/* Navigation */}
         <div className="flex-1 overflow-y-auto p-4 space-y-2">
+          {/* Back to Main Site Button */}
+          <Button
+            variant="ghost"
+            className="w-full justify-start mb-3 text-left h-auto py-2 px-3 text-blue-400 hover:bg-blue-900/20 hover:text-blue-300 border border-blue-600/20"
+            onClick={() => {
+              navigate('/');
+              setSidebarOpen(false);
+            }}
+          >
+            <Home className="w-4 h-4 mr-3 flex-shrink-0" />
+            <span className="flex-1 text-left font-medium">Back to Main Site</span>
+          </Button>
+          
           {navigationItems.map(item => renderNavItem(item))}
         </div>
 
@@ -229,6 +244,27 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title, descr
             </div>
 
             <div className="flex items-center space-x-3 flex-shrink-0">
+              {/* Back to Main Site - Desktop */}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="hidden sm:flex bg-blue-600 border-blue-500 text-white hover:bg-blue-700 hover:border-blue-600"
+                onClick={() => navigate('/')}
+              >
+                <Home className="w-4 h-4 mr-2" />
+                Back to Site
+              </Button>
+              
+              {/* Back to Main Site - Mobile */}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="sm:hidden bg-blue-600 border-blue-500 text-white hover:bg-blue-700 hover:border-blue-600"
+                onClick={() => navigate('/')}
+              >
+                <Home className="w-4 h-4" />
+              </Button>
+              
               <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white hover:bg-gray-700">
                 <Search className="w-4 h-4" />
               </Button>

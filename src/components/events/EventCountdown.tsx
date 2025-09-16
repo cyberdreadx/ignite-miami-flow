@@ -18,11 +18,14 @@ export const EventCountdown = () => {
 
 useEffect(() => {
     const fetchEvent = async () => {
+      // Get the next upcoming active event
       const { data } = await supabase
         .from('events')
-        .select('start_at')
+        .select('start_at, title, description')
         .eq('is_active', true)
-        .order('created_at', { ascending: false })
+        .gte('start_at', new Date().toISOString()) // Only future events
+        .order('start_at', { ascending: true }) // Get the earliest upcoming event
+        .limit(1)
         .maybeSingle();
 
       if (data?.start_at) {
@@ -32,7 +35,29 @@ useEffect(() => {
         setEventDate(new Date('2025-08-19T19:00:00-04:00'));
       }
     };
+    
     fetchEvent();
+
+    // Set up real-time subscription to events table
+    const channel = supabase
+      .channel('events-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'events'
+        },
+        () => {
+          // Refetch events when any change happens
+          fetchEvent();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   useEffect(() => {
