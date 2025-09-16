@@ -165,6 +165,7 @@ const EnhancedMemberManagement = () => {
   };
 
   const updateUserRole = async (userId: string, role: string) => {
+    console.log('updateUserRole called with:', { userId, role });
     setProcessingUsers(prev => new Set(prev).add(userId));
     
     try {
@@ -199,6 +200,7 @@ const EnhancedMemberManagement = () => {
   };
 
   const updateApprovalStatus = async (userId: string, status: string) => {
+    console.log('updateApprovalStatus called with:', { userId, status });
     setProcessingUsers(prev => new Set(prev).add(userId));
     
     try {
@@ -410,27 +412,45 @@ const EnhancedMemberManagement = () => {
                 <Mail className="w-4 h-4 mr-2" />
                 Send Email
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => updateUserRole(user.id, 'admin')}>
+              <DropdownMenuItem onClick={() => {
+                console.log('Make Admin clicked for user:', user.id);
+                updateUserRole(user.id, 'admin');
+              }}>
                 <Crown className="w-4 h-4 mr-2" />
                 Make Admin
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => updateUserRole(user.id, 'moderator')}>
+              <DropdownMenuItem onClick={() => {
+                console.log('Make Moderator clicked for user:', user.id);
+                updateUserRole(user.id, 'moderator');
+              }}>
                 <Shield className="w-4 h-4 mr-2" />
                 Make Moderator
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => updateUserRole(user.id, 'dj')}>
+              <DropdownMenuItem onClick={() => {
+                console.log('Make DJ clicked for user:', user.id);
+                updateUserRole(user.id, 'dj');
+              }}>
                 <Users className="w-4 h-4 mr-2" />
                 Make DJ
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => updateUserRole(user.id, 'performer')}>
+              <DropdownMenuItem onClick={() => {
+                console.log('Make Performer clicked for user:', user.id);
+                updateUserRole(user.id, 'performer');
+              }}>
                 <Users className="w-4 h-4 mr-2" />
                 Make Performer
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => updateUserRole(user.id, 'photographer')}>
+              <DropdownMenuItem onClick={() => {
+                console.log('Make Photographer clicked for user:', user.id);
+                updateUserRole(user.id, 'photographer');
+              }}>
                 <Camera className="w-4 h-4 mr-2" />
                 Make Photographer
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => updateUserRole(user.id, 'vip')}>
+              <DropdownMenuItem onClick={() => {
+                console.log('Make VIP clicked for user:', user.id);
+                updateUserRole(user.id, 'vip');
+              }}>
                 <Crown className="w-4 h-4 mr-2" />
                 Make VIP
               </DropdownMenuItem>
