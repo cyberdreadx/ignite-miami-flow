@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { 
@@ -25,7 +26,11 @@ import {
   Music,
   Flame,
   Crown,
-  User
+  User,
+  MoreHorizontal,
+  Mail,
+  UserCheck,
+  UserX
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 
@@ -219,6 +224,51 @@ export const EnhancedMemberManager: React.FC = () => {
     } catch (error: any) {
       toast({
         title: `Error ${action === 'add' ? 'adding' : 'removing'} role`,
+        description: error.message,
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const sendEmail = (email: string) => {
+    window.open(`mailto:${email}`, '_blank');
+  };
+
+  const deactivateUser = async (userId: string, userEmail: string) => {
+    try {
+      // Update user status to rejected (deactivated)
+      const { error } = await supabase
+        .from('profiles')
+        .update({ approval_status: 'rejected' })
+        .eq('user_id', userId);
+
+      if (error) throw error;
+
+      // Remove all roles from the user
+      const { error: rolesError } = await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', userId);
+
+      if (rolesError) throw rolesError;
+
+      // Update local state
+      setUsers(prev => prev.map(user => 
+        user.user_id === userId 
+          ? { ...user, approval_status: 'rejected' as ApprovalStatus, roles: [] }
+          : user
+      ));
+
+      toast({
+        title: 'User Deactivated',
+        description: `${userEmail} has been deactivated and all roles removed.`,
+        variant: 'destructive'
+      });
+
+      fetchRoleStats(); // Refresh stats
+    } catch (error: any) {
+      toast({
+        title: 'Error deactivating user',
         description: error.message,
         variant: 'destructive'
       });
@@ -463,9 +513,70 @@ export const EnhancedMemberManager: React.FC = () => {
                           </>
                         )}
                         
-                        <Button size="sm" variant="outline">
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <MoreHorizontal className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => sendEmail(user.email)}>
+                              <Mail className="w-4 h-4 mr-2" />
+                              Send Email
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => updateUserRole(user.user_id, 'admin', 'add')}>
+                              <Crown className="w-4 h-4 mr-2" />
+                              Make Admin
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => updateUserRole(user.user_id, 'moderator', 'add')}>
+                              <Shield className="w-4 h-4 mr-2" />
+                              Make Moderator
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => updateUserRole(user.user_id, 'dj', 'add')}>
+                              <Music className="w-4 h-4 mr-2" />
+                              Make DJ
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => updateUserRole(user.user_id, 'performer', 'add')}>
+                              <Flame className="w-4 h-4 mr-2" />
+                              Make Performer
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => updateUserRole(user.user_id, 'photographer', 'add')}>
+                              <Camera className="w-4 h-4 mr-2" />
+                              Make Photographer
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => updateUserRole(user.user_id, 'vip', 'add')}>
+                              <Crown className="w-4 h-4 mr-2" />
+                              Make VIP
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => updateUserRole(user.user_id, 'user', 'add')}>
+                              <User className="w-4 h-4 mr-2" />
+                              Make Member
+                            </DropdownMenuItem>
+                            {user.approval_status === 'pending' && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => updateUserApproval(user.user_id, 'approved')}>
+                                  <UserCheck className="w-4 h-4 mr-2" />
+                                  Approve User
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => updateUserApproval(user.user_id, 'rejected')}>
+                                  <UserX className="w-4 h-4 mr-2" />
+                                  Reject User
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              className="text-red-600"
+                              onClick={() => deactivateUser(user.user_id, user.email)}
+                            >
+                              <UserX className="w-4 h-4 mr-2" />
+                              Deactivate User
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </div>
                   );
@@ -584,9 +695,57 @@ export const EnhancedMemberManager: React.FC = () => {
                       </div>
 
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline">
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <MoreHorizontal className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => sendEmail(user.email)}>
+                              <Mail className="w-4 h-4 mr-2" />
+                              Send Email
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => updateUserRole(user.user_id, 'admin', 'add')}>
+                              <Crown className="w-4 h-4 mr-2" />
+                              Make Admin
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => updateUserRole(user.user_id, 'moderator', 'add')}>
+                              <Shield className="w-4 h-4 mr-2" />
+                              Make Moderator
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => updateUserRole(user.user_id, 'dj', 'add')}>
+                              <Music className="w-4 h-4 mr-2" />
+                              Make DJ
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => updateUserRole(user.user_id, 'performer', 'add')}>
+                              <Flame className="w-4 h-4 mr-2" />
+                              Make Performer
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => updateUserRole(user.user_id, 'photographer', 'add')}>
+                              <Camera className="w-4 h-4 mr-2" />
+                              Make Photographer
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => updateUserRole(user.user_id, 'vip', 'add')}>
+                              <Crown className="w-4 h-4 mr-2" />
+                              Make VIP
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => updateUserRole(user.user_id, 'user', 'add')}>
+                              <User className="w-4 h-4 mr-2" />
+                              Make Member
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                              className="text-red-600"
+                              onClick={() => deactivateUser(user.user_id, user.email)}
+                            >
+                              <UserX className="w-4 h-4 mr-2" />
+                              Deactivate User
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </div>
                   );
