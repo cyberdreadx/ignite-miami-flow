@@ -20,7 +20,7 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    const { qr_code_token, validator_name } = await req.json();
+    const { qr_code_token, validator_name, mark_as_used = true } = await req.json();
     
     if (!qr_code_token) {
       throw new Error("QR code token is required");
@@ -104,17 +104,19 @@ serve(async (req) => {
         });
       }
 
-      // Mark ticket as used
-      const { error: updateError } = await supabaseClient
-        .from("tickets")
-        .update({
-          used_at: now.toISOString(),
-          used_by: validator_name || "Door Staff"
-        })
-        .eq("qr_code_token", qr_code_token);
+      // Only mark ticket as used if requested (for actual door entry)
+      if (mark_as_used) {
+        const { error: updateError } = await supabaseClient
+          .from("tickets")
+          .update({
+            used_at: now.toISOString(),
+            used_by: validator_name || "Door Staff"
+          })
+          .eq("qr_code_token", qr_code_token);
 
-      if (updateError) {
-        console.error("Failed to mark ticket as used:", updateError);
+        if (updateError) {
+          console.error("Failed to mark ticket as used:", updateError);
+        }
       }
 
       return new Response(JSON.stringify({
