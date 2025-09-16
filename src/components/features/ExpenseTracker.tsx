@@ -23,12 +23,12 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select';
-import { Calendar } from '@/components/ui/calendar';
+import { Calendar } from '@/components/ui/data-display/calendar';
 import { 
   Popover, 
   PopoverContent, 
   PopoverTrigger 
-} from '@/components/ui/popover';
+} from '@/components/ui/overlays/popover';
 import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow, format } from 'date-fns';

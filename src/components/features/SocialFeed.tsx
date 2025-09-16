@@ -15,7 +15,7 @@ import { Heart, MessageCircle, Pin, Trash2, MoreHorizontal } from 'lucide-react'
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { formatDistanceToNow } from 'date-fns';
-import { MediaUpload, MediaFile, uploadMediaFiles } from '@/components/MediaUpload';
+import { MediaUpload, MediaFile, uploadMediaFiles } from '@/components/media/MediaUpload';
 import { MediaDisplay } from '@/components/MediaDisplay';
 import { LinkifyText } from '@/components/LinkifyText';
 import { CommentsSection } from '@/components/CommentsSection';

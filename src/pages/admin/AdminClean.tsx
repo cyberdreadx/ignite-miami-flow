@@ -19,9 +19,9 @@ import {
   LogOut
 } from 'lucide-react';
 import { AdminQRCodeFixer } from '@/components/AdminQRCodeFixer';
-import { EventAnalyticsTabs } from '@/components/EventAnalyticsTabs';
-import ExpenseTracker from '@/components/ExpenseTracker';
-import AdminAffiliateManager from '@/components/AdminAffiliateManager';
+import { EventAnalyticsTabs } from '@/components/events/EventAnalyticsTabs';
+import ExpenseTracker from '@/components/features/ExpenseTracker';
+import AdminAffiliateManager from '@/components/admin/AdminAffiliateManager';
 
 interface QuickStats {
   total_tickets: number;

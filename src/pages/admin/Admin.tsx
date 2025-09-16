@@ -32,12 +32,12 @@ import {
   Bell,
   Home
 } from 'lucide-react';
-import { MultiRoleManager } from '@/components/MultiRoleManager';
-import { AdminEventDateCard } from '@/components/AdminEventDateCard';
-import EventTicketAnalytics from '@/components/EventTicketAnalytics';
-import EnhancedEventAnalytics from '@/components/EnhancedEventAnalytics';
-import ExpenseTracker from '@/components/ExpenseTracker';
-import AdminAffiliateManager from '@/components/AdminAffiliateManager';
+import { MultiRoleManager } from '@/components/user/MultiRoleManager';
+import { AdminEventDateCard } from '@/components/admin/AdminEventDateCard';
+import EventTicketAnalytics from '@/components/events/EventTicketAnalytics';
+import EnhancedEventAnalytics from '@/components/events/EnhancedEventAnalytics';
+import ExpenseTracker from '@/components/features/ExpenseTracker';
+import AdminAffiliateManager from '@/components/admin/AdminAffiliateManager';
 import { AdminQRCodeFixer } from '@/components/AdminQRCodeFixer';
 import { EnhancedMemberManager } from '@/components/admin/EnhancedMemberManager';
 
