@@ -323,82 +323,82 @@ export const EnhancedMemberManager: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex flex-col space-y-3 md:flex-row md:items-center md:justify-between md:space-y-0">
         <div>
-          <h3 className="text-2xl font-bold">Member Management</h3>
-          <p className="text-muted-foreground">
+          <h3 className="text-xl md:text-2xl font-bold">Member Management</h3>
+          <p className="text-sm md:text-base text-muted-foreground">
             Comprehensive overview and management of all community members
           </p>
         </div>
-        <Button>
+        <Button className="w-full md:w-auto">
           <UserPlus className="w-4 h-4 mr-2" />
           Invite Member
         </Button>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="pending">Pending ({users.filter(u => u.approval_status === 'pending').length})</TabsTrigger>
-          <TabsTrigger value="approved">Approved ({users.filter(u => u.approval_status === 'approved').length})</TabsTrigger>
-          <TabsTrigger value="roles">Role Analytics</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto">
+          <TabsTrigger value="overview" className="text-xs md:text-sm px-2 py-2">Overview</TabsTrigger>
+          <TabsTrigger value="pending" className="text-xs md:text-sm px-2 py-2">Pending ({users.filter(u => u.approval_status === 'pending').length})</TabsTrigger>
+          <TabsTrigger value="approved" className="text-xs md:text-sm px-2 py-2">Approved ({users.filter(u => u.approval_status === 'approved').length})</TabsTrigger>
+          <TabsTrigger value="roles" className="text-xs md:text-sm px-2 py-2">Analytics</TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-6">
+        <TabsContent value="overview" className="space-y-4 md:space-y-6">
           {/* Quick Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
             <Card>
-              <CardContent className="p-4">
+              <CardContent className="p-3 md:p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Total Members</p>
-                    <p className="text-2xl font-bold">{users.length}</p>
+                    <p className="text-xs md:text-sm text-muted-foreground">Total Members</p>
+                    <p className="text-xl md:text-2xl font-bold">{users.length}</p>
                   </div>
-                  <Users className="w-8 h-8 text-muted-foreground" />
+                  <Users className="w-6 h-6 md:w-8 md:h-8 text-muted-foreground" />
                 </div>
               </CardContent>
             </Card>
             
             <Card>
-              <CardContent className="p-4">
+              <CardContent className="p-3 md:p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Pending Approval</p>
-                    <p className="text-2xl font-bold text-yellow-600">
+                    <p className="text-xs md:text-sm text-muted-foreground">Pending Approval</p>
+                    <p className="text-xl md:text-2xl font-bold text-yellow-600">
                       {users.filter(u => u.approval_status === 'pending').length}
                     </p>
                   </div>
-                  <Clock className="w-8 h-8 text-yellow-600" />
+                  <Clock className="w-6 h-6 md:w-8 md:h-8 text-yellow-600" />
                 </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardContent className="p-4">
+              <CardContent className="p-3 md:p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Active Members</p>
-                    <p className="text-2xl font-bold text-green-600">
+                    <p className="text-xs md:text-sm text-muted-foreground">Active Members</p>
+                    <p className="text-xl md:text-2xl font-bold text-green-600">
                       {users.filter(u => u.approval_status === 'approved').length}
                     </p>
                   </div>
-                  <CheckCircle className="w-8 h-8 text-green-600" />
+                  <CheckCircle className="w-6 h-6 md:w-8 md:h-8 text-green-600" />
                 </div>
               </CardContent>
             </Card>
 
             <Card>
-              <CardContent className="p-4">
+              <CardContent className="p-3 md:p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Special Roles</p>
-                    <p className="text-2xl font-bold text-purple-600">
+                    <p className="text-xs md:text-sm text-muted-foreground">Special Roles</p>
+                    <p className="text-xl md:text-2xl font-bold text-purple-600">
                       {users.filter(u => u.roles.some(r => ['dj', 'performer', 'photographer'].includes(r))).length}
                     </p>
                   </div>
-                  <Crown className="w-8 h-8 text-purple-600" />
+                  <Crown className="w-6 h-6 md:w-8 md:h-8 text-purple-600" />
                 </div>
               </CardContent>
             </Card>
@@ -406,10 +406,10 @@ export const EnhancedMemberManager: React.FC = () => {
 
           {/* Filters */}
           <Card>
-            <CardContent className="p-4">
-              <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex-1">
-                  <Label htmlFor="search">Search Members</Label>
+            <CardContent className="p-3 md:p-4">
+              <div className="flex flex-col space-y-4">
+                <div className="w-full">
+                  <Label htmlFor="search" className="text-sm">Search Members</Label>
                   <div className="relative">
                     <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                     <Input
@@ -422,34 +422,36 @@ export const EnhancedMemberManager: React.FC = () => {
                   </div>
                 </div>
                 
-                <div>
-                  <Label htmlFor="role-filter">Filter by Role</Label>
-                  <Select value={roleFilter} onValueChange={(value) => setRoleFilter(value as AppRole | 'all')}>
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="All Roles" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Roles</SelectItem>
-                      {Object.entries(ROLE_CONFIG).map(([role, config]) => (
-                        <SelectItem key={role} value={role}>{config.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="role-filter" className="text-sm">Filter by Role</Label>
+                    <Select value={roleFilter} onValueChange={(value) => setRoleFilter(value as AppRole | 'all')}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="All Roles" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Roles</SelectItem>
+                        {Object.entries(ROLE_CONFIG).map(([role, config]) => (
+                          <SelectItem key={role} value={role}>{config.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                <div>
-                  <Label htmlFor="status-filter">Filter by Status</Label>
-                  <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as ApprovalStatus | 'all')}>
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="All Statuses" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Statuses</SelectItem>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="approved">Approved</SelectItem>
-                      <SelectItem value="rejected">Rejected</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div>
+                    <Label htmlFor="status-filter" className="text-sm">Filter by Status</Label>
+                    <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as ApprovalStatus | 'all')}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="All Statuses" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Statuses</SelectItem>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="approved">Approved</SelectItem>
+                        <SelectItem value="rejected">Rejected</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -457,31 +459,31 @@ export const EnhancedMemberManager: React.FC = () => {
 
           {/* Members List */}
           <Card>
-            <CardHeader>
-              <CardTitle>All Members ({filteredUsers.length})</CardTitle>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base md:text-lg">All Members ({filteredUsers.length})</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4 max-h-96 overflow-y-auto">
+            <CardContent className="p-0">
+              <div className="space-y-2 max-h-96 overflow-y-auto">
                 {filteredUsers.map((user) => {
                   const primaryRole = getUserPrimaryRole(user.roles);
                   const primaryRoleConfig = ROLE_CONFIG[primaryRole];
                   
                   return (
-                    <div key={user.user_id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center space-x-4">
-                        <Avatar>
+                    <div key={user.user_id} className="flex flex-col md:flex-row md:items-center justify-between p-3 md:p-4 border-b last:border-b-0 space-y-3 md:space-y-0">
+                      <div className="flex items-start md:items-center space-x-3 flex-1 min-w-0">
+                        <Avatar className="flex-shrink-0">
                           <AvatarFallback className={primaryRoleConfig.color}>
                             {user.full_name?.charAt(0) || user.email?.charAt(0) || 'U'}
                           </AvatarFallback>
                         </Avatar>
                         
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <p className="font-medium">{user.full_name || user.email}</p>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2 mb-1">
+                            <p className="font-medium text-sm md:text-base truncate">{user.full_name || user.email}</p>
                             {getStatusBadge(user.approval_status)}
                           </div>
-                          <p className="text-sm text-muted-foreground">{user.email}</p>
-                          <div className="flex gap-1 mt-1">
+                          <p className="text-xs md:text-sm text-muted-foreground truncate">{user.email}</p>
+                          <div className="flex flex-wrap gap-1 mt-1">
                             {user.roles.map(role => getRoleBadge(role))}
                             {user.roles.length === 0 && getRoleBadge('user')}
                           </div>
@@ -491,31 +493,32 @@ export const EnhancedMemberManager: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="flex gap-2">
+                      <div className="flex flex-col md:flex-row gap-2 md:flex-shrink-0">
                         {user.approval_status === 'pending' && (
-                          <>
+                          <div className="flex gap-2">
                             <Button
                               size="sm"
                               onClick={() => updateUserApproval(user.user_id, 'approved')}
-                              className="bg-green-600 hover:bg-green-700"
+                              className="bg-green-600 hover:bg-green-700 flex-1 md:flex-none text-xs"
                             >
-                              <CheckCircle className="w-4 h-4 mr-1" />
+                              <CheckCircle className="w-3 h-3 md:w-4 md:h-4 mr-1" />
                               Approve
                             </Button>
                             <Button
                               size="sm"
                               variant="destructive"
                               onClick={() => updateUserApproval(user.user_id, 'rejected')}
+                              className="flex-1 md:flex-none text-xs"
                             >
-                              <XCircle className="w-4 h-4 mr-1" />
+                              <XCircle className="w-3 h-3 md:w-4 md:h-4 mr-1" />
                               Reject
                             </Button>
-                          </>
+                          </div>
                         )}
                         
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
+                            <Button variant="ghost" size="sm" className="w-full md:w-auto">
                               <MoreHorizontal className="w-4 h-4" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -596,30 +599,30 @@ export const EnhancedMemberManager: React.FC = () => {
         {/* Pending Tab */}
         <TabsContent value="pending">
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="w-5 h-5 text-yellow-600" />
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                <Clock className="w-4 h-4 md:w-5 md:h-5 text-yellow-600" />
                 Pending Approvals
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
+            <CardContent className="p-0">
+              <div className="space-y-2">
                 {users.filter(u => u.approval_status === 'pending').map((user) => (
-                  <div key={user.user_id} className="flex items-center justify-between p-4 border rounded-lg border-yellow-200 bg-yellow-50">
-                    <div className="flex items-center space-x-4">
-                      <Avatar>
+                  <div key={user.user_id} className="flex flex-col md:flex-row md:items-center justify-between p-3 md:p-4 border-b last:border-b-0 border-yellow-200 bg-yellow-50 space-y-3 md:space-y-0">
+                    <div className="flex items-start md:items-center space-x-3 flex-1 min-w-0">
+                      <Avatar className="flex-shrink-0">
                         <AvatarFallback>
                           {user.full_name?.charAt(0) || user.email?.charAt(0) || 'U'}
                         </AvatarFallback>
                       </Avatar>
                       
-                      <div>
-                        <p className="font-medium">{user.full_name || user.email}</p>
-                        <p className="text-sm text-muted-foreground">{user.email}</p>
-                        <div className="flex gap-1 mt-1">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm md:text-base truncate">{user.full_name || user.email}</p>
+                        <p className="text-xs md:text-sm text-muted-foreground truncate">{user.email}</p>
+                        <div className="flex flex-wrap gap-1 mt-1">
                           {user.roles.map(role => getRoleBadge(role))}
                           {user.roles.length === 0 && (
-                            <Badge className="bg-gray-100 text-gray-800">Requesting Access</Badge>
+                            <Badge className="bg-gray-100 text-gray-800 text-xs">Requesting Access</Badge>
                           )}
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
@@ -632,17 +635,18 @@ export const EnhancedMemberManager: React.FC = () => {
                       <Button
                         size="sm"
                         onClick={() => updateUserApproval(user.user_id, 'approved')}
-                        className="bg-green-600 hover:bg-green-700"
+                        className="bg-green-600 hover:bg-green-700 flex-1 md:flex-none text-xs"
                       >
-                        <CheckCircle className="w-4 h-4 mr-1" />
+                        <CheckCircle className="w-3 h-3 md:w-4 md:h-4 mr-1" />
                         Approve
                       </Button>
                       <Button
                         size="sm"
                         variant="destructive"
                         onClick={() => updateUserApproval(user.user_id, 'rejected')}
+                        className="flex-1 md:flex-none text-xs"
                       >
-                        <XCircle className="w-4 h-4 mr-1" />
+                        <XCircle className="w-3 h-3 md:w-4 md:h-4 mr-1" />
                         Reject
                       </Button>
                     </div>
@@ -663,31 +667,31 @@ export const EnhancedMemberManager: React.FC = () => {
         {/* Approved Tab */}
         <TabsContent value="approved">
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-green-600" />
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                <CheckCircle className="w-4 h-4 md:w-5 md:h-5 text-green-600" />
                 Approved Members
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4 max-h-96 overflow-y-auto">
+            <CardContent className="p-0">
+              <div className="space-y-2 max-h-96 overflow-y-auto">
                 {users.filter(u => u.approval_status === 'approved').map((user) => {
                   const primaryRole = getUserPrimaryRole(user.roles);
                   const primaryRoleConfig = ROLE_CONFIG[primaryRole];
                   
                   return (
-                    <div key={user.user_id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center space-x-4">
-                        <Avatar>
+                    <div key={user.user_id} className="flex flex-col md:flex-row md:items-center justify-between p-3 md:p-4 border-b last:border-b-0 space-y-3 md:space-y-0">
+                      <div className="flex items-start md:items-center space-x-3 flex-1 min-w-0">
+                        <Avatar className="flex-shrink-0">
                           <AvatarFallback className={primaryRoleConfig.color}>
                             {user.full_name?.charAt(0) || user.email?.charAt(0) || 'U'}
                           </AvatarFallback>
                         </Avatar>
                         
-                        <div>
-                          <p className="font-medium">{user.full_name || user.email}</p>
-                          <p className="text-sm text-muted-foreground">{user.email}</p>
-                          <div className="flex gap-1 mt-1">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm md:text-base truncate">{user.full_name || user.email}</p>
+                          <p className="text-xs md:text-sm text-muted-foreground truncate">{user.email}</p>
+                          <div className="flex flex-wrap gap-1 mt-1">
                             {user.roles.map(role => getRoleBadge(role))}
                             {user.roles.length === 0 && getRoleBadge('user')}
                           </div>
@@ -697,7 +701,7 @@ export const EnhancedMemberManager: React.FC = () => {
                       <div className="flex gap-2">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
+                            <Button variant="ghost" size="sm" className="w-full md:w-auto">
                               <MoreHorizontal className="w-4 h-4" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -757,28 +761,28 @@ export const EnhancedMemberManager: React.FC = () => {
 
         {/* Role Analytics Tab */}
         <TabsContent value="roles">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
             {roleStats.map((stat) => {
               const config = ROLE_CONFIG[stat.role];
               const Icon = config.icon;
               
               return (
                 <Card key={stat.role}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-4">
+                  <CardContent className="p-3 md:p-4">
+                    <div className="flex items-center justify-between mb-3 md:mb-4">
                       <div className="flex items-center gap-2">
-                        <Icon className="w-5 h-5" />
-                        <h4 className="font-semibold">{config.label}</h4>
+                        <Icon className="w-4 h-4 md:w-5 md:h-5" />
+                        <h4 className="font-semibold text-sm md:text-base">{config.label}</h4>
                       </div>
-                      <Badge className={config.color}>{stat.count}</Badge>
+                      <Badge className={`${config.color} text-xs`}>{stat.count}</Badge>
                     </div>
                     
                     <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
+                      <div className="flex justify-between text-xs md:text-sm">
                         <span>Approved:</span>
                         <span className="font-medium text-green-600">{stat.approved}</span>
                       </div>
-                      <div className="flex justify-between text-sm">
+                      <div className="flex justify-between text-xs md:text-sm">
                         <span>Pending:</span>
                         <span className="font-medium text-yellow-600">{stat.pending}</span>
                       </div>
