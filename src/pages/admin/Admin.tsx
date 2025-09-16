@@ -39,6 +39,7 @@ import EnhancedEventAnalytics from '@/components/EnhancedEventAnalytics';
 import ExpenseTracker from '@/components/ExpenseTracker';
 import AdminAffiliateManager from '@/components/AdminAffiliateManager';
 import { AdminQRCodeFixer } from '@/components/AdminQRCodeFixer';
+import { EnhancedMemberManager } from '@/components/admin/EnhancedMemberManager';
 
 interface Post {
   id: string;
@@ -1150,34 +1151,15 @@ const Admin = () => {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="h-5 w-5" />
-                  User Management
+                  Enhanced Member Management
                   <Badge variant="secondary">{allUsers.length}</Badge>
                 </CardTitle>
                 <CardDescription>
-                  View and manage all users and their multiple roles
+                  Comprehensive member oversight with role analytics and approval workflows
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6 max-h-96 overflow-y-auto">
-                  {allUsers.map((user) => (
-                    <MultiRoleManager
-                      key={user.user_id}
-                      userId={user.user_id}
-                      userName={user.full_name || user.email || 'Unknown User'}
-                      userEmail={user.email || ''}
-                      onRolesChange={() => {
-                        fetchAllUsers();
-                        fetchStats();
-                      }}
-                    />
-                  ))}
-                  
-                  {allUsers.length === 0 && (
-                    <div className="text-center py-8">
-                      <p className="text-muted-foreground">No users found.</p>
-                    </div>
-                  )}
-                </div>
+                <EnhancedMemberManager />
               </CardContent>
             </Card>
 
