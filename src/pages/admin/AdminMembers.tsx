@@ -244,7 +244,7 @@ const AdminMembers = () => {
             {/* Pending Approvals */}
             {pendingUsers.length > 0 && (
               <Card>
-                <CardHeader className="p-3 md:p-6">
+                <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base md:text-lg">
                     <Clock className="h-4 w-4 md:h-5 md:w-5" />
                     Pending Approvals ({pendingUsers.length})
@@ -253,11 +253,11 @@ const AdminMembers = () => {
                     New users waiting for approval
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="p-3 md:p-6 pt-0">
-                  <div className="space-y-3 md:space-y-4">
+                <CardContent className="p-0">
+                  <div className="space-y-2">
                     {pendingUsers.map((user) => (
-                      <div key={user.user_id} className="flex flex-col md:flex-row md:items-center justify-between p-3 md:p-4 border rounded-lg space-y-3 md:space-y-0">
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div key={user.user_id} className="flex flex-col md:flex-row md:items-center justify-between p-3 md:p-4 border-b last:border-b-0 border-yellow-200 bg-yellow-50 space-y-3 md:space-y-0">
+                        <div className="flex items-start md:items-center space-x-3 flex-1 min-w-0">
                           <Avatar className="h-8 w-8 md:h-10 md:w-10 flex-shrink-0">
                             <AvatarImage src={user.avatar_url} />
                             <AvatarFallback>
@@ -265,37 +265,36 @@ const AdminMembers = () => {
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
-                            <p className="font-medium text-sm md:text-base truncate">{user.full_name || user.email}</p>
+                            <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2 mb-1">
+                              <p className="font-medium text-sm md:text-base truncate">{user.full_name || user.email}</p>
+                              <Badge variant={getRoleBadgeVariant(user.role)} className="text-xs w-fit">
+                                {user.role}
+                              </Badge>
+                            </div>
                             <p className="text-xs md:text-sm text-muted-foreground truncate">{user.email}</p>
                             <p className="text-xs text-muted-foreground">
                               Requested {formatDistanceToNow(new Date(user.created_at))} ago
                             </p>
                           </div>
                         </div>
-                        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2">
-                          <Badge variant={getRoleBadgeVariant(user.role)} className="text-xs">
-                            {user.role}
-                          </Badge>
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleUserApproval(user.user_id, 'approved')}
-                              className="flex-1 md:flex-none text-xs"
-                            >
-                              <CheckCircle className="h-3 w-3 md:h-4 md:w-4 mr-1" />
-                              Approve
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => handleUserApproval(user.user_id, 'rejected')}
-                              className="flex-1 md:flex-none text-xs"
-                            >
-                              <XCircle className="h-3 w-3 md:h-4 md:w-4 mr-1" />
-                              Reject
-                            </Button>
-                          </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => handleUserApproval(user.user_id, 'approved')}
+                            className="bg-green-600 hover:bg-green-700 flex-1 md:flex-none text-xs"
+                          >
+                            <CheckCircle className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                            Approve
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleUserApproval(user.user_id, 'rejected')}
+                            className="flex-1 md:flex-none text-xs"
+                          >
+                            <XCircle className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                            Reject
+                          </Button>
                         </div>
                       </div>
                     ))}
@@ -306,7 +305,7 @@ const AdminMembers = () => {
 
             {/* All Members */}
             <Card>
-              <CardHeader className="p-3 md:p-6">
+              <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-base md:text-lg">
                   <Users className="h-4 w-4 md:h-5 md:w-5" />
                   All Members ({allUsers.length})
@@ -316,20 +315,31 @@ const AdminMembers = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-0">
-                <div className="space-y-2">
+                <div className="space-y-2 max-h-96 overflow-y-auto">
                   {allUsers.map((userData) => (
-                    <div key={userData.user_id} className="flex flex-col md:flex-row md:items-center justify-between p-3 md:p-4 border-b last:border-b-0 hover:bg-muted/50 transition-colors space-y-3 md:space-y-0">
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div key={userData.user_id} className="flex flex-col md:flex-row md:items-center justify-between p-3 md:p-4 border-b last:border-b-0 space-y-3 md:space-y-0">
+                      <div className="flex items-start md:items-center space-x-3 flex-1 min-w-0">
                         <Avatar className="h-8 w-8 md:h-10 md:w-10 flex-shrink-0">
                           <AvatarImage src={userData.avatar_url} />
                           <AvatarFallback>
                             {userData.full_name?.charAt(0) || userData.email.charAt(0)}
                           </AvatarFallback>
                         </Avatar>
+                        
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm md:text-base truncate">{userData.full_name || userData.email}</p>
+                          <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2 mb-1">
+                            <p className="font-medium text-sm md:text-base truncate">{userData.full_name || userData.email}</p>
+                            <Badge variant={getStatusBadgeVariant(userData.approval_status)} className="text-xs w-fit">
+                              {userData.approval_status}
+                            </Badge>
+                          </div>
                           <p className="text-xs md:text-sm text-muted-foreground truncate">{userData.email}</p>
-                          <p className="text-xs text-muted-foreground">
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            <Badge variant={getRoleBadgeVariant(userData.role)} className="text-xs">
+                              {userData.role}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">
                             Joined {formatDistanceToNow(new Date(userData.created_at))} ago
                             {userData.last_active && (
                               <span className="hidden sm:inline"> • Active {formatDistanceToNow(new Date(userData.last_active))} ago</span>
@@ -337,20 +347,13 @@ const AdminMembers = () => {
                           </p>
                         </div>
                       </div>
-                      
-                      <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-3">
-                        <Badge variant={getStatusBadgeVariant(userData.approval_status)} className="text-xs">
-                          {userData.approval_status}
-                        </Badge>
-                        
-                        {/* Role Dropdown */}
+
+                      <div className="flex gap-2">
+                        {/* Single Actions Dropdown */}
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" className="bg-background w-full md:w-auto text-xs">
-                              <Badge variant={getRoleBadgeVariant(userData.role)} className="mr-2 text-xs">
-                                {userData.role}
-                              </Badge>
-                              <ChevronDown className="h-3 w-3" />
+                            <Button variant="ghost" size="sm" className="w-full md:w-auto">
+                              <MoreVertical className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent className="bg-background border shadow-md z-50">
@@ -359,33 +362,22 @@ const AdminMembers = () => {
                               className="cursor-pointer hover:bg-muted"
                             >
                               <User className="h-4 w-4 mr-2" />
-                              User
+                              Make User
                             </DropdownMenuItem>
                             <DropdownMenuItem 
                               onClick={() => handleRoleChange(userData.user_id, 'moderator')}
                               className="cursor-pointer hover:bg-muted"
                             >
                               <Shield className="h-4 w-4 mr-2" />
-                              Moderator
+                              Make Moderator
                             </DropdownMenuItem>
                             <DropdownMenuItem 
                               onClick={() => handleRoleChange(userData.user_id, 'admin')}
                               className="cursor-pointer hover:bg-muted"
                             >
                               <Crown className="h-4 w-4 mr-2" />
-                              Admin
+                              Make Admin
                             </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-
-                        {/* Actions Dropdown */}
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="bg-background w-full md:w-auto">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent className="bg-background border shadow-md z-50">
                             {userData.approval_status === 'pending' && (
                               <>
                                 <DropdownMenuItem 
