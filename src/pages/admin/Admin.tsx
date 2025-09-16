@@ -860,7 +860,7 @@ const Admin = () => {
           </div>
 
           {/* Content */}
-          <div className="p-4 space-y-6">
+          <div className="p-3 md:p-4 space-y-4 md:space-y-6">
             {/* QR Code Emergency Fix */}
             <div id="qr-fix">
               <AdminQRCodeFixer />
@@ -871,7 +871,7 @@ const Admin = () => {
               <AdminEventDateCard />
             </div>
             {/* Stats Overview */}
-            <div id="dashboard" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div id="dashboard" className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Users</CardTitle>
@@ -1004,7 +1004,7 @@ const Admin = () => {
               <CardContent>
                 <div className="space-y-6">
                   {/* Revenue Overview */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                     <Card>
                       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
@@ -1064,7 +1064,7 @@ const Admin = () => {
                   {mediaPassAnalytics?.passes_by_type && mediaPassAnalytics.passes_by_type.length > 0 && (
                     <div>
                       <h3 className="text-lg font-semibold mb-4">Media Pass Breakdown</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 md:gap-4">
                         {mediaPassAnalytics.passes_by_type.map((passType) => (
                           <Card key={passType.pass_type}>
                             <CardHeader className="pb-2">

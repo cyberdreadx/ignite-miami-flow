@@ -234,7 +234,7 @@ const AdminAnalytics = () => {
 
   return (
     <AdminLayout title="Analytics" description="Revenue and performance insights">
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6">
         {/* Data Quality Banner */}
         {testTicketsCount > 0 && (
           <Alert className="mb-6">
@@ -269,7 +269,7 @@ const AdminAnalytics = () => {
         </div>
 
         {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
           <StatCard
             title="Total Revenue"
             value={analyticsData.totalRevenue.toFixed(2)}
@@ -298,7 +298,7 @@ const AdminAnalytics = () => {
         </div>
 
         {/* Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
           {/* Revenue Trend */}
           <Card>
             <CardHeader>

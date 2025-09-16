@@ -183,58 +183,58 @@ const AdminMembers = () => {
         <AdminSidebar />
         
         <main className="flex-1 flex flex-col">
-          <header className="h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40 flex items-center px-6">
-            <div className="flex items-center gap-4">
+          <header className="h-auto md:h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40 flex items-center p-3 md:px-6">
+            <div className="flex items-center gap-2 md:gap-4 w-full">
               <SidebarTrigger />
-              <div>
-                <h1 className="text-2xl font-bold">Member Management</h1>
-                <p className="text-muted-foreground">Manage users, roles, and approvals</p>
+              <div className="flex-1 min-w-0">
+                <h1 className="text-lg md:text-2xl font-bold truncate">Member Management</h1>
+                <p className="text-xs md:text-sm text-muted-foreground hidden sm:block">Manage users, roles, and approvals</p>
               </div>
             </div>
           </header>
 
-          <div className="flex-1 space-y-6 p-6">
+          <div className="flex-1 space-y-4 md:space-y-6 p-3 md:p-6">
             {/* Stats Cards */}
-            <div className="grid gap-4 md:grid-cols-4">
+            <div className="grid gap-3 md:gap-4 grid-cols-2 lg:grid-cols-4">
               <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Members</CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 md:p-4">
+                  <CardTitle className="text-xs md:text-sm font-medium">Total Members</CardTitle>
+                  <Users className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{allUsers.length}</div>
+                <CardContent className="p-3 md:p-4 pt-0">
+                  <div className="text-lg md:text-2xl font-bold">{allUsers.length}</div>
                 </CardContent>
               </Card>
               
               <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Pending Approval</CardTitle>
-                  <Clock className="h-4 w-4 text-muted-foreground" />
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 md:p-4">
+                  <CardTitle className="text-xs md:text-sm font-medium">Pending Approval</CardTitle>
+                  <Clock className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{pendingUsers.length}</div>
+                <CardContent className="p-3 md:p-4 pt-0">
+                  <div className="text-lg md:text-2xl font-bold">{pendingUsers.length}</div>
                 </CardContent>
               </Card>
               
               <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Admins</CardTitle>
-                  <Crown className="h-4 w-4 text-muted-foreground" />
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 md:p-4">
+                  <CardTitle className="text-xs md:text-sm font-medium">Admins</CardTitle>
+                  <Crown className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
+                <CardContent className="p-3 md:p-4 pt-0">
+                  <div className="text-lg md:text-2xl font-bold">
                     {allUsers.filter(u => u.role === 'admin').length}
                   </div>
                 </CardContent>
               </Card>
               
               <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Moderators</CardTitle>
-                  <Shield className="h-4 w-4 text-muted-foreground" />
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 md:p-4">
+                  <CardTitle className="text-xs md:text-sm font-medium">Moderators</CardTitle>
+                  <Shield className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
+                <CardContent className="p-3 md:p-4 pt-0">
+                  <div className="text-lg md:text-2xl font-bold">
                     {allUsers.filter(u => u.role === 'moderator').length}
                   </div>
                 </CardContent>
@@ -244,54 +244,58 @@ const AdminMembers = () => {
             {/* Pending Approvals */}
             {pendingUsers.length > 0 && (
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Clock className="h-5 w-5" />
+                <CardHeader className="p-3 md:p-6">
+                  <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                    <Clock className="h-4 w-4 md:h-5 md:w-5" />
                     Pending Approvals ({pendingUsers.length})
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-xs md:text-sm">
                     New users waiting for approval
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
+                <CardContent className="p-3 md:p-6 pt-0">
+                  <div className="space-y-3 md:space-y-4">
                     {pendingUsers.map((user) => (
-                      <div key={user.user_id} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex items-center gap-3">
-                          <Avatar>
+                      <div key={user.user_id} className="flex flex-col md:flex-row md:items-center justify-between p-3 md:p-4 border rounded-lg space-y-3 md:space-y-0">
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <Avatar className="h-8 w-8 md:h-10 md:w-10 flex-shrink-0">
                             <AvatarImage src={user.avatar_url} />
                             <AvatarFallback>
                               {user.full_name?.charAt(0) || user.email.charAt(0)}
                             </AvatarFallback>
                           </Avatar>
-                          <div>
-                            <p className="font-medium">{user.full_name || user.email}</p>
-                            <p className="text-sm text-muted-foreground">{user.email}</p>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm md:text-base truncate">{user.full_name || user.email}</p>
+                            <p className="text-xs md:text-sm text-muted-foreground truncate">{user.email}</p>
                             <p className="text-xs text-muted-foreground">
                               Requested {formatDistanceToNow(new Date(user.created_at))} ago
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant={getRoleBadgeVariant(user.role)}>
+                        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2">
+                          <Badge variant={getRoleBadgeVariant(user.role)} className="text-xs">
                             {user.role}
                           </Badge>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleUserApproval(user.user_id, 'approved')}
-                          >
-                            <CheckCircle className="h-4 w-4 mr-1" />
-                            Approve
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => handleUserApproval(user.user_id, 'rejected')}
-                          >
-                            <XCircle className="h-4 w-4 mr-1" />
-                            Reject
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleUserApproval(user.user_id, 'approved')}
+                              className="flex-1 md:flex-none text-xs"
+                            >
+                              <CheckCircle className="h-3 w-3 md:h-4 md:w-4 mr-1" />
+                              Approve
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => handleUserApproval(user.user_id, 'rejected')}
+                              className="flex-1 md:flex-none text-xs"
+                            >
+                              <XCircle className="h-3 w-3 md:h-4 md:w-4 mr-1" />
+                              Reject
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -302,48 +306,48 @@ const AdminMembers = () => {
 
             {/* All Members */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
+              <CardHeader className="p-3 md:p-6">
+                <CardTitle className="flex items-center gap-2 text-base md:text-lg">
+                  <Users className="h-4 w-4 md:h-5 md:w-5" />
                   All Members ({allUsers.length})
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-xs md:text-sm">
                   Manage member roles and permissions
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-0">
                 <div className="space-y-2">
                   {allUsers.map((userData) => (
-                    <div key={userData.user_id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <Avatar>
+                    <div key={userData.user_id} className="flex flex-col md:flex-row md:items-center justify-between p-3 md:p-4 border-b last:border-b-0 hover:bg-muted/50 transition-colors space-y-3 md:space-y-0">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <Avatar className="h-8 w-8 md:h-10 md:w-10 flex-shrink-0">
                           <AvatarImage src={userData.avatar_url} />
                           <AvatarFallback>
                             {userData.full_name?.charAt(0) || userData.email.charAt(0)}
                           </AvatarFallback>
                         </Avatar>
-                        <div>
-                          <p className="font-medium">{userData.full_name || userData.email}</p>
-                          <p className="text-sm text-muted-foreground">{userData.email}</p>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm md:text-base truncate">{userData.full_name || userData.email}</p>
+                          <p className="text-xs md:text-sm text-muted-foreground truncate">{userData.email}</p>
                           <p className="text-xs text-muted-foreground">
                             Joined {formatDistanceToNow(new Date(userData.created_at))} ago
                             {userData.last_active && (
-                              <> • Active {formatDistanceToNow(new Date(userData.last_active))} ago</>
+                              <span className="hidden sm:inline"> • Active {formatDistanceToNow(new Date(userData.last_active))} ago</span>
                             )}
                           </p>
                         </div>
                       </div>
                       
-                      <div className="flex items-center gap-3">
-                        <Badge variant={getStatusBadgeVariant(userData.approval_status)}>
+                      <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-3">
+                        <Badge variant={getStatusBadgeVariant(userData.approval_status)} className="text-xs">
                           {userData.approval_status}
                         </Badge>
                         
                         {/* Role Dropdown */}
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" className="bg-background">
-                              <Badge variant={getRoleBadgeVariant(userData.role)} className="mr-2">
+                            <Button variant="outline" size="sm" className="bg-background w-full md:w-auto text-xs">
+                              <Badge variant={getRoleBadgeVariant(userData.role)} className="mr-2 text-xs">
                                 {userData.role}
                               </Badge>
                               <ChevronDown className="h-3 w-3" />
@@ -377,7 +381,7 @@ const AdminMembers = () => {
                         {/* Actions Dropdown */}
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="bg-background">
+                            <Button variant="ghost" size="sm" className="bg-background w-full md:w-auto">
                               <MoreVertical className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
