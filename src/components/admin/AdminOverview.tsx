@@ -22,6 +22,7 @@ import {
   Star,
   Shield
 } from 'lucide-react';
+import { EnhancedMemberManager } from '@/components/admin/EnhancedMemberManager';
 
 interface DashboardStats {
   totalUsers: number;
@@ -267,9 +268,12 @@ export const AdminOverview: React.FC = () => {
   const quickActions: QuickAction[] = [
     {
       title: 'Manage Users',
-      description: `${stats?.totalUsers || 0} total users`,
+      description: `${stats?.totalUsers || 0} total users - see below`,
       icon: Users,
-      action: () => window.location.href = '/admin/members',
+      action: () => {
+        const element = document.getElementById('member-management');
+        element?.scrollIntoView({ behavior: 'smooth' });
+      },
       color: 'bg-blue-500',
       urgent: false
     },
@@ -539,6 +543,19 @@ export const AdminOverview: React.FC = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Enhanced Member Management Section */}
+      <Card id="member-management" className="border-gray-800 bg-gray-950">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
+            <Users className="w-5 h-5" />
+            Member Management
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <EnhancedMemberManager />
+        </CardContent>
+      </Card>
 
       {/* Alerts and Notifications */}
       {stats.pendingUsers > 0 && (

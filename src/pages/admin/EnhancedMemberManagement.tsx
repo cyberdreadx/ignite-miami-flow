@@ -198,6 +198,40 @@ const EnhancedMemberManagement = () => {
     }
   };
 
+  const updateApprovalStatus = async (userId: string, status: string) => {
+    setProcessingUsers(prev => new Set(prev).add(userId));
+    
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ approval_status: status })
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      // Refresh the users list
+      await fetchUsers();
+      
+      toast({
+        title: "Status Updated",
+        description: `User ${status} successfully`,
+      });
+    } catch (error) {
+      console.error('Error updating approval status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update approval status",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingUsers(prev => {
+        const next = new Set(prev);
+        next.delete(userId);
+        return next;
+      });
+    }
+  };
+
   const sendEmail = (email: string) => {
     window.open(`mailto:${email}`, '_blank');
   };
@@ -259,13 +293,54 @@ const EnhancedMemberManagement = () => {
                 <h3 className="font-semibold">
                   {user.full_name || 'No name provided'}
                 </h3>
+                
+                {/* Enhanced Role Badge */}
+                {user.role === 'admin' && (
+                  <Badge className="bg-red-500 text-white">
+                    <Crown className="w-3 h-3 mr-1" />
+                    Admin
+                  </Badge>
+                )}
+                {user.role === 'moderator' && (
+                  <Badge className="bg-green-500 text-white">
+                    <Shield className="w-3 h-3 mr-1" />
+                    Moderator
+                  </Badge>
+                )}
+                {user.role === 'dj' && (
+                  <Badge className="bg-purple-500 text-white">
+                    <Users className="w-3 h-3 mr-1" />
+                    DJ
+                  </Badge>
+                )}
+                {user.role === 'performer' && (
+                  <Badge className="bg-orange-500 text-white">
+                    <Users className="w-3 h-3 mr-1" />
+                    Performer
+                  </Badge>
+                )}
                 {user.role === 'photographer' && (
-                  <Badge variant="secondary">
+                  <Badge className="bg-blue-500 text-white">
                     <Camera className="w-3 h-3 mr-1" />
                     Photographer
                   </Badge>
                 )}
-                <Badge variant={user.approval_status === 'approved' ? 'default' : 'secondary'}>
+                {user.role === 'vip' && (
+                  <Badge className="bg-yellow-500 text-black">
+                    <Crown className="w-3 h-3 mr-1" />
+                    VIP
+                  </Badge>
+                )}
+                {(!user.role || user.role === 'user') && (
+                  <Badge variant="secondary">
+                    <Users className="w-3 h-3 mr-1" />
+                    Member
+                  </Badge>
+                )}
+                
+                {/* Approval Status Badge */}
+                <Badge variant={user.approval_status === 'approved' ? 'default' : 
+                              user.approval_status === 'pending' ? 'secondary' : 'destructive'}>
                   {user.approval_status}
                 </Badge>
               </div>
@@ -343,6 +418,36 @@ const EnhancedMemberManagement = () => {
                 <Shield className="w-4 h-4 mr-2" />
                 Make Moderator
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => updateUserRole(user.id, 'dj')}>
+                <Users className="w-4 h-4 mr-2" />
+                Make DJ
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => updateUserRole(user.id, 'performer')}>
+                <Users className="w-4 h-4 mr-2" />
+                Make Performer
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => updateUserRole(user.id, 'photographer')}>
+                <Camera className="w-4 h-4 mr-2" />
+                Make Photographer
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => updateUserRole(user.id, 'vip')}>
+                <Crown className="w-4 h-4 mr-2" />
+                Make VIP
+              </DropdownMenuItem>
+              {/* Approval Actions for Pending Users */}
+              {user.approval_status === 'pending' && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => updateApprovalStatus(user.id, 'approved')}>
+                    <UserCheck className="w-4 h-4 mr-2" />
+                    Approve User
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => updateApprovalStatus(user.id, 'rejected')}>
+                    <UserX className="w-4 h-4 mr-2" />
+                    Reject User
+                  </DropdownMenuItem>
+                </>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem className="text-red-600">
                 <UserX className="w-4 h-4 mr-2" />
