@@ -19,6 +19,7 @@ interface TestDataStats {
   realTickets: number;
   testTickets: number;
   invalidTickets: number;
+  pendingTickets: number;
   cleanupActions: string[];
 }
 
@@ -49,15 +50,25 @@ export const TestDataCleaner: React.FC = () => {
                (ticket.amount && ticket.amount < 100 && !ticket.stripe_session_id);
       }) || [];
 
+      // Find pending tickets older than 1 hour (likely abandoned)
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      const pendingTickets = allTickets?.filter(ticket => {
+        return ticket.status === 'pending' && ticket.created_at < oneHourAgo;
+      }) || [];
+
       const invalidTickets = allTickets?.filter(ticket => {
         const isReal = realTickets.includes(ticket);
         const isTest = testTickets.includes(ticket);
-        return !isReal && !isTest;
+        const isPending = pendingTickets.includes(ticket);
+        return !isReal && !isTest && !isPending;
       }) || [];
 
       const cleanupActions: string[] = [];
       if (testTickets.length > 0) {
         cleanupActions.push(`Remove ${testTickets.length} test tickets`);
+      }
+      if (pendingTickets.length > 0) {
+        cleanupActions.push(`Remove ${pendingTickets.length} abandoned pending tickets (>1hr old)`);
       }
       if (invalidTickets.length > 0) {
         cleanupActions.push(`Remove ${invalidTickets.length} invalid/orphaned tickets`);
@@ -68,6 +79,7 @@ export const TestDataCleaner: React.FC = () => {
         realTickets: realTickets.length,
         testTickets: testTickets.length,
         invalidTickets: invalidTickets.length,
+        pendingTickets: pendingTickets.length,
         cleanupActions
       });
 
@@ -104,6 +116,25 @@ export const TestDataCleaner: React.FC = () => {
 
         if (deleteTestError) throw deleteTestError;
         cleanedCount += testTickets.length;
+      }
+
+      // Remove pending tickets older than 1 hour
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      const { data: pendingTickets } = await supabase
+        .from('tickets')
+        .select('id')
+        .eq('status', 'pending')
+        .lt('created_at', oneHourAgo);
+
+      if (pendingTickets && pendingTickets.length > 0) {
+        const { error: deletePendingError } = await supabase
+          .from('tickets')
+          .delete()
+          .eq('status', 'pending')
+          .lt('created_at', oneHourAgo);
+
+        if (deletePendingError) throw deletePendingError;
+        cleanedCount += pendingTickets.length;
       }
 
       // Remove tiny amount tickets without Stripe data (likely test data)
@@ -187,7 +218,7 @@ export const TestDataCleaner: React.FC = () => {
 
         {stats && (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div className="text-center">
                 <div className="text-2xl font-bold">{stats.totalTickets}</div>
                 <div className="text-sm text-muted-foreground">Total Tickets</div>
@@ -199,6 +230,10 @@ export const TestDataCleaner: React.FC = () => {
               <div className="text-center">
                 <div className="text-2xl font-bold text-yellow-600">{stats.testTickets}</div>
                 <div className="text-sm text-muted-foreground">Test Tickets</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-orange-600">{stats.pendingTickets}</div>
+                <div className="text-sm text-muted-foreground">Pending Tickets</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-red-600">{stats.invalidTickets}</div>
@@ -230,8 +265,9 @@ export const TestDataCleaner: React.FC = () => {
               </Alert>
             )}
 
-            <div className="text-sm text-muted-foreground">
-              <strong>Real Ticket Criteria:</strong> Must have Stripe payment data, 'paid' status, and amount ≥ $1.00
+            <div className="text-sm text-muted-foreground space-y-1">
+              <div><strong>Real Ticket Criteria:</strong> Must have Stripe payment data, 'paid' status, and amount ≥ $1.00</div>
+              <div><strong>Pending Cleanup:</strong> Removes pending tickets older than 1 hour (likely abandoned checkouts)</div>
             </div>
           </div>
         )}
