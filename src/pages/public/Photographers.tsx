@@ -88,8 +88,23 @@ const Photographers = () => {
       }
 
       if (data?.url) {
-        // Redirect to Stripe checkout
-        window.open(data.url, '_blank');
+        console.log('Redirecting to:', data.url);
+        
+        // Try to open in new tab, fallback to redirect if blocked (PWA compatibility)
+        try {
+          const newWindow = window.open(data.url, '_blank');
+          if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+            // Popup was blocked, use redirect instead
+            console.log('Popup blocked, using redirect');
+            window.location.href = data.url;
+          } else {
+            console.log('Opened in new tab successfully');
+          }
+        } catch (redirectError) {
+          // Fallback to redirect if window.open fails
+          console.log('window.open failed, redirecting:', redirectError);
+          window.location.href = data.url;
+        }
       } else {
         throw new Error('No checkout URL received');
       }
