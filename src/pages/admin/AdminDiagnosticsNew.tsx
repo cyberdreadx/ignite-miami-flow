@@ -189,7 +189,7 @@ const AdminDiagnostics = () => {
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-blue-100 rounded-lg">
+                        <div className="p-2 rounded-lg bg-gray-500">
                           {tool.icon}
                         </div>
                         <div>
