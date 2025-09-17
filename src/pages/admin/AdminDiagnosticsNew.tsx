@@ -3,17 +3,7 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/layout/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Settings, 
-  CreditCard, 
-  TestTube, 
-  AlertTriangle, 
-  QrCode, 
-  Database,
-  ChevronRight,
-  Activity,
-  Calendar
-} from 'lucide-react';
+import { Settings, CreditCard, TestTube, AlertTriangle, QrCode, Database, ChevronRight, Activity, Calendar } from 'lucide-react';
 
 // Import diagnostic components
 import { StripeDataValidator } from '@/components/diagnostics/StripeDataValidator';
@@ -24,7 +14,6 @@ import { TicketSystemDiagnostic } from '@/components/diagnostics/TicketSystemDia
 import { TicketUsageAnalyzer } from '@/components/diagnostics/TicketUsageAnalyzer';
 import { EventDateManager } from '@/components/admin/EventDateManager';
 import { TestDataCleaner } from '@/components/diagnostics/TestDataCleaner';
-
 type DiagnosticTool = {
   id: string;
   title: string;
@@ -34,82 +23,70 @@ type DiagnosticTool = {
   category: 'primary' | 'secondary' | 'maintenance';
   status?: 'healthy' | 'warning' | 'error';
 };
-
 const AdminDiagnostics = () => {
   const [selectedTool, setSelectedTool] = useState<string | null>(null);
-
-  const diagnosticTools: DiagnosticTool[] = [
-    {
-      id: 'stripe-data',
-      title: 'Stripe Data Validation',
-      description: 'Verify payment data accuracy and revenue tracking',
-      icon: <CreditCard className="w-5 h-5" />,
-      component: <StripeDataValidator />,
-      category: 'primary',
-      status: 'healthy'
-    },
-    {
-      id: 'system-health',
-      title: 'System Health Check',
-      description: 'Test core functionality and API connections',
-      icon: <Activity className="w-5 h-5" />,
-      component: <SystemTester />,
-      category: 'primary',
-      status: 'healthy'
-    },
-    {
-      id: 'ticket-usage',
-      title: 'Ticket Usage Analyzer',
-      description: 'Find and fix tickets incorrectly marked as used',
-      icon: <AlertTriangle className="w-5 h-5" />,
-      component: <TicketUsageAnalyzer />,
-      category: 'primary',
-      status: 'warning'
-    },
-    {
-      id: 'data-integrity',
-      title: 'Data Integrity Fixer',
-      description: 'Find and fix payment data inconsistencies',
-      icon: <AlertTriangle className="w-5 h-5" />,
-      component: <DataIntegrityFixer />,
-      category: 'primary',
-      status: 'warning'
-    },
-    {
-      id: 'function-check',
-      title: 'Function Status',
-      description: 'Check Supabase edge function deployment',
-      icon: <Settings className="w-5 h-5" />,
-      component: <SupabaseFunctionChecker />,
-      category: 'secondary',
-      status: 'healthy'
-    },
-    {
-      id: 'event-manager',
-      title: 'Event Date Manager',
-      description: 'Manage Tuesday event dates and countdown timers',
-      icon: <Calendar className="w-5 h-5" />,
-      component: <EventDateManager />,
-      category: 'secondary'
-    },
-    {
-      id: 'ticket-system',
-      title: 'Ticket System Diagnostic',
-      description: 'Comprehensive ticket system testing',
-      icon: <QrCode className="w-5 h-5" />,
-      component: <TicketSystemDiagnostic />,
-      category: 'secondary'
-    },
-    {
-      id: 'data-cleaner',
-      title: 'Test Data Cleaner',
-      description: 'Remove test tickets and clean up database',
-      icon: <Database className="w-5 h-5" />,
-      component: <TestDataCleaner />,
-      category: 'maintenance'
-    }
-  ];
-
+  const diagnosticTools: DiagnosticTool[] = [{
+    id: 'stripe-data',
+    title: 'Stripe Data Validation',
+    description: 'Verify payment data accuracy and revenue tracking',
+    icon: <CreditCard className="w-5 h-5" />,
+    component: <StripeDataValidator />,
+    category: 'primary',
+    status: 'healthy'
+  }, {
+    id: 'system-health',
+    title: 'System Health Check',
+    description: 'Test core functionality and API connections',
+    icon: <Activity className="w-5 h-5" />,
+    component: <SystemTester />,
+    category: 'primary',
+    status: 'healthy'
+  }, {
+    id: 'ticket-usage',
+    title: 'Ticket Usage Analyzer',
+    description: 'Find and fix tickets incorrectly marked as used',
+    icon: <AlertTriangle className="w-5 h-5" />,
+    component: <TicketUsageAnalyzer />,
+    category: 'primary',
+    status: 'warning'
+  }, {
+    id: 'data-integrity',
+    title: 'Data Integrity Fixer',
+    description: 'Find and fix payment data inconsistencies',
+    icon: <AlertTriangle className="w-5 h-5" />,
+    component: <DataIntegrityFixer />,
+    category: 'primary',
+    status: 'warning'
+  }, {
+    id: 'function-check',
+    title: 'Function Status',
+    description: 'Check Supabase edge function deployment',
+    icon: <Settings className="w-5 h-5" />,
+    component: <SupabaseFunctionChecker />,
+    category: 'secondary',
+    status: 'healthy'
+  }, {
+    id: 'event-manager',
+    title: 'Event Date Manager',
+    description: 'Manage Tuesday event dates and countdown timers',
+    icon: <Calendar className="w-5 h-5" />,
+    component: <EventDateManager />,
+    category: 'secondary'
+  }, {
+    id: 'ticket-system',
+    title: 'Ticket System Diagnostic',
+    description: 'Comprehensive ticket system testing',
+    icon: <QrCode className="w-5 h-5" />,
+    component: <TicketSystemDiagnostic />,
+    category: 'secondary'
+  }, {
+    id: 'data-cleaner',
+    title: 'Test Data Cleaner',
+    description: 'Remove test tickets and clean up database',
+    icon: <Database className="w-5 h-5" />,
+    component: <TestDataCleaner />,
+    category: 'maintenance'
+  }];
   const getStatusBadge = (status?: string) => {
     switch (status) {
       case 'healthy':
@@ -122,7 +99,6 @@ const AdminDiagnostics = () => {
         return null;
     }
   };
-
   const getCategoryTitle = (category: string) => {
     switch (category) {
       case 'primary':
@@ -135,21 +111,12 @@ const AdminDiagnostics = () => {
         return 'Other';
     }
   };
-
   if (selectedTool) {
     const tool = diagnosticTools.find(t => t.id === selectedTool);
-    return (
-      <AdminLayout 
-        title={tool?.title || 'Diagnostic Tool'} 
-        description={tool?.description || 'System diagnostic tool'}
-      >
+    return <AdminLayout title={tool?.title || 'Diagnostic Tool'} description={tool?.description || 'System diagnostic tool'}>
         <div className="space-y-6">
           <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
-              onClick={() => setSelectedTool(null)}
-              className="flex items-center gap-2"
-            >
+            <Button variant="ghost" onClick={() => setSelectedTool(null)} className="flex items-center gap-2">
               ← Back to Diagnostics
             </Button>
             {tool?.status && getStatusBadge(tool.status)}
@@ -161,8 +128,7 @@ const AdminDiagnostics = () => {
             </CardContent>
           </Card>
         </div>
-      </AdminLayout>
-    );
+      </AdminLayout>;
   }
 
   // Group tools by category
@@ -173,9 +139,7 @@ const AdminDiagnostics = () => {
     acc[tool.category].push(tool);
     return acc;
   }, {} as Record<string, DiagnosticTool[]>);
-
-  return (
-    <AdminLayout title="System Diagnostics" description="Monitor system health and troubleshoot issues">
+  return <AdminLayout title="System Diagnostics" description="Monitor system health and troubleshoot issues">
       <div className="space-y-8">
         {/* Quick Status Overview */}
         <Card>
@@ -215,19 +179,13 @@ const AdminDiagnostics = () => {
         </Card>
 
         {/* Diagnostic Tools */}
-        {Object.entries(groupedTools).map(([category, tools]) => (
-          <div key={category} className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900">
+        {Object.entries(groupedTools).map(([category, tools]) => <div key={category} className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-50">
               {getCategoryTitle(category)}
             </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {tools.map((tool) => (
-                <Card 
-                  key={tool.id} 
-                  className="cursor-pointer hover:shadow-md transition-shadow"
-                  onClick={() => setSelectedTool(tool.id)}
-                >
+              {tools.map(tool => <Card key={tool.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setSelectedTool(tool.id)}>
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">
@@ -246,26 +204,17 @@ const AdminDiagnostics = () => {
                       {tool.description}
                     </p>
                     
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="w-full"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedTool(tool.id);
-                      }}
-                    >
+                    <Button variant="outline" size="sm" className="w-full" onClick={e => {
+                e.stopPropagation();
+                setSelectedTool(tool.id);
+              }}>
                       Open Tool
                     </Button>
                   </CardContent>
-                </Card>
-              ))}
+                </Card>)}
             </div>
-          </div>
-        ))}
+          </div>)}
       </div>
-    </AdminLayout>
-  );
+    </AdminLayout>;
 };
-
 export default AdminDiagnostics;
