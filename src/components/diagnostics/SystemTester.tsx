@@ -203,24 +203,27 @@ export const SystemTester: React.FC = () => {
           </p>
         )}
 
-        <div className="space-y-2">
+        <div className="space-y-3">
           {tests.map((test, index) => (
-            <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+            <div key={index} className="flex items-center justify-between p-4 border rounded-lg bg-card shadow-sm">
               <div className="flex items-center gap-3">
                 {test.status === 'pending' && <div className="w-4 h-4 border-2 border-muted rounded-full" />}
                 {test.status === 'pass' && <CheckCircle className="w-4 h-4 text-green-600" />}
                 {test.status === 'fail' && <XCircle className="w-4 h-4 text-red-600" />}
-                <span className="font-medium">{test.name}</span>
+                <span className="font-medium text-base">{test.name}</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 {test.message && (
-                  <span className="text-xs text-muted-foreground">{test.message}</span>
+                  <span className="text-sm text-foreground max-w-xs text-right">{test.message}</span>
                 )}
-                <Badge variant={
-                  test.status === 'pass' ? 'default' : 
-                  test.status === 'fail' ? 'destructive' : 
-                  'secondary'
-                }>
+                <Badge 
+                  variant={
+                    test.status === 'pass' ? 'default' : 
+                    test.status === 'fail' ? 'destructive' : 
+                    'secondary'
+                  }
+                  className="min-w-[60px] justify-center"
+                >
                   {test.status}
                 </Badge>
               </div>
@@ -229,12 +232,12 @@ export const SystemTester: React.FC = () => {
         </div>
 
         {qrToken && (
-          <div className="p-4 bg-muted rounded-lg">
-            <h4 className="font-semibold mb-2">Test QR Token:</h4>
-            <code className="text-xs break-all">{qrToken}</code>
-            <div className="mt-2 space-y-1 text-xs text-muted-foreground">
-              <p>• Test public view: <code>/ticket?token={qrToken}</code></p>
-              <p>• Test validation: Copy token to <code>/validate</code></p>
+          <div className="p-4 bg-card border rounded-lg shadow-sm">
+            <h4 className="font-semibold mb-3 text-base">Test QR Token:</h4>
+            <code className="text-sm break-all bg-muted p-2 rounded block">{qrToken}</code>
+            <div className="mt-3 space-y-2 text-sm text-foreground">
+              <p>• Test public view: <code className="bg-muted px-1 rounded">/ticket?token={qrToken}</code></p>
+              <p>• Test validation: Copy token to <code className="bg-muted px-1 rounded">/validate</code></p>
             </div>
           </div>
         )}

@@ -197,10 +197,10 @@ export const DatabaseQRManager: React.FC = () => {
           </div>
 
           {generatedToken && (
-            <div className="p-3 bg-muted rounded-lg">
-              <p className="text-sm font-medium mb-2">Generated Token:</p>
+            <div className="p-4 bg-card border rounded-lg shadow-sm">
+              <p className="text-sm font-medium mb-3">Generated Token:</p>
               <div className="flex items-center gap-2">
-                <code className="flex-1 p-2 bg-background rounded text-sm">
+                <code className="flex-1 p-3 bg-background border rounded text-sm">
                   {generatedToken}
                 </code>
                 <Button
@@ -238,11 +238,11 @@ export const DatabaseQRManager: React.FC = () => {
 
           <div className="space-y-3">
             {tickets.map((ticket) => (
-              <div key={ticket.id} className="p-4 border rounded-lg">
+              <div key={ticket.id} className="p-4 border rounded-lg bg-card shadow-sm">
                 <div className="flex items-center justify-between mb-3">
                   <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <Badge variant="outline">${(ticket.amount / 100).toFixed(2)}</Badge>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge variant="outline" className="text-sm">${(ticket.amount / 100).toFixed(2)}</Badge>
                       <Badge variant={ticket.status === 'paid' ? 'default' : 'secondary'}>
                         {ticket.status}
                       </Badge>
@@ -250,16 +250,16 @@ export const DatabaseQRManager: React.FC = () => {
                         {ticket.qr_code_token ? 'Has QR' : 'No QR'}
                       </Badge>
                     </div>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-foreground">
                       Created: {new Date(ticket.created_at).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
 
                 {ticket.qr_code_token ? (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                      <code className="flex-1 p-2 bg-muted rounded text-xs">
+                      <code className="flex-1 p-3 bg-background border rounded text-sm">
                         {ticket.qr_code_token}
                       </code>
                       <Button
@@ -285,7 +285,7 @@ export const DatabaseQRManager: React.FC = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {generatedToken ? (
                       <Button
                         size="sm"
@@ -295,7 +295,7 @@ export const DatabaseQRManager: React.FC = () => {
                         Assign Generated Token
                       </Button>
                     ) : (
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-foreground">
                         Generate a token above to assign to this ticket
                       </p>
                     )}

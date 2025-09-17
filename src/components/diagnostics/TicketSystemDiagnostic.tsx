@@ -417,36 +417,36 @@ export const TicketSystemDiagnostic: React.FC = () => {
         )}
 
         {diagnostics.length > 0 && (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {diagnostics.map((diagnostic, index) => (
               <div 
                 key={index}
-                className="p-4 border rounded-lg bg-card"
+                className="p-4 border rounded-lg bg-card shadow-sm"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-3 flex-1">
                     {getStatusIcon(diagnostic.status)}
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium">{diagnostic.test}</span>
-                        <Badge variant={getStatusVariant(diagnostic.status)}>
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="font-medium text-base">{diagnostic.test}</span>
+                        <Badge variant={getStatusVariant(diagnostic.status)} className="min-w-[70px] justify-center">
                           {diagnostic.status.toUpperCase()}
                         </Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground mb-2">{diagnostic.message}</p>
+                      <p className="text-sm text-foreground mb-3">{diagnostic.message}</p>
                       
                       {diagnostic.details && (
-                        <details className="mt-2">
-                          <summary className="text-xs cursor-pointer text-blue-600 hover:text-blue-800 font-medium">
+                        <details className="mt-3">
+                          <summary className="text-sm cursor-pointer text-primary hover:text-primary/80 font-medium">
                             View Technical Details
                           </summary>
-                          <div className="mt-2 p-3 bg-muted rounded-md text-xs">
+                          <div className="mt-3 p-3 bg-background border rounded-lg">
                             {typeof diagnostic.details === 'string' ? (
-                              <pre className="whitespace-pre-wrap font-mono">{diagnostic.details}</pre>
+                              <pre className="whitespace-pre-wrap font-mono text-sm text-foreground">{diagnostic.details}</pre>
                             ) : diagnostic.details.details ? (
-                              <pre className="whitespace-pre-wrap font-mono">{diagnostic.details.details}</pre>
+                              <pre className="whitespace-pre-wrap font-mono text-sm text-foreground">{diagnostic.details.details}</pre>
                             ) : (
-                              <pre className="font-mono">{JSON.stringify(diagnostic.details, null, 2)}</pre>
+                              <pre className="font-mono text-sm text-foreground">{JSON.stringify(diagnostic.details, null, 2)}</pre>
                             )}
                           </div>
                         </details>
