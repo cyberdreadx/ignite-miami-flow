@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Loader2, ArrowLeft } from "lucide-react";
 import NavBar from "@/components/layout/NavBar";
 import { AvatarUpload } from "@/components/user/AvatarUpload";
@@ -19,10 +20,49 @@ const Auth = () => {
   const [role, setRole] = useState("member");
   const [isLoading, setIsLoading] = useState(false);
   const [showVerification, setShowVerification] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotPasswordSent, setForgotPasswordSent] = useState(false);
   
   const { toast } = useToast();
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) {
+      toast({
+        title: "Email Required",
+        description: "Please enter your email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/`,
+      });
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        setForgotPasswordSent(true);
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Redirect if already logged in
   useEffect(() => {
@@ -107,7 +147,10 @@ const Auth = () => {
         <Card className="bg-card/10 backdrop-blur-lg border border-white/10">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl font-graffiti bg-gradient-fire bg-clip-text text-transparent">
-              {showVerification ? "Check Your Email" : (isLogin ? "Welcome Back" : "Join SkateBurn")}
+              {showVerification ? "Check Your Email" : 
+               forgotPasswordSent ? "Reset Link Sent" :
+               showForgotPassword ? "Reset Password" : 
+               (isLogin ? "Welcome Back" : "Join SkateBurn")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -137,6 +180,64 @@ const Auth = () => {
                   Back to Sign In
                 </Button>
               </div>
+            ) : forgotPasswordSent ? (
+              <div className="text-center space-y-4">
+                <div className="text-6xl mb-4">🔑</div>
+                <p className="text-muted-foreground">
+                  We've sent a password reset link to <strong>{email}</strong>
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Please check your email and click the reset link to create a new password.
+                </p>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setForgotPasswordSent(false);
+                    setShowForgotPassword(false);
+                    setIsLogin(true);
+                    setEmail("");
+                  }}
+                  className="mt-6"
+                >
+                  Back to Sign In
+                </Button>
+              </div>
+            ) : showForgotPassword ? (
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <div>
+                  <Label htmlFor="reset-email">Email</Label>
+                  <Input
+                    id="reset-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="bg-background/50"
+                    placeholder="Enter your email address"
+                  />
+                </div>
+                
+                <Button 
+                  type="submit" 
+                  className="w-full"
+                  disabled={isLoading}
+                >
+                  {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                  Send Reset Link
+                </Button>
+
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowForgotPassword(false);
+                    setEmail("");
+                  }}
+                  className="w-full"
+                  type="button"
+                >
+                  Back to Sign In
+                </Button>
+              </form>
             ) : (
               <>
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -227,17 +328,30 @@ const Auth = () => {
                   </Button>
                 </form>
                 
-                <div className="mt-6 text-center">
-                  <p className="text-sm text-muted-foreground">
-                    {isLogin ? "Don't have an account?" : "Already have an account?"}
-                  </p>
-                  <Button
-                    variant="link"
-                    onClick={() => setIsLogin(!isLogin)}
-                    className="text-glow-yellow"
-                  >
-                    {isLogin ? "Sign up here" : "Sign in here"}
-                  </Button>
+                <div className="mt-6 text-center space-y-2">
+                  {isLogin && (
+                    <Button
+                      variant="link"
+                      onClick={() => setShowForgotPassword(true)}
+                      className="text-sm text-muted-foreground hover:text-glow-yellow"
+                      type="button"
+                    >
+                      Forgot your password?
+                    </Button>
+                  )}
+                  
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      {isLogin ? "Don't have an account?" : "Already have an account?"}
+                    </p>
+                    <Button
+                      variant="link"
+                      onClick={() => setIsLogin(!isLogin)}
+                      className="text-glow-yellow"
+                    >
+                      {isLogin ? "Sign up here" : "Sign in here"}
+                    </Button>
+                  </div>
                 </div>
               </>
             )}
