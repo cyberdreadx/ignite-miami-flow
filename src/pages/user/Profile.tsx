@@ -28,6 +28,10 @@ const Profile = () => {
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   
   const { toast } = useToast();
   const { user, loading: authLoading } = useAuth();
@@ -116,6 +120,56 @@ const Profile = () => {
     setProfile(prev => ({ ...prev, avatar_url: avatarUrl }));
   };
 
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: 'Password mismatch',
+        description: 'New password and confirmation do not match.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast({
+        title: 'Password too short',
+        description: 'Password must be at least 6 characters long.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setChangingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Password updated!',
+        description: 'Your password has been changed successfully.',
+      });
+      
+      // Clear form
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error: any) {
+      console.error('Error changing password:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to change password. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
   if (authLoading || loading) {
     return (
       <>
@@ -202,6 +256,49 @@ const Profile = () => {
                       {saving ? 'Saving...' : 'Save Changes'}
                     </Button>
                   </form>
+
+                  {/* Change Password Section */}
+                  <div className="pt-6 mt-6 border-t border-border">
+                    <h3 className="text-lg font-semibold mb-4">Change Password</h3>
+                    <form onSubmit={handlePasswordChange} className="space-y-4">
+                      <div>
+                        <Label htmlFor="newPassword">New Password</Label>
+                        <Input
+                          id="newPassword"
+                          type="password"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          className="bg-background/50"
+                          placeholder="Enter new password"
+                          minLength={6}
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                        <Input
+                          id="confirmPassword"
+                          type="password"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          className="bg-background/50"
+                          placeholder="Confirm new password"
+                          minLength={6}
+                          required
+                        />
+                      </div>
+                      
+                      <Button 
+                        type="submit" 
+                        className="w-full"
+                        variant="outline"
+                        disabled={changingPassword}
+                      >
+                        {changingPassword ? 'Changing...' : 'Change Password'}
+                      </Button>
+                    </form>
+                  </div>
 
                   {/* Account Deletion Section */}
                   <div className="pt-6 mt-6 border-t border-border">
