@@ -10,7 +10,7 @@ import { Calendar, MapPin, Clock, Ticket, Users, CheckCircle, XCircle } from 'lu
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 
 import NavBar from '@/components/layout/NavBar';
 import { useWaiver } from '@/hooks/useWaiver';
@@ -45,7 +45,15 @@ const Tickets = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const { hasCompletedWaiver, loading: waiverLoading, markWaiverCompleted } = useWaiver();
+
+  // Redirect to auth if not signed in
+  useEffect(() => {
+    if (!user && !loading) {
+      navigate('/auth?redirect=/tickets');
+    }
+  }, [user, loading, navigate]);
 
   // Check for affiliate code in URL
   useEffect(() => {

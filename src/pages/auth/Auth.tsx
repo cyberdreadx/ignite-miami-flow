@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, ArrowLeft } from "lucide-react";
 import NavBar from "@/components/layout/NavBar";
@@ -26,6 +26,7 @@ const Auth = () => {
   const { toast } = useToast();
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,9 +68,10 @@ const Auth = () => {
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      navigate("/");
+      const redirectPath = searchParams.get('redirect') || '/';
+      navigate(redirectPath);
     }
-  }, [user, navigate]);
+  }, [user, navigate, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,7 +99,8 @@ const Auth = () => {
             title: "Welcome back!",
             description: "You have been logged in successfully.",
           });
-          navigate("/");
+          const redirectPath = searchParams.get('redirect') || '/';
+          navigate(redirectPath);
         }
       } else {
         const { error } = await signUp(email, password, username, role);
@@ -340,18 +343,18 @@ const Auth = () => {
                     </Button>
                   )}
                   
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      {isLogin ? "Don't have an account?" : "Already have an account?"}
-                    </p>
-                    <Button
-                      variant="link"
-                      onClick={() => setIsLogin(!isLogin)}
-                      className="text-glow-yellow"
-                    >
-                      {isLogin ? "Sign up here" : "Sign in here"}
-                    </Button>
-                  </div>
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    {isLogin ? "Don't have an account?" : "Already have an account?"}
+                  </p>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsLogin(!isLogin)}
+                    className="w-full"
+                  >
+                    {isLogin ? "Sign Up" : "Sign In"}
+                  </Button>
+                </div>
                 </div>
               </>
             )}
