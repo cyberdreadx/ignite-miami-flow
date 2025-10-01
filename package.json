@@ -50,7 +50,7 @@
     "embla-carousel-react": "^8.3.0",
     "framer-motion": "^12.23.12",
     "input-otp": "^1.2.4",
-    "lovable-tagger": "^1.1.9",
+    "lovable-tagger": "^1.1.10",
     "lucide-react": "^0.462.0",
     "next-themes": "^0.3.0",
     "react": "^18.3.1",
@@ -86,6 +86,6 @@
     "tailwindcss": "^3.4.11",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
-    "vite": "^5.4.20"
+    "vite": "^6.3.6"
   }
 }
