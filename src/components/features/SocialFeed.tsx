@@ -11,7 +11,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Heart, MessageCircle, Pin, Trash2, MoreHorizontal } from 'lucide-react';
+import { Heart, MessageCircle, Pin, Trash2, MoreHorizontal, Plus } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { formatDistanceToNow } from 'date-fns';
@@ -108,6 +109,7 @@ export const SocialFeed = React.memo(() => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [selectedMedia, setSelectedMedia] = useState<MediaFile[]>([]);
   const [clearMediaFiles, setClearMediaFiles] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
   const { toast } = useToast();
@@ -147,6 +149,7 @@ export const SocialFeed = React.memo(() => {
       setNewPost('');
       setSelectedMedia([]);
       setClearMediaFiles(true);
+      setIsDialogOpen(false);
       setTimeout(() => setClearMediaFiles(false), 100);
       toast({
         title: 'Post created!',
@@ -544,62 +547,61 @@ export const SocialFeed = React.memo(() => {
         )}
       </AnimatePresence>
       
-      {/* Create Post */}
-      <motion.div 
-        className="max-w-2xl mx-auto px-4"
-        variants={postVariants}
-        whileHover={{ 
-          y: -2,
-          transition: { type: "spring", stiffness: 300, damping: 30 }
-        }}
-      >
-        <Card className="hover:shadow-lg transition-shadow duration-300">
-          <CardContent className="pt-6">
-            <form onSubmit={handleCreatePost} className="space-y-4">
-              <Textarea
-                placeholder="What's happening at SkateBurn?"
-                value={newPost}
-                onChange={(e) => setNewPost(e.target.value)}
-                className="min-h-[100px] resize-none"
-              />
-              
-              {/* Media Upload */}
-              <MediaUpload 
-                onMediaChange={handleMediaChange}
-                maxFiles={4}
-                clearFiles={clearMediaFiles}
-              />
-              
-              {/* Upload Progress */}
-              {posting && selectedMedia.length > 0 && (
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Uploading media...</span>
-                    <span>{uploadProgress}%</span>
-                  </div>
-                  <Progress value={uploadProgress} className="w-full" />
+      {/* Floating Action Button */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogTrigger asChild>
+          <motion.button
+            className="fixed bottom-24 right-6 z-50 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl transition-shadow flex items-center justify-center"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          >
+            <Plus className="h-6 w-6" />
+          </motion.button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Create Post</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleCreatePost} className="space-y-4 mt-4">
+            <Textarea
+              placeholder="What's happening at SkateBurn?"
+              value={newPost}
+              onChange={(e) => setNewPost(e.target.value)}
+              className="min-h-[120px] resize-none"
+              disabled={posting}
+            />
+            
+            {/* Media Upload */}
+            <MediaUpload 
+              onMediaChange={handleMediaChange}
+              maxFiles={4}
+              clearFiles={clearMediaFiles}
+            />
+            
+            {/* Upload Progress */}
+            {posting && selectedMedia.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Uploading media...</span>
+                  <span>{uploadProgress}%</span>
                 </div>
-              )}
-              
-              <div className="flex justify-end">
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                >
-                  <Button 
-                    type="submit" 
-                    disabled={(!newPost.trim() && selectedMedia.length === 0) || posting}
-                    className="min-w-[100px]"
-                  >
-                    {posting ? 'Posting...' : 'Post'}
-                  </Button>
-                </motion.div>
+                <Progress value={uploadProgress} className="w-full" />
               </div>
-            </form>
-          </CardContent>
-        </Card>
-      </motion.div>
+            )}
+            
+            <Button 
+              type="submit" 
+              className="w-full"
+              disabled={(!newPost.trim() && selectedMedia.length === 0) || posting}
+            >
+              {posting ? 'Posting...' : 'Post'}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
       
       {/* Regular Posts */}
       <AnimatePresence>
