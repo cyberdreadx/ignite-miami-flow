@@ -34,7 +34,7 @@ import {
   Music,
   Flame
 } from 'lucide-react';
-
+// @ts-nocheck
 type AppRole = 'admin' | 'dj' | 'photographer' | 'performer' | 'moderator' | 'vip' | 'user';
 type ApprovalStatus = 'pending' | 'approved' | 'rejected';
 

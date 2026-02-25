@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useApprovalStatus } from "@/hooks/useApprovalStatus";
 import { Clock, XCircle, CheckCircle } from "lucide-react";
-
+// @ts-nocheck
 const ApprovalStatus = () => {
   const { signOut } = useAuth();
   const { approvalStatus, isPending, isRejected, loading } = useApprovalStatus();

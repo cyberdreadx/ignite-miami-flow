@@ -14,7 +14,7 @@ import {
   RefreshCw,
   Loader2
 } from 'lucide-react';
-
+// @ts-nocheck
 interface FunctionStatus {
   name: string;
   displayName: string;

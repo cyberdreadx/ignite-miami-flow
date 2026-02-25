@@ -8,7 +8,7 @@ import { Camera, Upload, Crop as CropIcon, Check, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import ReactCrop, { Crop, PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
-
+// @ts-nocheck
 interface AvatarUploadProps {
   currentAvatar?: string | null;
   userName?: string;

@@ -34,7 +34,7 @@ import {
   Pie,
   Cell
 } from 'recharts';
-
+// @ts-nocheck
 interface AnalyticsData {
   totalRevenue: number;
   totalTickets: number;

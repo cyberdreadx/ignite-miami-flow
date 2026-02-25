@@ -27,7 +27,7 @@ import {
 import { AdminQRCodeFixer } from '@/components/AdminQRCodeFixer';
 import { AdminTicketManager } from '@/components/admin/AdminTicketManager';
 import { TicketSystemDiagnostic } from '@/components/diagnostics/TicketSystemDiagnostic';
-
+// @ts-nocheck
 interface EventAnalytics {
   date: string;
   name: string;

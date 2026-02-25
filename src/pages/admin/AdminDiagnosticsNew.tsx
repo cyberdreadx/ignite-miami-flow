@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/layout
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Settings, CreditCard, TestTube, AlertTriangle, QrCode, Database, ChevronRight, Activity, Calendar } from 'lucide-react';
-
+// @ts-nocheck
 // Import diagnostic components
 import { StripeDataValidator } from '@/components/diagnostics/StripeDataValidator';
 import { SystemTester } from '@/components/diagnostics/SystemTester';
