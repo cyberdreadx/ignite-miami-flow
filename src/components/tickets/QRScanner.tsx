@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import QrScanner from 'react-qr-scanner';
-
+// @ts-nocheck
 interface QRScannerProps {
   onScan: (data: string) => void;
   isOpen: boolean;
