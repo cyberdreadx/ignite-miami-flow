@@ -492,6 +492,7 @@ export type Database = {
           role: string
         }[]
       }
+      is_admin: { Args: { _user_id: string }; Returns: boolean }
       toggle_like: { Args: { post_id: string }; Returns: undefined }
       toggle_pin: { Args: { post_id: string }; Returns: undefined }
     }

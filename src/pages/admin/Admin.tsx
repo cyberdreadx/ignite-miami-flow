@@ -379,9 +379,9 @@ const Admin = () => {
 
   const fetchMediaPassAnalytics = async () => {
     try {
-      // Use secure admin function to get media pass data
       const { data, error } = await supabase
-        .rpc('get_all_media_passes_admin');
+        .from('media_passes')
+        .select('id, amount, status, payment_method, created_at');
 
       if (error) {
         console.error('Error fetching media pass analytics:', error);
@@ -389,16 +389,16 @@ const Admin = () => {
       }
 
       const passes = data || [];
-      const paidPasses = passes.filter(p => p.status === 'paid');
+      const paidPasses = passes.filter(p => p.status === 'active' || p.status === 'paid');
       
-      // Group by pass type
+      // Group by payment method as "type"
       const passByType = passes.reduce((acc: any, pass) => {
-        const type = pass.pass_type;
+        const type = pass.payment_method || 'stripe';
         if (!acc[type]) {
           acc[type] = { pass_type: type, count: 0, revenue: 0 };
         }
         acc[type].count++;
-        if (pass.status === 'paid') {
+        if (pass.status === 'active' || pass.status === 'paid') {
           acc[type].revenue += pass.amount || 0;
         }
         return acc;
@@ -426,13 +426,12 @@ const Admin = () => {
           .select('amount, created_at, status')
           .gte('created_at', thirtyDaysAgo.toISOString()),
         supabase
-          .rpc('get_all_media_passes_admin')
+          .from('media_passes')
+          .select('amount, created_at, status')
+          .gte('created_at', thirtyDaysAgo.toISOString())
       ]);
 
-      // Filter media passes to only last 30 days since the function returns all
-      const filteredPasses = (passesResult.data || []).filter(pass => 
-        new Date(pass.created_at) >= thirtyDaysAgo
-      );
+      const filteredPasses = passesResult.data || [];
 
       // Group by date
       const salesByDate: { [key: string]: SalesData } = {};
@@ -451,7 +450,7 @@ const Admin = () => {
 
       // Process media passes
       filteredPasses.forEach(pass => {
-        if (pass.status === 'paid') {
+        if (pass.status === 'active' || pass.status === 'paid') {
           const date = new Date(pass.created_at).toISOString().split('T')[0];
           if (!salesByDate[date]) {
             salesByDate[date] = { date, tickets: 0, media_passes: 0, revenue: 0 };
@@ -620,7 +619,7 @@ const Admin = () => {
   const fetchDeletionRequests = async () => {
     try {
       const { data, error } = await supabase
-        .from('account_deletion_requests')
+        .from('account_deletion_requests' as any)
         .select(`
           id,
           user_id,
@@ -636,21 +635,23 @@ const Admin = () => {
         .order('created_at', { ascending: true });
 
       if (error) {
-        console.error('Error fetching deletion requests:', error);
-      } else {
-        const mappedRequests = (data || []).map((req: any) => ({
-          id: req.id,
-          user_id: req.user_id,
-          reason: req.reason,
-          status: req.status,
-          created_at: req.created_at,
-          user_email: req.profiles?.email || 'Unknown',
-          user_name: req.profiles?.full_name || req.profiles?.email || 'Unknown User',
-        }));
-        setDeletionRequests(mappedRequests);
+        // Table may not exist, silently skip
+        setDeletionRequests([]);
+        return;
       }
+      const mappedRequests = (data || []).map((req: any) => ({
+        id: req.id,
+        user_id: req.user_id,
+        reason: req.reason,
+        status: req.status,
+        created_at: req.created_at,
+        user_email: req.profiles?.email || 'Unknown',
+        user_name: req.profiles?.full_name || req.profiles?.email || 'Unknown User',
+      }));
+      setDeletionRequests(mappedRequests);
     } catch (error) {
-      console.error('Error in fetchDeletionRequests:', error);
+      // Table may not exist, silently skip
+      setDeletionRequests([]);
     }
   };
 

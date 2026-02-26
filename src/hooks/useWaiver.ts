@@ -1,7 +1,7 @@
-// @ts-nocheck
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+
 export const useWaiver = () => {
   const [hasCompletedWaiver, setHasCompletedWaiver] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
@@ -20,7 +20,7 @@ export const useWaiver = () => {
 
     try {
       const { data, error } = await supabase
-        .from('waiver_completions')
+        .from('waivers')
         .select('id')
         .eq('user_id', user.id)
         .maybeSingle();
@@ -40,12 +40,10 @@ export const useWaiver = () => {
 
     try {
       const { error } = await supabase
-        .from('waiver_completions')
+        .from('waivers')
         .insert({
           user_id: user.id,
-          waiver_url: 'https://tally.so/r/mY71ZB',
-          ip_address: null, // Could be populated with actual IP if needed
-          user_agent: navigator.userAgent
+          completed_at: new Date().toISOString()
         });
 
       if (error) throw error;
