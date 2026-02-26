@@ -76,7 +76,7 @@ export const AdminOverview: React.FC = () => {
         subscriptionsRes
       ] = await Promise.all([
         supabase.from('profiles').select('id, full_name, email, created_at'),
-        supabase.from('tickets').select('amount, status, created_at, valid_until, stripe_session_id, stripe_payment_intent_id'),
+        supabase.from('tickets').select('amount, status, created_at, stripe_session_id, stripe_payment_intent_id'),
         supabase.from('subscriptions').select('status, current_period_end')
       ]);
 
