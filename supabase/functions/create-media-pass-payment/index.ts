@@ -80,16 +80,13 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    // Create a simple media_passes table entry
+    // Insert into media_passes using only existing columns
     await supabaseService.from("media_passes").insert({
       user_id: user.id,
       stripe_session_id: session.id,
-      pass_type: passType,
-      photographer_name: name,
-      instagram_handle: instagramHandle,
-      amount: passType === "30" ? 3000 : 15000, // Amount in cents
+      amount: passType === "30" ? 3000 : 15000,
+      payment_method: "stripe",
       status: "pending",
-      created_at: new Date().toISOString()
     });
 
     return new Response(JSON.stringify({ url: session.url }), {

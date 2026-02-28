@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Ticket, Clock, Flame } from "lucide-react";
+import { ArrowRight, Ticket, Clock, Flame, Camera } from "lucide-react";
 import NavBar from "@/components/layout/NavBar";
 import { SocialFeed } from "@/components/features/SocialFeed";
 import { PixelFireBackground } from "@/components/features/PixelFireBackground";
@@ -131,6 +131,47 @@ const Index = () => {
               </Button>
             </div>
           </motion.div>
+        </div>
+      </section>
+
+      {/* Quick Access Cards */}
+      <section className="pb-4">
+        <div className="container mx-auto px-4">
+          <div className="grid sm:grid-cols-2 gap-3 max-w-2xl mx-auto mb-8">
+            {/* Event Ticket card */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="flex flex-col gap-2 rounded-lg border border-border/50 bg-card p-4 hover:border-primary/30 transition-colors"
+            >
+              <div className="flex items-center gap-2 text-primary">
+                <Ticket className="w-4 h-4" />
+                <span className="text-xs font-semibold tracking-widest uppercase">Event Ticket</span>
+              </div>
+              <p className="text-sm text-muted-foreground">Single event entry — sliding scale from $10</p>
+              <Button size="sm" className="mt-auto" onClick={() => navigate("/tickets")}>
+                Buy Ticket · $10+
+              </Button>
+            </motion.div>
+
+            {/* Media Pass card */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+              className="flex flex-col gap-2 rounded-lg border border-border/50 bg-card p-4 hover:border-primary/30 transition-colors"
+            >
+              <div className="flex items-center gap-2 text-primary">
+                <Camera className="w-4 h-4" />
+                <span className="text-xs font-semibold tracking-widest uppercase">Media Pass</span>
+              </div>
+              <p className="text-sm text-muted-foreground">Photographers & videographers — $30 or $150</p>
+              <Button size="sm" variant="outline" className="mt-auto" onClick={() => navigate("/photographers")}>
+                Get Media Pass
+              </Button>
+            </motion.div>
+          </div>
         </div>
       </section>
 
