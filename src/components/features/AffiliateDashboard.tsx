@@ -9,7 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { formatDistanceToNow } from 'date-fns';
 import {
   Copy, Plus, DollarSign, Users, TrendingUp,
-  Link as LinkIcon, Eye, EyeOff, Share2, Gift, Ticket
+  Link as LinkIcon, Eye, EyeOff, Share2, Gift, Ticket, CheckCircle2
 } from 'lucide-react';
 
 interface AffiliateCode {
@@ -27,9 +27,17 @@ interface Earning {
   created_at: string;
 }
 
+interface PayoutRecord {
+  id: string;
+  amount: number;
+  note: string | null;
+  created_at: string;
+}
+
 const AffiliateDashboard = () => {
   const [codes, setCodes] = useState<AffiliateCode[]>([]);
   const [earnings, setEarnings] = useState<Earning[]>([]);
+  const [payouts, setPayouts] = useState<PayoutRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [showAllCodes, setShowAllCodes] = useState(false);
@@ -60,8 +68,15 @@ const AffiliateDashboard = () => {
         if (!error) earningsData = data || [];
       }
 
+      const { data: payoutsData } = await supabase
+        .from('affiliate_payouts')
+        .select('id, amount, note, created_at')
+        .eq('user_id', user?.id)
+        .order('created_at', { ascending: false });
+
       setCodes(codesData || []);
       setEarnings(earningsData);
+      setPayouts(payoutsData || []);
     } catch (err) {
       console.error(err);
       toast({ title: 'Error loading affiliate data', variant: 'destructive' });
@@ -130,6 +145,8 @@ const AffiliateDashboard = () => {
   );
 
   const totalEarnings = earnings.reduce((s, e) => s + (e.amount || 0), 0);
+  const totalPaidOut = payouts.reduce((s, p) => s + (p.amount || 0), 0);
+  const outstanding = Math.max(0, totalEarnings - totalPaidOut);
   const activeCodes = codes.filter(c => c.is_active);
   const displayCodes = showAllCodes ? codes : codes.slice(0, 3);
 
@@ -156,11 +173,11 @@ const AffiliateDashboard = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 gap-3">
         <Card>
           <CardHeader className="pb-1 pt-4 px-4">
             <CardTitle className="text-xs text-muted-foreground font-medium flex items-center gap-1">
-              <DollarSign className="w-3 h-3" /> Earned
+              <DollarSign className="w-3 h-3" /> Total Earned
             </CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4">
@@ -180,11 +197,23 @@ const AffiliateDashboard = () => {
         <Card>
           <CardHeader className="pb-1 pt-4 px-4">
             <CardTitle className="text-xs text-muted-foreground font-medium flex items-center gap-1">
-              <LinkIcon className="w-3 h-3" /> Active
+              <CheckCircle2 className="w-3 h-3" /> Paid Out
             </CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4">
-            <div className="text-2xl font-bold">{activeCodes.length}</div>
+            <div className="text-2xl font-bold text-muted-foreground">${(totalPaidOut / 100).toFixed(2)}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-1 pt-4 px-4">
+            <CardTitle className="text-xs text-muted-foreground font-medium flex items-center gap-1">
+              <LinkIcon className="w-3 h-3" /> Outstanding
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-4 pb-4">
+            <div className={`text-2xl font-bold ${outstanding > 0 ? 'text-foreground' : 'text-muted-foreground'}`}>
+              ${(outstanding / 100).toFixed(2)}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -296,6 +325,41 @@ const AffiliateDashboard = () => {
                   </div>
                 );
               })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Payout History */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4" /> Payout History
+          </CardTitle>
+          <CardDescription className="text-xs">Payments you've received from the SkateBurn team</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {payouts.length === 0 ? (
+            <div className="text-center py-6 text-muted-foreground">
+              <DollarSign className="h-8 w-8 mx-auto mb-2 opacity-40" />
+              <p className="text-sm">No payouts recorded yet.</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {payouts.map(p => (
+                <div key={p.id} className="flex items-center justify-between p-2.5 rounded-lg border border-border/50 text-sm">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-primary shrink-0" />
+                    <div>
+                      <span className="font-semibold text-primary">${(p.amount / 100).toFixed(2)}</span>
+                      {p.note && <span className="text-muted-foreground ml-2 text-xs">{p.note}</span>}
+                    </div>
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    {formatDistanceToNow(new Date(p.created_at), { addSuffix: true })}
+                  </span>
+                </div>
+              ))}
             </div>
           )}
         </CardContent>
