@@ -29,8 +29,18 @@ interface Event {
 const Tickets = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
-  const [ticketAmount, setTicketAmount] = useState(10);
-  const [ticketInputValue, setTicketInputValue] = useState('10');
+  // Dynamic pricing: $15 at the door (8pm+ on Tuesdays), $10 advance
+  const getMinTicketPrice = () => {
+    const now = new Date();
+    const isTuesday = now.getDay() === 2; // 0=Sun, 2=Tue
+    const hour = now.getHours();
+    return isTuesday && hour >= 20 ? 15 : 10;
+  };
+  const minTicketPrice = getMinTicketPrice();
+  const isAtTheDoor = minTicketPrice === 15;
+
+  const [ticketAmount, setTicketAmount] = useState(() => getMinTicketPrice());
+  const [ticketInputValue, setTicketInputValue] = useState(() => String(getMinTicketPrice()));
   const [djDonationAmount, setDjDonationAmount] = useState(5);
   const [djDonationInput, setDjDonationInput] = useState('5');
   const [causeDonationAmount, setCauseDonationAmount] = useState(5);
@@ -233,7 +243,7 @@ const Tickets = () => {
     );
   }
 
-  const quickAmounts = [10, 15, 20, 25, 50];
+  const quickAmounts = isAtTheDoor ? [15, 20, 25, 50] : [10, 15, 20, 25, 50];
   const donationQuickAmounts = [5, 10, 20, 50];
 
   return (
@@ -275,7 +285,9 @@ const Tickets = () => {
                   </div>
                   <CardTitle className="text-xl">Event Ticket</CardTitle>
                   <CardDescription className="text-sm">
-                    Sliding scale starting at $10
+                    {isAtTheDoor
+                      ? <span className="text-destructive font-medium">At-the-door price: $15 minimum</span>
+                      : 'Sliding scale starting at $10 · $15 at the door (8pm)'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -302,10 +314,10 @@ const Tickets = () => {
                       onChange={(e) => setTicketInputValue(e.target.value)}
                       onBlur={(e) => {
                         const v = parseInt(e.target.value);
-                        if (isNaN(v) || v < 10) { setTicketAmount(10); setTicketInputValue('10'); }
+                        if (isNaN(v) || v < minTicketPrice) { setTicketAmount(minTicketPrice); setTicketInputValue(String(minTicketPrice)); }
                         else { setTicketAmount(v); setTicketInputValue(String(v)); }
                       }}
-                      min="10"
+                      min={minTicketPrice}
                       className="text-lg font-semibold"
                     />
                   </div>

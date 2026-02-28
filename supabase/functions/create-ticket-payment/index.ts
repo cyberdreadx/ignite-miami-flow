@@ -44,8 +44,13 @@ serve(async (req) => {
 
     logStep("Parsing request body...");
     const { amount, affiliateCode } = await req.json();
-    if (!amount || amount < 1000) { // $10.00 minimum for tickets
-      throw new Error("Invalid amount. Minimum ticket price is $10.00");
+    // Dynamic pricing: $15 minimum at the door (8pm+ on Tuesdays), $10 advance
+    const now = new Date();
+    const isTuesday = now.getUTCDay() === 2; // treat as UTC; client enforces local time
+    const miamiHour = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' })).getHours();
+    const minAmount = (isTuesday && miamiHour >= 20) ? 1500 : 1000;
+    if (!amount || amount < minAmount) {
+      throw new Error(`Invalid amount. Minimum ticket price is $${minAmount / 100}.00`);
     }
     logStep("Amount validated", { amount: `$${amount / 100}`, affiliateCode });
 
