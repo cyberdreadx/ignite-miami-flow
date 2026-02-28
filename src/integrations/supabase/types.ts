@@ -467,6 +467,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      generate_affiliate_code: { Args: never; Returns: string }
       get_posts_with_counts: {
         Args: never
         Returns: {
