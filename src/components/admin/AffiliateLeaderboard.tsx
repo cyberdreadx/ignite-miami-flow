@@ -3,7 +3,16 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import { RefreshCw, Trophy, DollarSign, Ticket, Link as LinkIcon, TrendingUp } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { RefreshCw, Trophy, DollarSign, Ticket, TrendingUp, Star, Crown } from 'lucide-react';
+
+interface AffiliateCodeRow {
+  id: string;
+  code: string;
+  user_id: string;
+  is_active: boolean | null;
+  tier: string;
+}
 
 interface LeaderboardEntry {
   user_id: string;
@@ -13,23 +22,25 @@ interface LeaderboardEntry {
   total_earnings: number; // in cents
   active_codes: number;
   codes: string[];
+  tier: 'standard' | 'promoter'; // highest tier across codes
+  code_ids: string[]; // for tier toggling
 }
 
-const MEDAL_COLORS = ['text-yellow-500', 'text-slate-400', 'text-amber-700'];
 const MEDAL_EMOJI = ['🥇', '🥈', '🥉'];
 
 const AffiliateLeaderboard = () => {
   const [leaders, setLeaders] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [updatingTier, setUpdatingTier] = useState<string | null>(null);
   const [totalStats, setTotalStats] = useState({ totalSales: 0, totalEarnings: 0, totalAffiliates: 0 });
+  const { toast } = useToast();
 
   const fetchLeaderboard = async () => {
     setLoading(true);
     try {
-      // Fetch all affiliate codes with their owner profiles
       const { data: codes, error: codesErr } = await supabase
         .from('affiliate_codes')
-        .select('id, code, user_id, is_active');
+        .select('id, code, user_id, is_active, tier');
 
       if (codesErr) throw codesErr;
       if (!codes || codes.length === 0) {
@@ -38,14 +49,12 @@ const AffiliateLeaderboard = () => {
         return;
       }
 
-      // Fetch all earnings
       const { data: earnings, error: earningsErr } = await supabase
         .from('affiliate_earnings')
         .select('affiliate_code_id, amount');
 
       if (earningsErr) throw earningsErr;
 
-      // Fetch profiles for all code owners
       const userIds = [...new Set(codes.map(c => c.user_id))];
       const { data: profiles, error: profilesErr } = await supabase
         .from('profiles')
@@ -54,7 +63,6 @@ const AffiliateLeaderboard = () => {
 
       if (profilesErr) throw profilesErr;
 
-      // Build a map of code_id -> { sales, earnings }
       const earningsByCode: Record<string, { sales: number; earnings: number }> = {};
       for (const e of earnings || []) {
         if (!e.affiliate_code_id) continue;
@@ -65,9 +73,8 @@ const AffiliateLeaderboard = () => {
         earningsByCode[e.affiliate_code_id].earnings += e.amount || 0;
       }
 
-      // Aggregate by user
       const byUser: Record<string, LeaderboardEntry> = {};
-      for (const code of codes) {
+      for (const code of codes as AffiliateCodeRow[]) {
         const profile = profiles?.find(p => p.user_id === code.user_id);
         const displayName = profile?.full_name || profile?.username || profile?.email || 'Unknown';
         const email = profile?.email || '';
@@ -81,6 +88,8 @@ const AffiliateLeaderboard = () => {
             total_earnings: 0,
             active_codes: 0,
             codes: [],
+            tier: 'standard',
+            code_ids: [],
           };
         }
 
@@ -91,6 +100,9 @@ const AffiliateLeaderboard = () => {
         }
         if (code.is_active) byUser[code.user_id].active_codes += 1;
         byUser[code.user_id].codes.push(code.code);
+        byUser[code.user_id].code_ids.push(code.id);
+        // If any code is promoter tier, mark the user as promoter
+        if (code.tier === 'promoter') byUser[code.user_id].tier = 'promoter';
       }
 
       const sorted = Object.values(byUser).sort((a, b) => {
@@ -105,8 +117,34 @@ const AffiliateLeaderboard = () => {
       setTotalStats({ totalSales, totalEarnings, totalAffiliates: sorted.length });
     } catch (err) {
       console.error('Error fetching affiliate leaderboard:', err);
+      toast({ title: 'Error loading leaderboard', variant: 'destructive' });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const togglePromoterTier = async (entry: LeaderboardEntry) => {
+    const newTier = entry.tier === 'promoter' ? 'standard' : 'promoter';
+    setUpdatingTier(entry.user_id);
+    try {
+      const { error } = await supabase
+        .from('affiliate_codes')
+        .update({ tier: newTier })
+        .in('id', entry.code_ids);
+
+      if (error) throw error;
+
+      toast({
+        title: newTier === 'promoter'
+          ? `${entry.display_name} upgraded to Promoter 🌟 ($3/ticket)`
+          : `${entry.display_name} set back to Standard ($1/ticket)`,
+      });
+      fetchLeaderboard();
+    } catch (err) {
+      console.error(err);
+      toast({ title: 'Error updating tier', variant: 'destructive' });
+    } finally {
+      setUpdatingTier(null);
     }
   };
 
@@ -156,6 +194,18 @@ const AffiliateLeaderboard = () => {
         </Card>
       </div>
 
+      {/* Tier legend */}
+      <div className="flex items-center gap-4 text-xs text-muted-foreground px-1">
+        <div className="flex items-center gap-1.5">
+          <Star className="w-3 h-3 text-muted-foreground" />
+          <span>Standard — earns $1/ticket</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <Crown className="w-3 h-3 text-yellow-500" />
+          <span>Promoter — earns $3/ticket</span>
+        </div>
+      </div>
+
       {/* Leaderboard table */}
       <Card>
         <CardHeader className="pb-3">
@@ -165,7 +215,7 @@ const AffiliateLeaderboard = () => {
                 <Trophy className="h-4 w-4 text-yellow-500" /> Affiliate Leaderboard
               </CardTitle>
               <CardDescription className="text-xs mt-1">
-                Ranked by ticket sales referred
+                Ranked by ticket sales referred. Toggle Promoter tier to grant $3/ticket.
               </CardDescription>
             </div>
             <Button variant="ghost" size="sm" onClick={fetchLeaderboard}>
@@ -185,7 +235,7 @@ const AffiliateLeaderboard = () => {
               {leaders.map((entry, idx) => (
                 <div
                   key={entry.user_id}
-                  className={`flex items-center gap-3 px-4 py-3 ${idx === 0 ? 'bg-primary/5' : ''}`}
+                  className={`flex items-center gap-3 px-4 py-3 ${entry.tier === 'promoter' ? 'bg-accent/30' : idx === 0 ? 'bg-primary/5' : ''}`}
                 >
                   {/* Rank */}
                   <div className="w-8 text-center shrink-0">
@@ -198,7 +248,14 @@ const AffiliateLeaderboard = () => {
 
                   {/* Name + codes */}
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm truncate">{entry.display_name}</div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-sm truncate">{entry.display_name}</span>
+                      {entry.tier === 'promoter' && (
+                        <Badge variant="outline" className="text-xs gap-1 px-1.5 py-0 border-primary/40 text-primary">
+                          <Crown className="w-2.5 h-2.5" /> Promoter
+                        </Badge>
+                      )}
+                    </div>
                     <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
                       {entry.codes.slice(0, 3).map(code => (
                         <code key={code} className="text-xs bg-muted px-1.5 py-0 rounded font-mono">
@@ -212,7 +269,7 @@ const AffiliateLeaderboard = () => {
                   </div>
 
                   {/* Stats */}
-                  <div className="flex items-center gap-4 shrink-0 text-right">
+                  <div className="flex items-center gap-3 shrink-0 text-right">
                     <div>
                       <div className="text-sm font-semibold">{entry.total_sales}</div>
                       <div className="text-xs text-muted-foreground">sales</div>
@@ -223,9 +280,21 @@ const AffiliateLeaderboard = () => {
                       </div>
                       <div className="text-xs text-muted-foreground">earned</div>
                     </div>
-                    <Badge variant={entry.active_codes > 0 ? 'default' : 'secondary'} className="text-xs">
-                      {entry.active_codes} active
-                    </Badge>
+                    <Button
+                      variant={entry.tier === 'promoter' ? 'outline' : 'ghost'}
+                      size="sm"
+                      className={`h-7 text-xs ${entry.tier === 'promoter' ? 'border-primary/50 text-primary' : ''}`}
+                      disabled={updatingTier === entry.user_id}
+                      onClick={() => togglePromoterTier(entry)}
+                    >
+                      {updatingTier === entry.user_id ? (
+                        '...'
+                      ) : entry.tier === 'promoter' ? (
+                        <><Crown className="w-3 h-3 mr-1" /> Promoter</>
+                      ) : (
+                        <><Star className="w-3 h-3 mr-1" /> Make Promoter</>
+                      )}
+                    </Button>
                   </div>
                 </div>
               ))}

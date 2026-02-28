@@ -147,7 +147,7 @@ const AffiliateDashboard = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold font-display">Affiliate Dashboard</h1>
-          <p className="text-muted-foreground text-sm">Share your link → earn $1 per ticket sold</p>
+          <p className="text-muted-foreground text-sm">Share your link → earn per ticket sold</p>
         </div>
         <Button onClick={generateCode} disabled={generating} size="sm">
           <Plus className="h-4 w-4 mr-2" />
