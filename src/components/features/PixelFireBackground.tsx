@@ -86,22 +86,32 @@ export const PixelFireBackground: React.FC = () => {
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 0 }}>
-      {/* Gradient overlay: only fade the top edge of the fire strip */}
+      {/* Top fade: fire blends into dark background */}
       <div
         className="absolute inset-x-0 bottom-0"
         style={{
           height: "220px",
-          background: "linear-gradient(to top, transparent 0%, transparent 40%, hsl(0 0% 6% / 0.7) 80%, hsl(0 0% 6%) 100%)",
+          background: "linear-gradient(to top, transparent 0%, transparent 30%, hsl(0 0% 6% / 0.6) 70%, hsl(0 0% 6%) 100%)",
           zIndex: 2,
         }}
       />
 
-      {/* Scanline overlay — only on the fire strip */}
+      {/* Bottom fade: fire fades INTO the page bottom (no hard cut-off) */}
+      <div
+        className="absolute inset-x-0 bottom-0"
+        style={{
+          height: "60px",
+          background: "linear-gradient(to bottom, transparent 0%, hsl(0 0% 6%) 100%)",
+          zIndex: 4,
+        }}
+      />
+
+      {/* Scanline overlay */}
       <div
         className="absolute inset-x-0 bottom-0"
         style={{
           height: "220px",
-          backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.15) 3px, rgba(0,0,0,0.15) 4px)",
+          backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.12) 3px, rgba(0,0,0,0.12) 4px)",
           zIndex: 3,
         }}
       />
@@ -117,7 +127,7 @@ export const PixelFireBackground: React.FC = () => {
           height: "220px",
           imageRendering: "pixelated",
           zIndex: 1,
-          opacity: 0.72,
+          opacity: 0.78,
         }}
       />
     </div>
