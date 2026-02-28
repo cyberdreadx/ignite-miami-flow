@@ -86,37 +86,38 @@ export const PixelFireBackground: React.FC = () => {
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 0 }}>
-      {/* Gradient overlay to fade fire into background at top */}
+      {/* Gradient overlay: only fade the top edge of the fire strip */}
       <div
-        className="absolute inset-0"
+        className="absolute inset-x-0 bottom-0"
         style={{
-          background: "linear-gradient(to top, transparent 0%, hsl(0 0% 6% / 0.4) 40%, hsl(0 0% 6% / 0.85) 70%, hsl(0 0% 6%) 100%)",
+          height: "220px",
+          background: "linear-gradient(to top, transparent 0%, transparent 40%, hsl(0 0% 6% / 0.7) 80%, hsl(0 0% 6%) 100%)",
           zIndex: 2,
         }}
       />
 
-      {/* Scanline overlay — 8-bit CRT feel */}
+      {/* Scanline overlay — only on the fire strip */}
       <div
-        className="absolute inset-0"
+        className="absolute inset-x-0 bottom-0"
         style={{
-          backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.18) 3px, rgba(0,0,0,0.18) 4px)",
+          height: "220px",
+          backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.15) 3px, rgba(0,0,0,0.15) 4px)",
           zIndex: 3,
         }}
       />
 
-      {/* Canvas fire — bottom-anchored, pixelated */}
+      {/* Canvas fire — bottom-anchored, pixelated, max 220px tall */}
       <canvas
         ref={canvasRef}
         style={{
           position: "absolute",
           bottom: 0,
-          left: "50%",
-          transform: "translateX(-50%)",
+          left: 0,
           width: "100%",
-          height: "auto",
+          height: "220px",
           imageRendering: "pixelated",
           zIndex: 1,
-          opacity: 0.75,
+          opacity: 0.72,
         }}
       />
     </div>
