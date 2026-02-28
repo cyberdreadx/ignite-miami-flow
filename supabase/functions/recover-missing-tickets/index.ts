@@ -147,11 +147,10 @@ serve(async (req) => {
                 user_id: user.id,
                 stripe_session_id: session.id,
                 amount: session.amount_total,
-                currency: session.currency,
-                status: 'paid',
-                qr_code_token: qrToken,
+                status: 'active',
+                qr_code: qrToken,
                 qr_code_data: JSON.stringify(qrData),
-                valid_until: validUntil.toISOString(),
+                payment_method: 'stripe',
                 created_at: new Date(session.created * 1000).toISOString(),
               })
               .select()
@@ -275,11 +274,10 @@ serve(async (req) => {
               user_id: user.id,
               stripe_session_id: session.id,
               amount: session.amount_total,
-              currency: session.currency,
-              status: 'paid',
-              qr_code_token: qrToken,
+              status: 'active',
+              qr_code: qrToken,
               qr_code_data: JSON.stringify(qrData),
-              valid_until: validUntil.toISOString(),
+              payment_method: 'stripe',
               created_at: new Date(session.created * 1000).toISOString(),
             })
             .select()
