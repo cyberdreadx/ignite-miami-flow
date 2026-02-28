@@ -174,7 +174,7 @@ export const MyTickets: React.FC = () => {
   };
 
   const isValidTicket = (ticket: UserTicket) => {
-    if (ticket.status !== 'paid') return false;
+    if (ticket.status !== 'paid' && ticket.status !== 'active') return false;
     if (ticket.used_at) return false; // Can't use QR code if already used
     if (!ticket.valid_until) return true;
     return new Date(ticket.valid_until) > new Date();
