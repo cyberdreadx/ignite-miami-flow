@@ -80,6 +80,33 @@ export type Database = {
           },
         ]
       }
+      affiliate_payouts: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          note: string | null
+          paid_by: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          note?: string | null
+          paid_by: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          note?: string | null
+          paid_by?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       comments: {
         Row: {
           content: string
