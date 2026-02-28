@@ -498,6 +498,20 @@ export type Database = {
         Returns: undefined
       }
       generate_affiliate_code: { Args: never; Returns: string }
+      generate_qr_token: { Args: never; Returns: string }
+      get_my_media_passes: {
+        Args: never
+        Returns: {
+          created_at: string
+          id: string
+          instagram_handle: string
+          pass_type: string
+          photographer_name: string
+          qr_code_token: string
+          status: string
+          valid_until: string
+        }[]
+      }
       get_posts_with_counts: {
         Args: never
         Returns: {

@@ -69,16 +69,16 @@ export const MyTickets: React.FC = () => {
           .eq('user_id', user.id)
           .order('created_at', { ascending: false }),
         supabase
-          .rpc('get_my_media_passes')
+          .rpc('get_my_media_passes').throwOnError()
+          .then(r => r).catch(() => ({ data: [] }))
       ]);
 
       if (ticketsResponse.error) throw ticketsResponse.error;
       if (subscriptionsResponse.error) throw subscriptionsResponse.error;
-      if (mediaPassesResponse.error) throw mediaPassesResponse.error;
 
       setTickets(ticketsResponse.data || []);
       setSubscriptions(subscriptionsResponse.data || []);
-      setMediaPasses(mediaPassesResponse.data || []);
+      setMediaPasses((mediaPassesResponse as any).data || []);
     } catch (error) {
       console.error('Error fetching tickets:', error);
       toast({
@@ -187,7 +187,7 @@ export const MyTickets: React.FC = () => {
   };
 
   const isValidMediaPass = (mediaPass: UserMediaPass) => {
-    if (mediaPass.status !== 'paid') return false;
+    if (mediaPass.status !== 'paid' && mediaPass.status !== 'active') return false;
     if (!mediaPass.valid_until) return true;
     return new Date(mediaPass.valid_until) > new Date();
   };
