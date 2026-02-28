@@ -18,8 +18,10 @@ import {
   Download,
   ArrowUp,
   ArrowDown,
-  AlertTriangle
+  AlertTriangle,
+  Gift
 } from 'lucide-react';
+import AffiliateLeaderboard from '@/components/admin/AffiliateLeaderboard';
 import {
   LineChart,
   Line,
@@ -234,7 +236,17 @@ const AdminAnalytics = () => {
 
   return (
     <AdminLayout title="Analytics" description="Revenue and performance insights">
-      <div className="space-y-4 md:space-y-6">
+      <Tabs defaultValue="overview" className="space-y-4 md:space-y-6">
+        <TabsList>
+          <TabsTrigger value="overview" className="flex items-center gap-1.5">
+            <BarChart3 className="h-3.5 w-3.5" /> Overview
+          </TabsTrigger>
+          <TabsTrigger value="affiliates" className="flex items-center gap-1.5">
+            <Gift className="h-3.5 w-3.5" /> Affiliates
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-4 md:space-y-6">
         {/* Data Quality Banner */}
         {testTicketsCount > 0 && (
           <Alert className="mb-6">
@@ -362,8 +374,13 @@ const AdminAnalytics = () => {
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
-        </Card>
-      </div>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="affiliates">
+          <AffiliateLeaderboard />
+        </TabsContent>
+      </Tabs>
     </AdminLayout>
   );
 };
