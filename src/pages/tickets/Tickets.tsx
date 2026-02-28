@@ -89,6 +89,30 @@ const Tickets = () => {
           ? 'Thank you for supporting our DJs!' 
           : 'Thank you for supporting the SkateBurn community!',
       });
+    } else if (success === 'true' && sessionId) {
+      // Call verify-and-create-ticket to create the ticket record
+      const createTicket = async () => {
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          const { data, error } = await supabase.functions.invoke('verify-and-create-ticket', {
+            body: { sessionId, userEmail: session?.user?.email },
+          });
+          if (error) throw error;
+          toast({
+            title: 'Ticket Ready! 🎉',
+            description: 'Your ticket has been created. View your QR code in My Tickets.',
+            action: <Button variant="outline" size="sm" onClick={() => navigate('/my-tickets')}>View Tickets</Button>
+          });
+        } catch (err: any) {
+          console.error('Error creating ticket after payment:', err);
+          toast({
+            title: 'Payment Successful! 🎉',
+            description: 'Your ticket is being processed. Check "My Tickets" shortly.',
+            action: <Button variant="outline" size="sm" onClick={() => navigate('/my-tickets')}>View Tickets</Button>
+          });
+        }
+      };
+      createTicket();
     } else if (success === 'true') {
       toast({
         title: 'Payment Successful! 🎉',
