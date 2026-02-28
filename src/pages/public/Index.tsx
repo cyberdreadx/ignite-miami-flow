@@ -87,9 +87,10 @@ const Index = () => {
             <motion.img
               src={skateburnLogo}
               alt="SkateBurn Miami"
-              className="h-16 md:h-20 w-auto mx-auto mb-8 opacity-90"
+              className="h-20 md:h-24 w-auto mx-auto mb-6"
+              style={{ borderRadius: "50%", objectFit: "cover" }}
               initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 0.9, scale: 1 }}
+              animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
             />
 
