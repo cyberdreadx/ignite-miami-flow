@@ -1,1 +1,4 @@
 project_id = "ltemqywmatntueklqsyf"
+
+[functions.verify-and-create-ticket]
+verify_jwt = false
