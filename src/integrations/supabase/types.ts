@@ -494,6 +494,14 @@ export type Database = {
         }[]
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      process_affiliate_referral: {
+        Args: {
+          p_affiliate_code: string
+          p_referred_user_id: string
+          p_ticket_id: string
+        }
+        Returns: boolean
+      }
       toggle_like: { Args: { post_id: string }; Returns: undefined }
       toggle_pin: { Args: { post_id: string }; Returns: undefined }
     }

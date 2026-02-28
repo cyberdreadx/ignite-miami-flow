@@ -186,15 +186,13 @@ serve(async (req) => {
       .from('tickets')
       .insert({
         user_id: userId,
-        event_id: eventId, // Now properly associate with event
+        event_id: eventId,
         stripe_session_id: sessionId,
         amount: session.amount_total,
-        affiliate_code_used: affiliateCode || null,
-        currency: session.currency,
-        status: 'paid',
-        qr_code_token: qrToken,
+        status: 'active',
+        qr_code: qrToken,
         qr_code_data: JSON.stringify(qrData),
-        valid_until: validUntil.toISOString()
+        payment_method: 'stripe',
       })
       .select()
       .single();
