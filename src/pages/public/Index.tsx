@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Ticket, Clock, Flame, Camera } from "lucide-react";
+import { ArrowRight, Ticket, Clock, Flame, Camera, Share2 } from "lucide-react";
 import NavBar from "@/components/layout/NavBar";
 import { SocialFeed } from "@/components/features/SocialFeed";
 import { PixelFireBackground } from "@/components/features/PixelFireBackground";
@@ -138,7 +138,7 @@ const Index = () => {
       {/* Quick Access Cards */}
       <section className="pb-4">
         <div className="container mx-auto px-4">
-          <div className="grid sm:grid-cols-2 gap-3 max-w-2xl mx-auto mb-8">
+          <div className="grid sm:grid-cols-3 gap-3 max-w-3xl mx-auto mb-8">
             {/* Event Ticket card */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -170,6 +170,23 @@ const Index = () => {
               <p className="text-sm text-muted-foreground">Photographers & videographers — $30 or $150</p>
               <Button size="sm" variant="outline" className="mt-auto" onClick={() => navigate("/photographers")}>
                 Get Media Pass
+              </Button>
+            </motion.div>
+
+            {/* Referral card */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="flex flex-col gap-2 rounded-lg border border-primary/20 bg-card p-4 hover:border-primary/40 transition-colors"
+            >
+              <div className="flex items-center gap-2 text-primary">
+                <Share2 className="w-4 h-4" />
+                <span className="text-xs font-semibold tracking-widest uppercase">Refer & Earn</span>
+              </div>
+              <p className="text-sm text-muted-foreground">Share your link — earn $1 per ticket sold</p>
+              <Button size="sm" variant="outline" className="mt-auto border-primary/30 text-primary hover:bg-primary/10" onClick={() => navigate("/affiliate")}>
+                Get Your Link
               </Button>
             </motion.div>
           </div>
