@@ -89,7 +89,7 @@ serve(async (req) => {
         },
       ],
       mode: "payment",
-      success_url: `${req.headers.get("origin")}/tickets?success=true&session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${req.headers.get("origin")}/tickets/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get("origin")}/tickets?canceled=true`,
       metadata: {
         type: "ticket",
