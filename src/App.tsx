@@ -50,11 +50,11 @@ const App = () => (
     <ErrorBoundary>
       <AuthProvider>
         <UserRoleProvider>
-          <TooltipProvider>
+  <TooltipProvider>
+        <BrowserRouter>
         <Toaster />
         <Sonner />
         <PWAInstallPrompt />
-        <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/admin" element={<NewAdmin />} />
