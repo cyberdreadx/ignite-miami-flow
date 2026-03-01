@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -19,7 +20,13 @@ import {
   ArrowUp,
   ArrowDown,
   AlertTriangle,
-  Gift
+  Gift,
+  X,
+  User,
+  Mail,
+  Clock,
+  QrCode,
+  CheckCircle2
 } from 'lucide-react';
 import AffiliateLeaderboard from '@/components/admin/AffiliateLeaderboard';
 import {
@@ -65,6 +72,9 @@ const AdminAnalytics = () => {
   const [testTicketsCount, setTestTicketsCount] = useState(0);
   const [allTimeRevenue, setAllTimeRevenue] = useState(0);
   const [allTimeTickets, setAllTimeTickets] = useState(0);
+  const [selectedTicket, setSelectedTicket] = useState<any | null>(null);
+  const [ticketModalOpen, setTicketModalOpen] = useState(false);
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
 
   const fetchAllTimeStats = async () => {
@@ -191,6 +201,29 @@ const AdminAnalytics = () => {
     fetchAllTimeStats();
   }, [timeRange]);
 
+  // Handle ?ticketId=... from global search deep link
+  useEffect(() => {
+    const ticketId = searchParams.get('ticketId');
+    if (!ticketId) return;
+    const fetchTicket = async () => {
+      const { data: tickets } = await supabase
+        .from('tickets')
+        .select('*')
+        .eq('id', ticketId)
+        .single();
+      if (!tickets) return;
+      // Enrich with buyer profile
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name, email, username')
+        .eq('user_id', tickets.user_id)
+        .single();
+      setSelectedTicket({ ...tickets, user_name: profile?.full_name || profile?.username, user_email: profile?.email });
+      setTicketModalOpen(true);
+    };
+    fetchTicket();
+  }, [searchParams]);
+
   const StatCard = ({ title, value, change, icon: Icon, prefix = '', suffix = '' }: {
     title: string;
     value: number | string;
@@ -250,6 +283,34 @@ const AdminAnalytics = () => {
 
   return (
     <AdminLayout title="Analytics" description="Revenue and performance insights">
+      {/* Ticket Detail Modal */}
+      {ticketModalOpen && selectedTicket && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/70 p-4" onClick={() => setTicketModalOpen(false)}>
+          <div className="bg-gray-950 border border-gray-700 rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold text-white flex items-center gap-2"><Ticket className="w-5 h-5 text-primary" /> Ticket Details</h2>
+              <button onClick={() => setTicketModalOpen(false)} className="text-gray-400 hover:text-white transition-colors"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="space-y-3 text-sm">
+              <div className="flex items-center gap-2 text-gray-300"><User className="w-4 h-4 text-muted-foreground shrink-0" /><span>{selectedTicket.user_name || 'Unknown User'}</span></div>
+              {selectedTicket.user_email && <div className="flex items-center gap-2 text-gray-300"><Mail className="w-4 h-4 text-muted-foreground shrink-0" /><span>{selectedTicket.user_email}</span></div>}
+              <div className="flex items-center gap-2 text-gray-300"><DollarSign className="w-4 h-4 text-muted-foreground shrink-0" /><span className="font-bold">${(selectedTicket.amount / 100).toFixed(2)}</span></div>
+              <div className="flex items-center gap-2 text-gray-300"><Clock className="w-4 h-4 text-muted-foreground shrink-0" /><span>Purchased {new Date(selectedTicket.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span></div>
+              {selectedTicket.used_at && <div className="flex items-center gap-2 text-green-400"><CheckCircle2 className="w-4 h-4 shrink-0" /><span>Scanned {new Date(selectedTicket.used_at).toLocaleDateString()}</span></div>}
+              {(selectedTicket.qr_code || selectedTicket.qr_code_data) && (
+                <div className="flex items-start gap-2 text-gray-400 font-mono text-xs break-all"><QrCode className="w-4 h-4 shrink-0 mt-0.5" /><span>{selectedTicket.qr_code || selectedTicket.qr_code_data}</span></div>
+              )}
+              <div className="flex items-center gap-2">
+                <Badge className={selectedTicket.used_at ? 'bg-orange-800/50 text-orange-300 border-orange-700' : 'bg-green-800/50 text-green-300 border-green-700'}>
+                  {selectedTicket.used_at ? 'Used' : selectedTicket.status}
+                </Badge>
+              </div>
+              <div className="pt-2 border-t border-gray-800 text-xs text-gray-500 break-all">ID: {selectedTicket.id}</div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Tabs defaultValue="overview" className="space-y-4 md:space-y-6">
         <TabsList>
           <TabsTrigger value="overview" className="flex items-center gap-1.5">

@@ -51,7 +51,7 @@ export const AdminGlobalSearch: React.FC = () => {
           type: 'user',
           title: u.full_name || u.username || 'Unknown User',
           subtitle: u.email || `Role: ${u.role}`,
-          href: '/admin/members',
+          href: `/admin/members?highlight=${u.user_id}`,
         });
       });
 
@@ -62,7 +62,7 @@ export const AdminGlobalSearch: React.FC = () => {
           type: isOrder ? 'order' : 'ticket',
           title: isOrder ? `Order — $${(t.amount / 100).toFixed(2)}` : `Ticket #${t.id.slice(0, 8)}`,
           subtitle: `Status: ${t.status} · ${new Date(t.created_at).toLocaleDateString()}`,
-          href: '/admin/analytics',
+          href: `/admin/analytics?ticketId=${t.id}`,
         });
       });
 

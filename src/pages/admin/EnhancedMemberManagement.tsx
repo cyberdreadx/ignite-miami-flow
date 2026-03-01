@@ -1,5 +1,6 @@
 // @ts-nocheck
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { AdminLayout } from '@/components/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -68,6 +69,9 @@ const EnhancedMemberManagement = () => {
   const [activeTab, setActiveTab] = useState('all');
   const [loading, setLoading] = useState(true);
   const [processingUsers, setProcessingUsers] = useState<Set<string>>(new Set());
+  const [highlightedUserId, setHighlightedUserId] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
+  const highlightRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const { toast } = useToast();
 
   const fetchUsers = async () => {
@@ -280,8 +284,27 @@ const EnhancedMemberManagement = () => {
     filterUsers();
   }, [users, searchTerm, activeTab]);
 
-  const UserCard = ({ user }: { user: UserProfile }) => (
-    <Card className="hover:shadow-md transition-shadow">
+  // Handle ?highlight=userId from global search
+  useEffect(() => {
+    const highlightId = searchParams.get('highlight');
+    if (highlightId && users.length > 0) {
+      setHighlightedUserId(highlightId);
+      setTimeout(() => {
+        const el = highlightRefs.current[highlightId];
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        // Clear highlight after 3 seconds
+        setTimeout(() => setHighlightedUserId(null), 3000);
+      }, 300);
+    }
+  }, [searchParams, users]);
+
+  const UserCard = ({ user }: { user: UserProfile }) => {
+    const isHighlighted = highlightedUserId === user.user_id;
+    return (
+    <div ref={(el) => { highlightRefs.current[user.user_id] = el; }}>
+    <Card className={`hover:shadow-md transition-all duration-500 ${isHighlighted ? 'ring-2 ring-primary shadow-lg shadow-primary/20 scale-[1.01]' : ''}`}>
       <CardContent className="p-6">
         <div className="flex items-start justify-between">
           <div className="flex items-start space-x-4">
@@ -462,7 +485,9 @@ const EnhancedMemberManagement = () => {
         </div>
       </CardContent>
     </Card>
+    </div>
   );
+  };
 
   return (
     <AdminLayout 
