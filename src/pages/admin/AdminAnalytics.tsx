@@ -63,7 +63,22 @@ const AdminAnalytics = () => {
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState('30d');
   const [testTicketsCount, setTestTicketsCount] = useState(0);
+  const [allTimeRevenue, setAllTimeRevenue] = useState(0);
+  const [allTimeTickets, setAllTimeTickets] = useState(0);
   const { toast } = useToast();
+
+  const fetchAllTimeStats = async () => {
+    const { data } = await supabase
+      .from('tickets')
+      .select('amount')
+      .in('status', ['active', 'paid', 'completed'])
+      .or('stripe_session_id.not.is.null,stripe_payment_intent_id.not.is.null')
+      .gte('amount', 100);
+    if (data) {
+      setAllTimeTickets(data.length);
+      setAllTimeRevenue(data.reduce((sum, t) => sum + (t.amount || 0), 0) / 100);
+    }
+  };
 
   const fetchAnalytics = async () => {
     setLoading(true);
@@ -173,6 +188,7 @@ const AdminAnalytics = () => {
 
   useEffect(() => {
     fetchAnalytics();
+    fetchAllTimeStats();
   }, [timeRange]);
 
   const StatCard = ({ title, value, change, icon: Icon, prefix = '', suffix = '' }: {
@@ -192,11 +208,11 @@ const AdminAnalytics = () => {
             {change !== undefined && (
               <div className="flex items-center mt-1">
                 {change >= 0 ? (
-                  <ArrowUp className="h-4 w-4 text-green-500 mr-1" />
+                  <ArrowUp className="h-4 w-4 text-green-600 dark:text-green-400 mr-1" />
                 ) : (
-                  <ArrowDown className="h-4 w-4 text-red-500 mr-1" />
+                  <ArrowDown className="h-4 w-4 text-red-600 dark:text-red-400 mr-1" />
                 )}
-                <span className={`text-sm ${change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                <span className={`text-sm ${change >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                   {Math.abs(change)}%
                 </span>
               </div>
@@ -245,6 +261,28 @@ const AdminAnalytics = () => {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4 md:space-y-6">
+        {/* All-Time Summary Banner */}
+        <div className="grid grid-cols-2 gap-3 p-4 rounded-xl bg-primary/10 border border-primary/20">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary/20">
+              <DollarSign className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">All-Time Revenue</p>
+              <p className="text-2xl font-black text-foreground">${allTimeRevenue.toFixed(2)}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary/20">
+              <Ticket className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">All-Time Tickets Sold</p>
+              <p className="text-2xl font-black text-foreground">{allTimeTickets}</p>
+            </div>
+          </div>
+        </div>
+
         {/* Data Quality Banner */}
         {testTicketsCount > 0 && (
           <Alert className="mb-6">
