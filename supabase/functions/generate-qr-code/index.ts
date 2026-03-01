@@ -46,10 +46,12 @@ serve(async (req) => {
         .single();
 
       if (ticketError || !ticket) throw new Error("Ticket not found");
-      if (ticket.qr_code_token) {
+      
+      // qr_code column stores the token in the tickets table
+      if (ticket.qr_code) {
         // Return existing QR code
         result = {
-          qr_code_token: ticket.qr_code_token,
+          qr_code_token: ticket.qr_code,
           qr_code_data: ticket.qr_code_data,
           type: "ticket"
         };
@@ -69,7 +71,7 @@ serve(async (req) => {
         
         // Create QR code URL that points to public verification page
         const baseUrl = req.headers.get("origin") || "https://25d21c34-b6fc-441b-9054-fae609c5f6e2.lovableproject.com";
-        const qrCodeUrl = `${baseUrl}/ticket?token=${qrToken}`;
+        const qrCodeUrl = `${baseUrl}/verify?token=${qrToken}`;
         
         // Store additional data as JSON for internal use
         const qrData = JSON.stringify({
@@ -80,19 +82,18 @@ serve(async (req) => {
           token: qrToken,
           event_id: ticket.event_id,
           amount: ticket.amount,
-          valid_until: ticket.valid_until
         });
 
-        // Update ticket with QR code data
+        // Update ticket with QR code data (qr_code column stores the token)
         const { error: updateError } = await supabaseClient
           .from("tickets")
           .update({
-            qr_code_token: qrToken,
+            qr_code: qrToken,
             qr_code_data: qrData
           })
           .eq("id", ticket_id);
 
-        if (updateError) throw new Error("Failed to update ticket with QR code");
+        if (updateError) throw new Error(`Failed to update ticket with QR code: ${updateError.message}`);
 
         result = {
           qr_code_token: qrToken,
