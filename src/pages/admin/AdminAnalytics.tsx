@@ -85,11 +85,9 @@ const AdminAnalytics = () => {
 
       // Filter to only include REAL tickets with Stripe payment confirmation
       const realTicketsData = allTicketsData?.filter(ticket => {
-        // Must have either Stripe session ID or payment intent ID
         const hasStripeData = ticket.stripe_session_id || ticket.stripe_payment_intent_id;
-        // Must have paid status
-        const isPaid = ticket.status === 'paid' || ticket.status === 'completed';
-        // Must have realistic amount (> $1 = 100 cents)
+        // Include 'active', 'paid', and 'completed' — Stripe-confirmed tickets land as 'active'
+        const isPaid = ticket.status === 'paid' || ticket.status === 'completed' || ticket.status === 'active';
         const hasRealisticAmount = ticket.amount && ticket.amount >= 100;
         
         return hasStripeData && isPaid && hasRealisticAmount;

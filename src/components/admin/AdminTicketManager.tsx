@@ -90,9 +90,9 @@ export const AdminTicketManager: React.FC = () => {
 
       // Calculate stats
       const total = formattedTickets.length;
-      const paid = formattedTickets.filter(t => t.status === 'paid').length;
+      const paid = formattedTickets.filter(t => t.status === 'paid' || t.status === 'active' || t.status === 'completed').length;
       const used = formattedTickets.filter(t => t.used_at).length;
-      const missingQR = formattedTickets.filter(t => !t.qr_code_token).length;
+      const missingQR = formattedTickets.filter(t => !t.qr_code && !t.qr_code_token).length;
       
       setStats({ total, paid, used, missingQR });
 
@@ -435,11 +435,11 @@ export const AdminTicketManager: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <User className="w-4 h-4" />
                       <span className="font-medium">{ticket.user_name || ticket.user_email || 'Unknown User'}</span>
-                      <Badge variant={ticket.status === 'paid' ? 'default' : 'secondary'}>
+                      <Badge variant={ticket.status === 'paid' || ticket.status === 'active' ? 'default' : 'secondary'}>
                         {ticket.status}
                       </Badge>
                       {ticket.used_at && <Badge variant="outline">Used</Badge>}
-                      {!ticket.qr_code_token && <Badge variant="destructive">No QR</Badge>}
+                      {!ticket.qr_code && !ticket.qr_code_token && <Badge variant="destructive">No QR</Badge>}
                     </div>
                     <div className="text-sm text-muted-foreground">
                       ${(ticket.amount / 100).toFixed(2)}
@@ -451,13 +451,13 @@ export const AdminTicketManager: React.FC = () => {
                     {ticket.used_at && (
                       <div>Used: {new Date(ticket.used_at).toLocaleString()} by {ticket.used_by}</div>
                     )}
-                    {ticket.qr_code_token && (
-                      <div className="font-mono">QR: {ticket.qr_code_token.substring(0, 20)}...</div>
+                    {(ticket.qr_code || ticket.qr_code_token) && (
+                      <div className="font-mono">QR: {(ticket.qr_code || ticket.qr_code_token)?.substring(0, 20)}...</div>
                     )}
                   </div>
                   
                   <div className="flex gap-2 pt-2">
-                    {!ticket.qr_code_token && (
+                    {!ticket.qr_code && !ticket.qr_code_token && (
                       <Button
                         size="sm"
                         variant="outline"
