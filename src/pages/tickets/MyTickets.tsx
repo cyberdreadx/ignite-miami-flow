@@ -49,7 +49,6 @@ export const MyTickets: React.FC = () => {
   const [mediaPasses, setMediaPasses] = useState<UserMediaPass[]>([]);
   const [loading, setLoading] = useState(true);
   const [recovering, setRecovering] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<{type: 'ticket' | 'subscription' | 'media_pass', id: string} | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -236,28 +235,6 @@ export const MyTickets: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-8">
-                {/* QR Code Display */}
-                {selectedItem && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="flex justify-center"
-                  >
-                    <EnhancedQRCodeDisplay
-                      ticketId={selectedItem.type === 'ticket' ? selectedItem.id : undefined}
-                      subscriptionId={selectedItem.type === 'subscription' ? selectedItem.id : undefined}
-                      mediaPassId={selectedItem.type === 'media_pass' ? selectedItem.id : undefined}
-                      type={selectedItem.type}
-                      existingToken={
-                        selectedItem.type === 'ticket' ? 
-                          tickets.find(t => t.id === selectedItem.id)?.qr_code_token || undefined :
-                        selectedItem.type === 'subscription' ?
-                          subscriptions.find(s => s.id === selectedItem.id)?.qr_code_token || undefined :
-                          mediaPasses.find(m => m.id === selectedItem.id)?.qr_code_token || undefined
-                      }
-                    />
-                  </motion.div>
-                )}
 
                 {/* Active Subscriptions */}
                 {subscriptions.length > 0 && (
@@ -269,7 +246,7 @@ export const MyTickets: React.FC = () => {
                     <div className="space-y-4">
                       {subscriptions.map((subscription) => (
                         <Card key={subscription.id} className="hover:shadow-md transition-shadow">
-                          <CardContent className="p-4 sm:p-6">
+                          <CardContent className="p-4 sm:p-6 space-y-4">
                             <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
                               <div className="flex-1 space-y-2">
                                 <div className="flex flex-col sm:flex-row sm:items-center gap-2">
@@ -285,27 +262,22 @@ export const MyTickets: React.FC = () => {
                                   </p>
                                 </div>
                               </div>
-                               <div className="flex flex-col sm:flex-row gap-2">
-                                {isValidSubscription(subscription) && (
-                                  <Button
-                                    onClick={() => setSelectedItem({type: 'subscription', id: subscription.id})}
-                                    variant={selectedItem?.id === subscription.id ? 'default' : 'outline'}
-                                    className="w-full sm:w-auto text-sm"
-                                    size="sm"
-                                  >
-                                    Show QR Code
-                                  </Button>
-                                )}
-                                <Button
-                                  onClick={handleManageSubscription}
-                                  variant="outline"
-                                  className="w-full sm:w-auto text-sm"
-                                  size="sm"
-                                >
-                                  Manage Subscription
-                                </Button>
-                              </div>
+                              <Button
+                                onClick={handleManageSubscription}
+                                variant="outline"
+                                className="w-full sm:w-auto text-sm self-start"
+                                size="sm"
+                              >
+                                Manage Subscription
+                              </Button>
                             </div>
+                            {isValidSubscription(subscription) && (
+                              <EnhancedQRCodeDisplay
+                                subscriptionId={subscription.id}
+                                type="subscription"
+                                existingToken={subscription.qr_code_token}
+                              />
+                            )}
                           </CardContent>
                         </Card>
                       ))}
@@ -322,51 +294,46 @@ export const MyTickets: React.FC = () => {
                     <div className="space-y-4">
                       {mediaPasses.map((mediaPass) => (
                         <Card key={mediaPass.id} className="hover:shadow-md transition-shadow">
-                          <CardContent className="p-4 sm:p-6">
-                            <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
-                              <div className="flex-1 space-y-2">
-                                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                                  <h3 className="font-semibold text-base">{mediaPass.pass_type} Media Pass</h3>
-                                  {getStatusBadge(mediaPass.status)}
-                                </div>
-                                <div className="space-y-1 text-sm">
-                                  <p className="text-muted-foreground">
-                                    Photographer: {mediaPass.photographer_name}
-                                  </p>
-                                  {mediaPass.instagram_handle && (
-                                    <p className="text-muted-foreground">
-                                      Instagram: @{mediaPass.instagram_handle}
-                                    </p>
-                                  )}
-                                  {mediaPass.valid_until && (
-                                    <p className="text-muted-foreground">
-                                      Valid until: {new Date(mediaPass.valid_until).toLocaleDateString()}
-                                    </p>
-                                  )}
-                                  <p className="text-xs text-muted-foreground">
-                                    Purchased: {new Date(mediaPass.created_at).toLocaleDateString()}
-                                  </p>
-                                </div>
+                          <CardContent className="p-4 sm:p-6 space-y-4">
+                            <div className="flex-1 space-y-2">
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                <h3 className="font-semibold text-base">{mediaPass.pass_type} Media Pass</h3>
+                                {getStatusBadge(mediaPass.status)}
                               </div>
-                              <div className="flex flex-col sm:flex-row gap-2">
-                                {isValidMediaPass(mediaPass) && (
-                                  <Button
-                                    onClick={() => setSelectedItem({type: 'media_pass', id: mediaPass.id})}
-                                    variant={selectedItem?.id === mediaPass.id ? 'default' : 'outline'}
-                                    className="w-full sm:w-auto text-sm"
-                                    size="sm"
-                                  >
-                                    Show QR Code
-                                  </Button>
+                              <div className="space-y-1 text-sm">
+                                <p className="text-muted-foreground">
+                                  Photographer: {mediaPass.photographer_name}
+                                </p>
+                                {mediaPass.instagram_handle && (
+                                  <p className="text-muted-foreground">
+                                    Instagram: @{mediaPass.instagram_handle}
+                                  </p>
                                 )}
+                                {mediaPass.valid_until && (
+                                  <p className="text-muted-foreground">
+                                    Valid until: {new Date(mediaPass.valid_until).toLocaleDateString()}
+                                  </p>
+                                )}
+                                <p className="text-xs text-muted-foreground">
+                                  Purchased: {new Date(mediaPass.created_at).toLocaleDateString()}
+                                </p>
                               </div>
                             </div>
+                            {isValidMediaPass(mediaPass) && (
+                              <EnhancedQRCodeDisplay
+                                mediaPassId={mediaPass.id}
+                                type="media_pass"
+                                existingToken={mediaPass.qr_code_token}
+                              />
+                            )}
                           </CardContent>
                         </Card>
                       ))}
                     </div>
                   </div>
                 )}
+
+                {/* Event Tickets */}
                 {tickets.length > 0 && (
                   <div>
                     <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
@@ -376,50 +343,41 @@ export const MyTickets: React.FC = () => {
                     <div className="space-y-4">
                       {tickets.map((ticket) => (
                         <Card key={ticket.id} className="hover:shadow-md transition-shadow">
-                          <CardContent className="p-4 sm:p-6">
-                            <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
-                              <div className="flex-1 space-y-2">
-                                 <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                                   <h3 className="font-semibold text-base">Event Ticket</h3>
-                                   {getStatusBadge(ticket.status)}
-                                   {ticket.used_at && (
-                                     <Badge variant="secondary" className="text-xs">
-                                       Used
-                                     </Badge>
-                                   )}
-                                 </div>
-                                <div className="space-y-1 text-sm">
-                                  <p className="text-muted-foreground">
-                                    Amount: ${(ticket.amount / 100).toFixed(2)}
-                                  </p>
-                                  {ticket.valid_until && (
-                                    <p className="text-muted-foreground">
-                                      Valid until: {new Date(ticket.valid_until).toLocaleDateString()}
-                                    </p>
-                                  )}
-                                   <p className="text-xs text-muted-foreground">
-                                     Purchased: {new Date(ticket.created_at).toLocaleDateString()}
-                                   </p>
-                                   {ticket.used_at && (
-                                     <p className="text-xs text-orange-600">
-                                       Used: {new Date(ticket.used_at).toLocaleString()} {ticket.used_by && `by ${ticket.used_by}`}
-                                     </p>
-                                   )}
-                                 </div>
+                          <CardContent className="p-4 sm:p-6 space-y-4">
+                            <div className="flex-1 space-y-2">
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                                <h3 className="font-semibold text-base">Event Ticket</h3>
+                                {getStatusBadge(ticket.status)}
+                                {ticket.used_at && (
+                                  <Badge variant="secondary" className="text-xs">Used</Badge>
+                                )}
                               </div>
-                              <div className="flex flex-col sm:flex-row gap-2">
-                                {isValidTicket(ticket) && (
-                                  <Button
-                                    onClick={() => setSelectedItem({type: 'ticket', id: ticket.id})}
-                                    variant={selectedItem?.id === ticket.id ? 'default' : 'outline'}
-                                    className="w-full sm:w-auto text-sm"
-                                    size="sm"
-                                  >
-                                    Show QR Code
-                                  </Button>
+                              <div className="space-y-1 text-sm">
+                                <p className="text-muted-foreground">
+                                  Amount: ${(ticket.amount / 100).toFixed(2)}
+                                </p>
+                                {ticket.valid_until && (
+                                  <p className="text-muted-foreground">
+                                    Valid until: {new Date(ticket.valid_until).toLocaleDateString()}
+                                  </p>
+                                )}
+                                <p className="text-xs text-muted-foreground">
+                                  Purchased: {new Date(ticket.created_at).toLocaleDateString()}
+                                </p>
+                                {ticket.used_at && (
+                                  <p className="text-xs text-destructive">
+                                    Used: {new Date(ticket.used_at).toLocaleString()} {ticket.used_by && `by ${ticket.used_by}`}
+                                  </p>
                                 )}
                               </div>
                             </div>
+                            {isValidTicket(ticket) && (
+                              <EnhancedQRCodeDisplay
+                                ticketId={ticket.id}
+                                type="ticket"
+                                existingToken={ticket.qr_code_token}
+                              />
+                            )}
                           </CardContent>
                         </Card>
                       ))}
