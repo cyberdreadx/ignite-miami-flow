@@ -92,8 +92,8 @@ export const AdminOverview: React.FC = () => {
       const realTickets = allTickets.filter(ticket => {
         // Must have either Stripe session ID or payment intent ID
         const hasStripeData = ticket.stripe_session_id || ticket.stripe_payment_intent_id;
-        // Must have paid status
-        const isPaid = ticket.status === 'paid' || ticket.status === 'completed';
+        // Must have a valid paid/active status
+        const isPaid = ticket.status === 'paid' || ticket.status === 'completed' || ticket.status === 'active';
         // Must have realistic amount (> $1 = 100 cents)
         const hasRealisticAmount = ticket.amount && ticket.amount >= 100;
         
@@ -101,7 +101,7 @@ export const AdminOverview: React.FC = () => {
       });
       
       const tickets = realTickets;
-      const paidTickets = tickets; // Already filtered for paid tickets above
+      const paidTickets = tickets; // Already filtered above
       const totalTicketsSold = paidTickets.length;
       const totalRevenue = paidTickets.reduce((sum, t) => sum + (t.amount || 0), 0) / 100; // Convert cents to dollars
       
@@ -192,8 +192,8 @@ export const AdminOverview: React.FC = () => {
       const recentTickets = allRecentTickets?.filter(ticket => {
         // Must have either Stripe session ID or payment intent ID
         const hasStripeData = ticket.stripe_session_id || ticket.stripe_payment_intent_id;
-        // Must have paid status
-        const isPaid = ticket.status === 'paid' || ticket.status === 'completed';
+        // Must have a valid paid/active status
+        const isPaid = ticket.status === 'paid' || ticket.status === 'completed' || ticket.status === 'active';
         // Must have realistic amount (> $1 = 100 cents)
         const hasRealisticAmount = ticket.amount && ticket.amount >= 100;
         
