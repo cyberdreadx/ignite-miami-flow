@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRoles } from '@/contexts/UserRoleContext';
 import { supabase } from '@/integrations/supabase/client';
+import { AdminGlobalSearch } from '@/components/admin/AdminGlobalSearch';
 import { 
   LayoutDashboard,
   Users,
@@ -243,7 +244,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title, descr
               </div>
             </div>
 
-            <div className="flex items-center space-x-3 flex-shrink-0">
+            <div className="flex items-center gap-2 flex-shrink-0">
+              {/* Global search */}
+              <AdminGlobalSearch />
+
               {/* Back to Main Site - Desktop */}
               <Button 
                 variant="outline" 
@@ -264,10 +268,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title, descr
               >
                 <Home className="w-4 h-4" />
               </Button>
-              
-              <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white hover:bg-gray-700">
-                <Search className="w-4 h-4" />
-              </Button>
+
               <Button variant="ghost" size="sm" className="relative text-gray-400 hover:text-white hover:bg-gray-700">
                 <Bell className="w-4 h-4" />
                 <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full"></span>
