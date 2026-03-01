@@ -371,11 +371,29 @@ export const MyTickets: React.FC = () => {
                                 )}
                               </div>
                             </div>
-                            {isValidTicket(ticket) && (
+                            {ticket.used_at ? (
+                              <div className="relative w-full max-w-md mx-auto">
+                                <div className="pointer-events-none opacity-40 grayscale">
+                                  <EnhancedQRCodeDisplay
+                                    ticketId={ticket.id}
+                                    type="ticket"
+                                    existingToken={ticket.qr_code_token || ticket.qr_code}
+                                  />
+                                </div>
+                                <div className="absolute inset-0 flex flex-col items-center justify-center rounded-lg bg-destructive/20 border-2 border-destructive">
+                                  <span className="text-destructive font-black text-3xl tracking-widest rotate-[-12deg] border-4 border-destructive rounded px-4 py-1 bg-background/80 select-none">
+                                    USED
+                                  </span>
+                                  <p className="mt-2 text-xs text-destructive font-medium">
+                                    Scanned {new Date(ticket.used_at).toLocaleString()}
+                                  </p>
+                                </div>
+                              </div>
+                            ) : isValidTicket(ticket) && (
                               <EnhancedQRCodeDisplay
                                 ticketId={ticket.id}
                                 type="ticket"
-                                existingToken={ticket.qr_code_token}
+                                existingToken={ticket.qr_code_token || ticket.qr_code}
                               />
                             )}
                           </CardContent>
