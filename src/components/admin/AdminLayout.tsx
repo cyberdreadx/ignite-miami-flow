@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { Toaster } from '@/components/ui/feedback/toaster';
+import { Toaster as Sonner } from '@/components/ui/feedback/sonner';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -140,6 +142,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title, descr
 
   return (
     <div className="min-h-screen bg-black flex">
+      <Toaster />
+      <Sonner position="top-right" />
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div 
