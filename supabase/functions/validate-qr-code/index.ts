@@ -23,13 +23,17 @@ serve(async (req: any) => {
       { auth: { persistSession: false } }
     );
 
-    const { qr_code_token, validator_name, mark_as_used = true } = await req.json();
+    const { qr_code_token: rawToken, validator_name, mark_as_used = true } = await req.json();
+    
+    // Extract just the token if a full URL was scanned
+    const tokenMatch = rawToken?.match(/[?&]token=([^&]+)/);
+    const qr_code_token = tokenMatch ? decodeURIComponent(tokenMatch[1]) : rawToken;
     
     if (!qr_code_token) {
       throw new Error("QR code token is required");
     }
 
-    console.log("Validating QR code:", qr_code_token);
+    console.log("Validating QR code token:", qr_code_token);
 
     // Check tickets table - token stored in qr_code column
     const { data: ticket, error: ticketError } = await supabaseClient
