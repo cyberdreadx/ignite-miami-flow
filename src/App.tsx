@@ -26,6 +26,8 @@ import { MyTickets } from "./pages/tickets/MyTickets";
 import { ValidateTicket } from "./pages/tickets/ValidateTicket";
 import { PublicTicketView } from "./pages/tickets/PublicTicketView";
 import { VerifyTicket } from "./pages/tickets/VerifyTicket";
+import { CheckIn } from "./pages/tickets/CheckIn";
+import { CheckInQR } from "./pages/tickets/CheckInQR";
 import TicketSuccess from "./pages/tickets/TicketSuccess";
 import Affiliate from "./pages/user/Affiliate";
 import PWAInstallPrompt from "./components/layout/PWAInstallPrompt";
@@ -76,7 +78,9 @@ const App = () => (
              <Route path="/affiliate" element={<Affiliate />} />
               <Route path="/validate" element={<ValidateTicket />} />
               <Route path="/verify" element={<PublicTicketView />} />
-              <Route path="/tickets/success" element={<TicketSuccess />} />
+               <Route path="/checkin" element={<CheckIn />} />
+               <Route path="/admin/checkin-qr" element={<CheckInQR />} />
+               <Route path="/tickets/success" element={<TicketSuccess />} />
               <Route path="/ticket" element={<PublicTicketView />} />
               <Route path="/test-notifications" element={<TestNotifications />} />
               <Route path="/test-database" element={<DatabaseTest />} />
