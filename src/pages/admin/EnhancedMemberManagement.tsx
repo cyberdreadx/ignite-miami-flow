@@ -305,18 +305,18 @@ const EnhancedMemberManagement = () => {
     return (
     <div ref={(el) => { highlightRefs.current[user.user_id] = el; }}>
     <Card className={`hover:shadow-md transition-all duration-500 ${isHighlighted ? 'ring-2 ring-primary shadow-lg shadow-primary/20 scale-[1.01]' : ''}`}>
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between">
-          <div className="flex items-start space-x-4">
+      <CardContent className="p-3 sm:p-4">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-start space-x-3 min-w-0 flex-1">
             <Avatar className="h-12 w-12">
               <AvatarFallback>
                 {user.full_name?.charAt(0) || user.email.charAt(0)}
               </AvatarFallback>
             </Avatar>
             
-            <div className="flex-1 space-y-2">
-              <div className="flex items-center space-x-2">
-                <h3 className="font-semibold">
+            <div className="flex-1 min-w-0 space-y-1.5">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <h3 className="font-semibold text-sm truncate">
                   {user.full_name || 'No name provided'}
                 </h3>
                 
@@ -497,7 +497,7 @@ const EnhancedMemberManagement = () => {
       <div className="space-y-6">
         {/* Stats Cards */}
         {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center space-x-2">
@@ -562,14 +562,14 @@ const EnhancedMemberManagement = () => {
                 />
               </div>
               
-              <div className="flex space-x-2">
-                <Button variant="outline" onClick={exportUsers}>
-                  <Download className="w-4 h-4 mr-2" />
-                  Export
+              <div className="flex gap-2 shrink-0">
+                <Button variant="outline" size="sm" onClick={exportUsers}>
+                  <Download className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Export</span>
                 </Button>
-                <Button variant="outline" onClick={fetchUsers}>
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Refresh
+                <Button variant="outline" size="sm" onClick={fetchUsers}>
+                  <RefreshCw className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Refresh</span>
                 </Button>
               </div>
             </div>
@@ -578,11 +578,11 @@ const EnhancedMemberManagement = () => {
 
         {/* User Lists */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="all">All Users ({users.length})</TabsTrigger>
-            <TabsTrigger value="recent">Recent</TabsTrigger>
-            <TabsTrigger value="photographers">Photographers</TabsTrigger>
-            <TabsTrigger value="incomplete">Incomplete Profiles</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto">
+            <TabsTrigger value="all" className="text-xs px-2 py-2">All Users ({users.length})</TabsTrigger>
+            <TabsTrigger value="recent" className="text-xs px-2 py-2">Recent</TabsTrigger>
+            <TabsTrigger value="photographers" className="text-xs px-2 py-2">Photographers</TabsTrigger>
+            <TabsTrigger value="incomplete" className="text-xs px-2 py-2">Incomplete</TabsTrigger>
           </TabsList>
 
           <TabsContent value={activeTab} className="mt-6">
