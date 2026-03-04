@@ -2,15 +2,12 @@ import { useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { 
   Users, 
-  MessageSquare, 
   TrendingUp,
-  Clock,
-  Shield,
   Home,
-  Settings,
   BarChart3,
   DollarSign,
-  Receipt
+  Receipt,
+  QrCode
 } from "lucide-react";
 
 import {
@@ -31,6 +28,7 @@ const adminItems = [
   { title: "Analytics", url: "/admin/analytics", icon: TrendingUp, id: "analytics" },
   { title: "Expenses", url: "/admin#expenses", icon: Receipt, id: "expenses" },
   { title: "Affiliates", url: "/admin#affiliates", icon: DollarSign, id: "affiliates" },
+  { title: "Check-In QR", url: "/admin/checkin-qr", icon: QrCode, id: "checkin-qr" },
 ];
 
 const generalItems = [
