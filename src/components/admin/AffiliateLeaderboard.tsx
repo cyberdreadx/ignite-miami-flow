@@ -355,13 +355,19 @@ const AffiliateLeaderboard = () => {
                         <span className="hidden xs:inline">Pay Out</span>
                       </Button>
                       <Button
-                        variant={entry.tier === 'promoter' ? 'outline' : 'ghost'}
+                        variant={entry.tier === 'promoter' ? 'default' : 'outline'}
                         size="sm"
-                        className={`h-7 text-xs ${entry.tier === 'promoter' ? 'border-primary/40 text-primary' : ''}`}
+                        className={`h-7 text-xs gap-1 ${entry.tier === 'promoter' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}
                         disabled={updatingTier === entry.user_id}
+                        title={entry.tier === 'promoter' ? 'Promoter ($3/ticket) — click to demote' : 'Standard ($1/ticket) — click to promote'}
                         onClick={() => togglePromoterTier(entry)}
                       >
-                        {entry.tier === 'promoter' ? <Crown className="w-3 h-3" /> : <Star className="w-3 h-3" />}
+                        {updatingTier === entry.user_id
+                          ? <RefreshCw className="w-3 h-3 animate-spin" />
+                          : entry.tier === 'promoter'
+                            ? <><Crown className="w-3 h-3" /><span className="hidden sm:inline">Promoter</span></>
+                            : <><Star className="w-3 h-3" /><span className="hidden sm:inline">Standard</span></>
+                        }
                       </Button>
                       {expandedUser === entry.user_id
                         ? <ChevronUp className="w-4 h-4 text-muted-foreground" />

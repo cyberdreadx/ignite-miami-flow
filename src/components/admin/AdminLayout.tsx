@@ -226,7 +226,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title, descr
       </div>
 
       {/* Main content */}
-      <div className="flex-1 lg:ml-0 min-w-0">
+      <div className="flex-1 lg:ml-0 min-w-0 overflow-x-hidden w-full">
         {/* Top bar */}
         <div className="bg-gray-950 shadow-sm border-b border-gray-800 px-4 py-3 flex-shrink-0">
           <div className="flex items-center justify-between">
@@ -282,7 +282,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title, descr
         </div>
 
         {/* Page content */}
-        <div className="p-6 overflow-auto bg-black min-h-screen">
+        <div className="p-3 sm:p-4 md:p-6 overflow-x-hidden overflow-y-auto bg-black min-h-screen w-full max-w-full">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
