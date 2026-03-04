@@ -61,6 +61,57 @@ serve(async (req) => {
       throw new Error("Could not find user for this payment");
     }
 
+    // Extract affiliate code early so it can be used in all paths
+    const affiliateCode = (session.metadata?.affiliate_code || '').trim();
+    console.log(`[AFFILIATE] Code from Stripe metadata: "${affiliateCode}"`);
+    console.log(`[AFFILIATE] Full metadata: ${JSON.stringify(session.metadata)}`);
+
+    // Helper to process affiliate referral
+    const processAffiliate = async (ticketId: string, referredUserId: string) => {
+      if (!affiliateCode) return;
+      try {
+        // Check if already processed for this ticket
+        const { data: existingEarning } = await supabase
+          .from('affiliate_earnings')
+          .select('id')
+          .eq('ticket_id', ticketId)
+          .single();
+        
+        if (existingEarning) {
+          console.log(`[AFFILIATE] Already processed for ticket ${ticketId}`);
+          return;
+        }
+
+        const { data: codeData } = await supabase
+          .from('affiliate_codes')
+          .select('id, user_id, tier')
+          .eq('code', affiliateCode)
+          .eq('is_active', true)
+          .single();
+
+        console.log(`[AFFILIATE] Code lookup:`, JSON.stringify(codeData));
+
+        if (!codeData) {
+          console.log(`[AFFILIATE] Code "${affiliateCode}" not found or inactive`);
+          return;
+        }
+
+        const { data: result, error: rpcError } = await supabase.rpc('process_affiliate_referral', {
+          p_affiliate_code: affiliateCode,
+          p_ticket_id: ticketId,
+          p_referred_user_id: referredUserId,
+        });
+
+        if (rpcError) {
+          console.error('[AFFILIATE] RPC error:', JSON.stringify(rpcError));
+        } else {
+          console.log('[AFFILIATE] Processed successfully, result:', result);
+        }
+      } catch (err) {
+        console.error('[AFFILIATE] Exception:', err);
+      }
+    };
+
     // Check if ticket already exists
     const { data: existingTicket } = await supabase
       .from('tickets')
@@ -70,6 +121,8 @@ serve(async (req) => {
 
     if (existingTicket) {
       console.log(`Ticket already exists for session ${sessionId}`);
+      // Still try to process affiliate in case it was missed
+      await processAffiliate(existingTicket.id, userId);
       return new Response(JSON.stringify({ 
         success: true, 
         message: "Ticket already exists",
@@ -206,27 +259,8 @@ serve(async (req) => {
 
     console.log(`Ticket created successfully: ${ticket.id}`);
 
-    // Process affiliate referral if code was used
-    if (affiliateCode && affiliateCode.trim() !== '') {
-      try {
-        console.log(`Processing affiliate referral for code: ${affiliateCode}`);
-        const { data: referralResult, error: referralError } = await supabase
-          .rpc('process_affiliate_referral', {
-            p_affiliate_code: affiliateCode,
-            p_ticket_id: ticket.id,
-            p_referred_user_id: userId
-          });
-
-        if (referralError) {
-          console.error('Error processing affiliate referral:', referralError);
-        } else {
-          console.log('Affiliate referral processed successfully:', referralResult);
-        }
-      } catch (error) {
-        console.error('Error in affiliate referral processing:', error);
-        // Don't fail the ticket creation if referral processing fails
-      }
-    }
+    // Process affiliate referral using shared helper
+    await processAffiliate(ticket.id, userId);
 
     return new Response(JSON.stringify({ 
       success: true, 
