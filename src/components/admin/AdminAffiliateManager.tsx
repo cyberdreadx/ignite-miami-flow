@@ -59,13 +59,180 @@ interface AffiliateReferral {
   referred_user_name: string | null;
 }
 
+interface TicketResult {
+  id: string;
+  user_id: string;
+  created_at: string;
+  stripe_session_id: string | null;
+  profile_name: string;
+  profile_email: string;
+}
+
+const ManualCreditForm = ({ onSuccess }: { onSuccess: () => void }) => {
+  const { toast } = useToast();
+  const [query, setQuery] = useState('');
+  const [searching, setSearching] = useState(false);
+  const [tickets, setTickets] = useState<TicketResult[]>([]);
+  const [selected, setSelected] = useState<TicketResult | null>(null);
+  const [code, setCode] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const searchTickets = async () => {
+    if (!query.trim()) return;
+    setSearching(true);
+    setTickets([]);
+    setSelected(null);
+    try {
+      // Search profiles by name or email
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, email')
+        .or(`full_name.ilike.%${query}%,email.ilike.%${query}%`)
+        .limit(10);
+
+      if (!profiles?.length) { toast({ title: 'No users found', variant: 'destructive' }); return; }
+
+      const userIds = profiles.map(p => p.user_id);
+      const { data: ticketsData } = await supabase
+        .from('tickets')
+        .select('id, user_id, created_at, stripe_session_id, status')
+        .in('user_id', userIds)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      const profileMap = new Map(profiles.map(p => [p.user_id, p]));
+      const mapped: TicketResult[] = (ticketsData || []).map(t => {
+        const p = profileMap.get(t.user_id);
+        return { ...t, profile_name: p?.full_name || p?.email || 'Unknown', profile_email: p?.email || '' };
+      });
+      setTickets(mapped);
+      if (!mapped.length) toast({ title: 'No active tickets found for this user', variant: 'destructive' });
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const handleCredit = async () => {
+    if (!selected || !code.trim()) return;
+    setSubmitting(true);
+    try {
+      const { data: existing } = await supabase
+        .from('affiliate_earnings')
+        .select('id')
+        .eq('ticket_id', selected.id)
+        .maybeSingle();
+      if (existing) { toast({ title: 'Ticket already has an affiliate earning', variant: 'destructive' }); return; }
+
+      const { data: result, error } = await supabase.rpc('process_affiliate_referral', {
+        p_affiliate_code: code.trim().toUpperCase(),
+        p_ticket_id: selected.id,
+        p_referred_user_id: selected.user_id,
+      });
+      if (error) throw error;
+      if (!result) throw new Error('Code not found, inactive, or buyer owns the code');
+
+      toast({ title: `✅ Credited code ${code.toUpperCase()} for ${selected.profile_name}` });
+      setQuery(''); setTickets([]); setSelected(null); setCode('');
+      onSuccess();
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Search */}
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Users className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+          <Input
+            placeholder="Search buyer by name or email..."
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && searchTickets()}
+            className="pl-8"
+          />
+        </div>
+        <Button variant="outline" onClick={searchTickets} disabled={searching || !query.trim()}>
+          {searching ? 'Searching...' : 'Search'}
+        </Button>
+      </div>
+
+      {/* Ticket results */}
+      {tickets.length > 0 && !selected && (
+        <div className="border rounded-lg divide-y max-h-52 overflow-y-auto">
+          {tickets.map(t => (
+            <button
+              key={t.id}
+              onClick={() => setSelected(t)}
+              className="w-full text-left px-3 py-2.5 hover:bg-muted/50 transition-colors"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <span className="font-medium text-sm">{t.profile_name}</span>
+                  <span className="text-muted-foreground text-xs ml-2">{t.profile_email}</span>
+                </div>
+                <span className="text-xs text-muted-foreground shrink-0">
+                  {formatDistanceToNow(new Date(t.created_at), { addSuffix: true })}
+                </span>
+              </div>
+              <p className="font-mono text-xs text-muted-foreground mt-0.5 truncate">{t.id}</p>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Selected ticket + code input */}
+      {selected && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between bg-primary/5 border border-primary/20 rounded-lg px-3 py-2.5">
+            <div>
+              <p className="font-medium text-sm flex items-center gap-1.5">
+                <Ticket className="h-3.5 w-3.5 text-primary" /> {selected.profile_name}
+              </p>
+              <p className="font-mono text-xs text-muted-foreground mt-0.5 truncate max-w-xs">{selected.id}</p>
+            </div>
+            <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => { setSelected(null); setTickets([]); }}>
+              Change
+            </Button>
+          </div>
+
+          <div className="flex gap-2 items-end">
+            <div className="space-y-1.5 flex-1">
+              <Label className="text-xs">Promoter's Affiliate Code</Label>
+              <div className="relative">
+                <Code className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  placeholder="e.g. 3XTWLI"
+                  value={code}
+                  onChange={e => setCode(e.target.value.toUpperCase())}
+                  className="pl-8 font-mono uppercase tracking-widest"
+                  maxLength={6}
+                />
+              </div>
+            </div>
+            <Button onClick={handleCredit} disabled={submitting || !code.trim()}>
+              {submitting ? 'Crediting...' : 'Credit Affiliate'}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Tier ($1 standard / $3 promoter) is applied automatically. Double-crediting is prevented.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const AdminAffiliateManager = () => {
   const [affiliateCodes, setAffiliateCodes] = useState<AffiliateCode[]>([]);
   const [affiliateEarnings, setAffiliateEarnings] = useState<AffiliateEarnings[]>([]);
   const [referrals, setReferrals] = useState<AffiliateReferral[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [creditForm, setCreditForm] = useState({ ticketId: '', affiliateCode: '', submitting: false });
   const { toast } = useToast();
 
   useEffect(() => {
@@ -208,51 +375,6 @@ const AdminAffiliateManager = () => {
     }
   };
 
-  const handleManualCredit = async () => {
-    const ticketId = creditForm.ticketId.trim();
-    const code = creditForm.affiliateCode.trim().toUpperCase();
-    if (!ticketId || !code) {
-      toast({ title: 'Please fill in both fields', variant: 'destructive' });
-      return;
-    }
-    setCreditForm(f => ({ ...f, submitting: true }));
-    try {
-      // Look up ticket to get buyer's user_id
-      const { data: ticket, error: ticketErr } = await supabase
-        .from('tickets')
-        .select('id, user_id')
-        .eq('id', ticketId)
-        .single();
-      if (ticketErr || !ticket) throw new Error('Ticket not found');
-
-      // Check not already credited
-      const { data: existing } = await supabase
-        .from('affiliate_earnings')
-        .select('id')
-        .eq('ticket_id', ticketId)
-        .maybeSingle();
-      if (existing) {
-        toast({ title: 'This ticket already has an affiliate earning recorded', variant: 'destructive' });
-        return;
-      }
-
-      const { data: result, error: rpcErr } = await supabase.rpc('process_affiliate_referral', {
-        p_affiliate_code: code,
-        p_ticket_id: ticketId,
-        p_referred_user_id: ticket.user_id,
-      });
-      if (rpcErr) throw rpcErr;
-      if (!result) throw new Error('Code not found or inactive, or buyer is the code owner');
-
-      toast({ title: `✅ Affiliate earning credited for code ${code}` });
-      setCreditForm({ ticketId: '', affiliateCode: '', submitting: false });
-      fetchAffiliateData();
-    } catch (err: any) {
-      toast({ title: 'Error crediting affiliate', description: err.message, variant: 'destructive' });
-    } finally {
-      setCreditForm(f => ({ ...f, submitting: false }));
-    }
-  };
 
   const filteredCodes = affiliateCodes.filter(code =>
     code.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -484,42 +606,7 @@ const AdminAffiliateManager = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
-            <div className="space-y-1.5">
-              <Label className="text-xs">Ticket ID (UUID)</Label>
-              <div className="relative">
-                <Ticket className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                <Input
-                  placeholder="e.g. a1b2c3d4-..."
-                  value={creditForm.ticketId}
-                  onChange={e => setCreditForm(f => ({ ...f, ticketId: e.target.value }))}
-                  className="pl-8 font-mono text-xs"
-                />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Affiliate Code</Label>
-              <div className="relative">
-                <Code className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-                <Input
-                  placeholder="e.g. 3XTWLI"
-                  value={creditForm.affiliateCode}
-                  onChange={e => setCreditForm(f => ({ ...f, affiliateCode: e.target.value.toUpperCase() }))}
-                  className="pl-8 font-mono uppercase text-sm tracking-widest"
-                  maxLength={6}
-                />
-              </div>
-            </div>
-            <Button
-              onClick={handleManualCredit}
-              disabled={creditForm.submitting || !creditForm.ticketId || !creditForm.affiliateCode}
-            >
-              {creditForm.submitting ? 'Crediting...' : 'Credit Affiliate'}
-            </Button>
-          </div>
-          <p className="text-xs text-muted-foreground mt-2">
-            Commission tier ($1 standard / $3 promoter) is determined automatically by the code owner's tier.
-          </p>
+          <ManualCreditForm onSuccess={fetchAffiliateData} />
         </CardContent>
       </Card>
 
