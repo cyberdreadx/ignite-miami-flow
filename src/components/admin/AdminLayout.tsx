@@ -248,7 +248,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title, descr
               </div>
             </div>
 
-            <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="flex items-center gap-1 flex-shrink-0">
               {/* Global search */}
               <AdminGlobalSearch />
 
@@ -267,13 +267,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, title, descr
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="sm:hidden bg-blue-600 border-blue-500 text-white hover:bg-blue-700 hover:border-blue-600"
+                className="sm:hidden bg-blue-600 border-blue-500 text-white hover:bg-blue-700 hover:border-blue-600 px-2"
                 onClick={() => navigate('/')}
               >
                 <Home className="w-4 h-4" />
               </Button>
 
-              <Button variant="ghost" size="sm" className="relative text-gray-400 hover:text-white hover:bg-gray-700">
+              <Button variant="ghost" size="sm" className="relative text-gray-400 hover:text-white hover:bg-gray-700 px-2">
                 <Bell className="w-4 h-4" />
                 <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full"></span>
               </Button>

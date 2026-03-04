@@ -233,11 +233,11 @@ const AdminAnalytics = () => {
     suffix?: string;
   }) => (
     <Card>
-      <CardContent className="p-6">
+      <CardContent className="p-3 sm:p-4 md:p-6">
         <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <p className="text-2xl font-bold">{prefix}{value}{suffix}</p>
+          <div className="min-w-0">
+            <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">{title}</p>
+            <p className="text-lg sm:text-2xl font-bold">{prefix}{value}{suffix}</p>
             {change !== undefined && (
               <div className="flex items-center mt-1">
                 {change >= 0 ? (
@@ -312,11 +312,11 @@ const AdminAnalytics = () => {
       )}
 
       <Tabs defaultValue="overview" className="space-y-4 md:space-y-6">
-        <TabsList>
-          <TabsTrigger value="overview" className="flex items-center gap-1.5">
+        <TabsList className="w-full sm:w-auto">
+          <TabsTrigger value="overview" className="flex items-center gap-1.5 flex-1 sm:flex-none text-xs sm:text-sm">
             <BarChart3 className="h-3.5 w-3.5" /> Overview
           </TabsTrigger>
-          <TabsTrigger value="affiliates" className="flex items-center gap-1.5">
+          <TabsTrigger value="affiliates" className="flex items-center gap-1.5 flex-1 sm:flex-none text-xs sm:text-sm">
             <Gift className="h-3.5 w-3.5" /> Affiliates
           </TabsTrigger>
         </TabsList>
@@ -356,23 +356,23 @@ const AdminAnalytics = () => {
         )}
 
         {/* Time Range Selector */}
-        <div className="flex justify-between items-center">
+        <div className="flex flex-wrap gap-2 items-center">
           <Tabs value={timeRange} onValueChange={setTimeRange}>
             <TabsList>
-              <TabsTrigger value="7d">Last 7 Days</TabsTrigger>
-              <TabsTrigger value="30d">Last 30 Days</TabsTrigger>
-              <TabsTrigger value="90d">Last 90 Days</TabsTrigger>
+              <TabsTrigger value="7d" className="text-xs px-2">Last 7 Days</TabsTrigger>
+              <TabsTrigger value="30d" className="text-xs px-2">Last 30 Days</TabsTrigger>
+              <TabsTrigger value="90d" className="text-xs px-2">Last 90 Days</TabsTrigger>
             </TabsList>
           </Tabs>
           
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={fetchAnalytics}>
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Refresh
+          <div className="flex gap-2 ml-auto">
+            <Button variant="outline" size="sm" onClick={fetchAnalytics}>
+              <RefreshCw className="w-3 h-3 sm:mr-1" />
+              <span className="hidden sm:inline">Refresh</span>
             </Button>
-            <Button variant="outline">
-              <Download className="w-4 h-4 mr-2" />
-              Export
+            <Button variant="outline" size="sm">
+              <Download className="w-3 h-3 sm:mr-1" />
+              <span className="hidden sm:inline">Export</span>
             </Button>
           </div>
         </div>
