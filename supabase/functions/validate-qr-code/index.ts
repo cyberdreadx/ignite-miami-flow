@@ -10,17 +10,15 @@ const corsHeaders = {
 
 // @ts-ignore - Deno global available at runtime
 serve(async (req: any) => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Create Supabase client using service role key
     const supabaseClient = createClient(
-      // @ts-ignore - Deno global available at runtime
+      // @ts-ignore
       Deno.env.get("SUPABASE_URL") ?? "",
-      // @ts-ignore - Deno global available at runtime
+      // @ts-ignore
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
       { auth: { persistSession: false } }
     );
@@ -33,48 +31,31 @@ serve(async (req: any) => {
 
     console.log("Validating QR code:", qr_code_token);
 
-    // First check if it's a ticket using secure verification
-    const { data: ticketData, error: ticketError } = await supabaseClient
-      .rpc("verify_qr_token", { token: qr_code_token });
+    // Check tickets table - token stored in qr_code_data column
+    const { data: ticket, error: ticketError } = await supabaseClient
+      .from("tickets")
+      .select("id, user_id, created_at, event_id, used_at, used_by, status, qr_code_data")
+      .eq("qr_code_data", qr_code_token)
+      .maybeSingle();
 
-    console.log("Staff validation - Ticket query:", { ticketData, ticketError });
+    console.log("Ticket query result:", { ticket, ticketError });
 
-    if (!ticketError && ticketData && ticketData.length > 0) {
-      const verification = ticketData[0];
-      
-      // For staff validation, we need to check the full ticket details
-      const { data: ticket, error: ticketDetailError } = await supabaseClient
-        .from("tickets")
-        .select("id, user_id, created_at, event_id, used_at, used_by")
-        .eq("qr_code_token", qr_code_token)
-        .single();
-
-      if (ticketDetailError || !ticket) {
-        return new Response(JSON.stringify({
-          valid: false,
-          reason: "Ticket not found",
-          type: "ticket"
-        }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        });
-      }
-
-      // Get user profile separately
+    if (!ticketError && ticket) {
+      // Get user profile
       const { data: profile } = await supabaseClient
         .from("profiles")
         .select("full_name, email")
         .eq("user_id", ticket.user_id)
-        .single();
+        .maybeSingle();
 
       const userName = profile?.full_name || profile?.email || "Unknown";
-      
-      if (verification.used_at) {
+
+      if (ticket.used_at) {
         return new Response(JSON.stringify({
           valid: false,
           reason: "Ticket already used",
-          used_at: verification.used_at,
-          used_by: verification.used_by,
+          used_at: ticket.used_at,
+          used_by: ticket.used_by,
           type: "ticket"
         }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -82,14 +63,11 @@ serve(async (req: any) => {
         });
       }
 
-      const now = new Date();
-      const validUntil = verification.valid_until ? new Date(verification.valid_until) : null;
-
-      if (validUntil && now > validUntil) {
+      if (ticket.status !== "paid" && ticket.status !== "active") {
         return new Response(JSON.stringify({
           valid: false,
-          reason: "Ticket expired",
-          valid_until: verification.valid_until,
+          reason: `Ticket status: ${ticket.status || "unknown"}`,
+          status: ticket.status,
           type: "ticket"
         }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -97,27 +75,15 @@ serve(async (req: any) => {
         });
       }
 
-      if (verification.ticket_status !== "paid") {
-        return new Response(JSON.stringify({
-          valid: false,
-          reason: "Ticket not paid",
-          status: verification.ticket_status,
-          type: "ticket"
-        }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        });
-      }
-
-      // Only mark ticket as used if requested (for actual door entry)
+      // Mark as used if requested
       if (mark_as_used) {
         const { error: updateError } = await supabaseClient
           .from("tickets")
           .update({
-            used_at: now.toISOString(),
+            used_at: new Date().toISOString(),
             used_by: validator_name || "Door Staff"
           })
-          .eq("qr_code_token", qr_code_token);
+          .eq("id", ticket.id);
 
         if (updateError) {
           console.error("Failed to mark ticket as used:", updateError);
@@ -129,10 +95,9 @@ serve(async (req: any) => {
         type: "ticket",
         ticket_info: {
           id: ticket.id,
-          event_id: verification.event_id,
+          event_id: ticket.event_id,
           user_name: userName,
           created_at: ticket.created_at,
-          valid_until: verification.valid_until
         }
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -140,42 +105,32 @@ serve(async (req: any) => {
       });
     }
 
-    // If not a ticket, check if it's a subscription using secure verification
-    const { data: subscriptionData, error: subError } = await supabaseClient
-      .rpc("verify_subscription_qr", { token: qr_code_token });
+    // Check subscriptions
+    const { data: subscription, error: subError } = await supabaseClient
+      .from("subscriptions")
+      .select("id, user_id, created_at, status, current_period_end")
+      .eq("stripe_subscription_id", qr_code_token)
+      .maybeSingle();
 
-    console.log("Staff validation - Subscription query:", { subscriptionData, subError });
+    console.log("Subscription query result:", { subscription, subError });
 
-    if (!subError && subscriptionData && subscriptionData.length > 0) {
-      const verification = subscriptionData[0];
-      
-      // For staff validation, get user details
-      const { data: subscription } = await supabaseClient
-        .from("subscriptions")
-        .select("id, user_id, created_at")
-        .eq("qr_code_token", qr_code_token)
-        .single();
-        
+    if (!subError && subscription) {
       const { data: profile } = await supabaseClient
         .from("profiles")
         .select("full_name, email")
-        .eq("user_id", subscription?.user_id)
-        .single();
+        .eq("user_id", subscription.user_id)
+        .maybeSingle();
 
       const userName = profile?.full_name || profile?.email || "Unknown";
-      
-      if (!verification.is_valid) {
-        let reason = "Subscription not valid";
-        if (verification.subscription_status !== "active") {
-          reason = "Subscription not active";
-        } else if (verification.current_period_end && new Date() > new Date(verification.current_period_end)) {
-          reason = "Subscription expired";
-        }
-        
+
+      const isActive = subscription.status === "active";
+      const notExpired = !subscription.current_period_end || new Date() <= new Date(subscription.current_period_end);
+
+      if (!isActive || !notExpired) {
         return new Response(JSON.stringify({
           valid: false,
-          reason: reason,
-          status: verification.subscription_status,
+          reason: !isActive ? "Subscription not active" : "Subscription expired",
+          status: subscription.status,
           type: "subscription"
         }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -187,74 +142,11 @@ serve(async (req: any) => {
         valid: true,
         type: "subscription",
         subscription_info: {
-          id: subscription?.id,
-          status: verification.subscription_status,
+          id: subscription.id,
+          status: subscription.status,
           user_name: userName,
-          current_period_end: verification.current_period_end,
-          created_at: subscription?.created_at
-        }
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
-    }
-
-    // If not a subscription, check if it's a media pass using secure verification
-    const { data: mediaPassData, error: mediaPassError } = await supabaseClient
-      .rpc("verify_media_pass_qr", { token: qr_code_token });
-
-    console.log("Staff validation - Media pass query:", { mediaPassData, mediaPassError });
-
-    if (!mediaPassError && mediaPassData && mediaPassData.length > 0) {
-      const verification = mediaPassData[0];
-      
-      // For staff validation, get additional details if needed
-      const { data: mediaPass } = await supabaseClient
-        .from("media_passes")
-        .select("id, user_id, created_at")
-        .eq("qr_code_token", qr_code_token)
-        .single();
-        
-      const { data: profile } = await supabaseClient
-        .from("profiles")
-        .select("full_name, email")
-        .eq("user_id", mediaPass?.user_id)
-        .single();
-
-      const userName = profile?.full_name || profile?.email || "Unknown";
-      
-      if (!verification.is_valid) {
-        let reason = "Media pass not valid";
-        if (verification.pass_status !== "paid") {
-          reason = "Media pass not paid";
-        } else if (verification.valid_until && new Date() > new Date(verification.valid_until)) {
-          reason = "Media pass expired";
-        }
-        
-        return new Response(JSON.stringify({
-          valid: false,
-          reason: reason,
-          status: verification.pass_status,
-          type: "media_pass"
-        }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        });
-      }
-
-      // Media passes don't get "used up" like tickets - they remain valid until expiry
-      return new Response(JSON.stringify({
-        valid: true,
-        type: "media_pass",
-        media_pass_info: {
-          id: mediaPass?.id,
-          pass_type: verification.pass_type,
-          photographer_name: verification.photographer_name,
-          instagram_handle: verification.instagram_handle,
-          user_name: userName,
-          created_at: mediaPass?.created_at,
-          valid_until: verification.valid_until,
-          status: verification.pass_status
+          current_period_end: subscription.current_period_end,
+          created_at: subscription.created_at
         }
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
