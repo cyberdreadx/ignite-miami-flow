@@ -17,7 +17,9 @@ import {
   EyeOff,
   Code,
   Target,
-  Calendar
+  Calendar,
+  PlusCircle,
+  Ticket
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -63,6 +65,7 @@ const AdminAffiliateManager = () => {
   const [referrals, setReferrals] = useState<AffiliateReferral[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [creditForm, setCreditForm] = useState({ ticketId: '', affiliateCode: '', submitting: false });
   const { toast } = useToast();
 
   useEffect(() => {
@@ -202,6 +205,52 @@ const AdminAffiliateManager = () => {
         description: 'An unexpected error occurred.',
         variant: 'destructive',
       });
+    }
+  };
+
+  const handleManualCredit = async () => {
+    const ticketId = creditForm.ticketId.trim();
+    const code = creditForm.affiliateCode.trim().toUpperCase();
+    if (!ticketId || !code) {
+      toast({ title: 'Please fill in both fields', variant: 'destructive' });
+      return;
+    }
+    setCreditForm(f => ({ ...f, submitting: true }));
+    try {
+      // Look up ticket to get buyer's user_id
+      const { data: ticket, error: ticketErr } = await supabase
+        .from('tickets')
+        .select('id, user_id')
+        .eq('id', ticketId)
+        .single();
+      if (ticketErr || !ticket) throw new Error('Ticket not found');
+
+      // Check not already credited
+      const { data: existing } = await supabase
+        .from('affiliate_earnings')
+        .select('id')
+        .eq('ticket_id', ticketId)
+        .maybeSingle();
+      if (existing) {
+        toast({ title: 'This ticket already has an affiliate earning recorded', variant: 'destructive' });
+        return;
+      }
+
+      const { data: result, error: rpcErr } = await supabase.rpc('process_affiliate_referral', {
+        p_affiliate_code: code,
+        p_ticket_id: ticketId,
+        p_referred_user_id: ticket.user_id,
+      });
+      if (rpcErr) throw rpcErr;
+      if (!result) throw new Error('Code not found or inactive, or buyer is the code owner');
+
+      toast({ title: `✅ Affiliate earning credited for code ${code}` });
+      setCreditForm({ ticketId: '', affiliateCode: '', submitting: false });
+      fetchAffiliateData();
+    } catch (err: any) {
+      toast({ title: 'Error crediting affiliate', description: err.message, variant: 'destructive' });
+    } finally {
+      setCreditForm(f => ({ ...f, submitting: false }));
     }
   };
 
@@ -421,6 +470,56 @@ const AdminAffiliateManager = () => {
               </div>
             ))}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Manual Credit */}
+      <Card className="border-primary/30">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <PlusCircle className="h-4 w-4 text-primary" /> Manual Affiliate Credit
+          </CardTitle>
+          <CardDescription>
+            Credit a promoter for a ticket they referred verbally — the buyer didn't enter the code at checkout.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Ticket ID (UUID)</Label>
+              <div className="relative">
+                <Ticket className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  placeholder="e.g. a1b2c3d4-..."
+                  value={creditForm.ticketId}
+                  onChange={e => setCreditForm(f => ({ ...f, ticketId: e.target.value }))}
+                  className="pl-8 font-mono text-xs"
+                />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Affiliate Code</Label>
+              <div className="relative">
+                <Code className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  placeholder="e.g. 3XTWLI"
+                  value={creditForm.affiliateCode}
+                  onChange={e => setCreditForm(f => ({ ...f, affiliateCode: e.target.value.toUpperCase() }))}
+                  className="pl-8 font-mono uppercase text-sm tracking-widest"
+                  maxLength={6}
+                />
+              </div>
+            </div>
+            <Button
+              onClick={handleManualCredit}
+              disabled={creditForm.submitting || !creditForm.ticketId || !creditForm.affiliateCode}
+            >
+              {creditForm.submitting ? 'Crediting...' : 'Credit Affiliate'}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            Commission tier ($1 standard / $3 promoter) is determined automatically by the code owner's tier.
+          </p>
         </CardContent>
       </Card>
 
