@@ -1,499 +1,203 @@
 // @ts-nocheck
 import React, { useState, useEffect } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { useSearchParams } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRoles } from '@/contexts/UserRoleContext';
-import { supabase } from '@/integrations/supabase/client';
-import { formatDistanceToNow } from 'date-fns';
-import { 
-  CheckCircle, 
-  XCircle, 
-  Ticket, 
-  User, 
-  Calendar, 
-  DollarSign,
-  Hash,
-  Clock,
-  AlertTriangle,
-  Loader2,
-  CreditCard,
-  Camera
-} from 'lucide-react';
-import NavBar from '@/components/NavBar';
-
-interface TicketDetails {
-  id: string;
-  user_id: string;
-  amount: number;
-  status: string;
-  created_at: string;
-  valid_until: string | null;
-  used_at: string | null;
-  used_by: string | null;
-  qr_code_token: string;
-  user_email: string;
-  user_name: string;
-}
-
-interface SubscriptionInfo {
-  id: string;
-  status: string;
-  user_name: string;
-  current_period_end: string | null;
-  created_at: string;
-}
-
-interface MediaPassInfo {
-  id: string;
-  pass_type: string;
-  photographer_name: string;
-  instagram_handle: string;
-  amount: number;
-  user_name: string;
-  created_at: string;
-  valid_until: string | null;
-  status: string;
-}
+import { Button } from '@/components/ui/button';
+import { CheckCircle, XCircle, Loader2, User, Calendar, AlertCircle } from 'lucide-react';
+import NavBar from '@/components/layout/NavBar';
+import { useToast } from '@/hooks/use-toast';
 
 export const VerifyTicket: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const [ticket, setTicket] = useState<TicketDetails | null>(null);
-  const [subscriptionInfo, setSubscriptionInfo] = useState<SubscriptionInfo | null>(null);
-  const [mediaPassInfo, setMediaPassInfo] = useState<MediaPassInfo | null>(null);
-  const [verificationType, setVerificationType] = useState<'ticket' | 'subscription' | 'media_pass' | null>(null);
-  const [isValid, setIsValid] = useState<boolean | null>(null);
-  const [reason, setReason] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [marking, setMarking] = useState(false);
+  const [ticket, setTicket] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
-  
   const { user } = useAuth();
   const { hasRole } = useUserRoles();
-  
   const { toast } = useToast();
-  
-  // Get QR token from URL params
+
   const qrToken = searchParams.get('token') || searchParams.get('qr_code_token') || '';
-  
   const canMarkAsUsed = user && (hasRole('admin') || hasRole('moderator'));
 
-  const fetchVerificationDetails = async () => {
+  useEffect(() => {
     if (!qrToken) {
       setError('No QR token provided');
       setLoading(false);
       return;
     }
+    fetchTicket();
+  }, [qrToken]);
 
+  const fetchTicket = async () => {
+    setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('verify-ticket-public', {
-        body: { qr_token: qrToken }
-      });
+      const { data, error } = await supabase
+        .from('tickets')
+        .select('id, user_id, amount, status, created_at, used_at, used_by, qr_code')
+        .eq('qr_code', qrToken)
+        .maybeSingle();
 
-      console.log('Verification response:', data);
-      console.log('Verification error:', error);
-
-      if (error) {
-        throw new Error(error.message);
+      if (error) throw error;
+      if (!data) {
+        setError('Ticket not found');
+        setLoading(false);
+        return;
       }
 
-      // Handle ticket verification
-      if (data.success && data.ticket) {
-        console.log('Found valid ticket:', data.ticket);
-        setVerificationType('ticket');
-        setTicket(data.ticket);
-        
-        // Set validity based on ticket status, payment, expiry, and usage
-        const isTicketCurrentlyValid = 
-          data.ticket.status === 'paid' && 
-          !data.ticket.used_at && 
-          (!data.ticket.valid_until || new Date(data.ticket.valid_until) > new Date());
-        
-        setIsValid(isTicketCurrentlyValid);
-      }
-      // Handle subscription verification
-      else if (data.type === 'subscription') {
-        setVerificationType('subscription');
-        setSubscriptionInfo(data.subscription_info);
-        setIsValid(data.valid);
-        setReason(data.reason);
-      }
-      // Handle media pass verification
-      else if (data.type === 'media_pass') {
-        setVerificationType('media_pass');
-        setMediaPassInfo(data.media_pass_info);
-        setIsValid(data.valid);
-        setReason(data.reason);
-      }
-      // Handle error cases
-      else {
-        setError(data.error || 'QR code not found');
-      }
-    } catch (err) {
-      console.error('Error fetching verification details:', err);
-      setError(err instanceof Error ? err.message : 'Failed to verify QR code');
+      setTicket(data);
+
+      // Fetch profile separately
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('full_name, email')
+        .eq('user_id', data.user_id)
+        .maybeSingle();
+
+      setProfile(profileData);
+    } catch (err: any) {
+      setError(err.message || 'Failed to verify ticket');
     } finally {
       setLoading(false);
     }
   };
 
-  const markTicketAsUsed = async () => {
+  const markAsUsed = async () => {
     if (!ticket || !user) return;
-    
     setMarking(true);
     try {
       const { error } = await supabase
         .from('tickets')
         .update({
           used_at: new Date().toISOString(),
-          used_by: user.email || user.id
+          used_by: profile?.full_name || user.email || 'Door Staff'
         })
         .eq('id', ticket.id);
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
-      // Update local state
-      setTicket(prev => prev ? {
-        ...prev,
-        used_at: new Date().toISOString(),
-        used_by: user.email || user.id
-      } : null);
-
-      // Update validity state since ticket is now used
-      setIsValid(false);
-
-      toast({
-        title: "Ticket Marked as Used ✅",
-        description: `Ticket checked off by ${user.email}`,
-      });
-    } catch (err) {
-      console.error('Error marking ticket as used:', err);
-      toast({
-        title: "Error",
-        description: "Failed to mark ticket as used. Please try again.",
-        variant: "destructive",
-      });
+      setTicket((prev: any) => ({ ...prev, used_at: new Date().toISOString(), used_by: user.email }));
+      toast({ title: '✅ Ticket marked as used' });
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
     } finally {
       setMarking(false);
     }
   };
 
-  useEffect(() => {
-    fetchVerificationDetails();
-  }, [qrToken]);
-
-  const getVerificationTitle = () => {
-    switch (verificationType) {
-      case 'ticket':
-        return 'Ticket Verification';
-      case 'subscription':
-        return 'Monthly Pass Verification';
-      case 'media_pass':
-        return 'Media Pass Verification';
-      default:
-        return 'QR Code Verification';
-    }
-  };
-
-  const getStatusInfo = () => {
-    if (verificationType === 'ticket' && ticket) {
-      if (ticket.used_at) {
-        return { 
-          icon: CheckCircle, 
-          text: 'Already Used', 
-          variant: 'secondary' as const,
-          details: `Used on ${new Date(ticket.used_at).toLocaleString()}${ticket.used_by ? ` by ${ticket.used_by}` : ''}`
-        };
-      }
-      
-      if (ticket.status !== 'paid') {
-        return { icon: XCircle, text: 'Not Paid', variant: 'destructive' as const };
-      }
-      
-      if (ticket.valid_until && new Date(ticket.valid_until) <= new Date()) {
-        return { icon: XCircle, text: 'Expired', variant: 'destructive' as const };
-      }
-      
-      return { icon: CheckCircle, text: 'Valid Entry', variant: 'default' as const };
-    }
-
-    // For subscriptions and media passes
-    if (isValid === true) {
-      return { icon: CheckCircle, text: 'Valid Entry', variant: 'default' as const };
-    } else if (isValid === false) {
-      return { 
-        icon: XCircle, 
-        text: 'Invalid Entry', 
-        variant: 'destructive' as const,
-        details: reason || undefined
-      };
-    }
-
-    return { icon: XCircle, text: 'Unknown', variant: 'destructive' as const };
-  };
-
-  const isTicketValid = () => {
-    if (verificationType !== 'ticket' || !ticket) return false;
-    if (ticket.status !== 'paid') return false;
-    if (ticket.used_at) return false; // Already used
-    if (!ticket.valid_until) return true;
-    return new Date(ticket.valid_until) > new Date();
-  };
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background flex flex-col">
         <NavBar />
-        <div className="pt-24 pb-8">
-          <div className="container mx-auto px-4 text-center">
-            <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
-            <p className="text-muted-foreground">Verifying QR code...</p>
-          </div>
+        <div className="flex-1 flex items-center justify-center">
+          <Loader2 className="w-10 h-10 animate-spin text-primary" />
         </div>
       </div>
     );
   }
 
-  if (error) {
+  if (error || !ticket) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-red-50 flex flex-col">
         <NavBar />
-        <div className="pt-24 pb-8">
-          <div className="container mx-auto px-4 text-center">
-            <XCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-            <h1 className="text-3xl font-bold mb-2 text-red-600">INVALID ENTRY</h1>
-            <p className="text-muted-foreground mb-4">{error}</p>
-            <p className="text-sm text-muted-foreground">This is an official SkateBurn ticket verification page</p>
+        <div className="flex-1 flex items-center justify-center px-4">
+          <div className="text-center">
+            <XCircle className="w-24 h-24 text-red-500 mx-auto mb-4" />
+            <h1 className="text-5xl font-black text-red-600 mb-3">INVALID</h1>
+            <p className="text-red-500 text-lg">{error || 'Ticket not found'}</p>
           </div>
         </div>
       </div>
     );
   }
 
-  if (!ticket && !subscriptionInfo && !mediaPassInfo) {
+  const isAlreadyUsed = !!ticket.used_at;
+  const isValid = (ticket.status === 'active' || ticket.status === 'paid') && !isAlreadyUsed;
+  const holderName = profile?.full_name || profile?.email || 'Unknown';
+
+  if (isAlreadyUsed) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-yellow-50 flex flex-col">
         <NavBar />
-        <div className="pt-24 pb-8">
-          <div className="container mx-auto px-4 text-center">
-            <XCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-            <h1 className="text-3xl font-bold mb-2 text-red-600">INVALID ENTRY</h1>
-            <p className="text-muted-foreground mb-4">The QR code is invalid or has been deactivated.</p>
-            <p className="text-sm text-muted-foreground">This is an official SkateBurn ticket verification page</p>
+        <div className="flex-1 flex items-center justify-center px-4">
+          <div className="text-center">
+            <AlertCircle className="w-24 h-24 text-yellow-500 mx-auto mb-4" />
+            <h1 className="text-4xl font-black text-yellow-600 mb-3">ALREADY USED</h1>
+            <p className="text-yellow-700 text-lg mb-2">{holderName}</p>
+            <p className="text-yellow-600 text-sm">
+              Used on {new Date(ticket.used_at).toLocaleString()}
+              {ticket.used_by && ` by ${ticket.used_by}`}
+            </p>
           </div>
         </div>
       </div>
     );
   }
 
-  const statusInfo = getStatusInfo();
-  const StatusIcon = statusInfo.icon;
+  if (!isValid) {
+    return (
+      <div className="min-h-screen bg-red-50 flex flex-col">
+        <NavBar />
+        <div className="flex-1 flex items-center justify-center px-4">
+          <div className="text-center">
+            <XCircle className="w-24 h-24 text-red-500 mx-auto mb-4" />
+            <h1 className="text-5xl font-black text-red-600 mb-3">INVALID</h1>
+            <p className="text-red-500 text-lg">Ticket status: {ticket.status}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-green-50 flex flex-col">
       <NavBar />
-      <div className="pt-24 pb-8">
-        <div className="container mx-auto px-4 max-w-2xl">
-          <div className="text-center mb-8">
-            <StatusIcon className={`w-16 h-16 mx-auto mb-4 ${
-              statusInfo.variant === 'default' ? 'text-green-500' :
-              statusInfo.variant === 'destructive' ? 'text-red-500' :
-              'text-yellow-500'
-            }`} />
-            <h1 className="text-3xl font-bold mb-2">{getVerificationTitle()}</h1>
-            
-            {statusInfo.variant === 'destructive' ? (
-              <div className="bg-red-50 border-2 border-red-200 rounded-lg p-6 mb-4">
-                <h2 className="text-2xl font-bold text-red-600 mb-2">INVALID ENTRY</h2>
-                {statusInfo.details && (
-                  <p className="text-red-600">{statusInfo.details}</p>
-                )}
-              </div>
-            ) : (
-              <Badge variant={statusInfo.variant} className="text-lg px-4 py-2 mb-4">
-                {statusInfo.text}
-              </Badge>
-            )}
-            
-            {statusInfo.details && statusInfo.variant !== 'destructive' && (
-              <p className="text-sm text-muted-foreground mt-2">{statusInfo.details}</p>
-            )}
+      <div className="flex-1 flex items-center justify-center px-4">
+        <div className="text-center max-w-sm w-full">
+          <CheckCircle className="w-24 h-24 text-green-500 mx-auto mb-4" />
+          <h1 className="text-5xl font-black text-green-600 mb-6">APPROVED</h1>
+
+          <div className="bg-white rounded-2xl shadow-md p-6 mb-6 text-left space-y-3">
+            <div className="flex items-center gap-3">
+              <User className="w-5 h-5 text-muted-foreground shrink-0" />
+              <span className="font-semibold text-lg">{holderName}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Calendar className="w-5 h-5 text-muted-foreground shrink-0" />
+              <span className="text-muted-foreground text-sm">
+                Purchased {new Date(ticket.created_at).toLocaleDateString()}
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-muted-foreground text-sm">Amount:</span>
+              <span className="font-semibold">${(ticket.amount / 100).toFixed(2)}</span>
+            </div>
           </div>
 
-          {/* Ticket Details */}
-          {verificationType === 'ticket' && ticket && (
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Ticket className="w-5 h-5" />
-                  Ticket Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="flex items-center gap-2">
-                    <Hash className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">QR Token:</span>
-                    <span className="font-mono text-sm">{ticket.qr_code_token}</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Amount:</span>
-                    <span className="font-semibold">${(ticket.amount / 100).toFixed(2)}</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <User className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Holder:</span>
-                    <span>{ticket.user_name}</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Purchased:</span>
-                    <span>{formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true })}</span>
-                  </div>
-                  
-                  {ticket.valid_until && (
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">Valid Until:</span>
-                      <span>{new Date(ticket.valid_until).toLocaleDateString()}</span>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+          {canMarkAsUsed && (
+            <Button
+              onClick={markAsUsed}
+              disabled={marking}
+              size="lg"
+              className="w-full text-lg py-6 bg-green-600 hover:bg-green-700"
+            >
+              {marking ? (
+                <Loader2 className="w-5 h-5 animate-spin mr-2" />
+              ) : (
+                <CheckCircle className="w-5 h-5 mr-2" />
+              )}
+              Mark as Used & Let In
+            </Button>
           )}
 
-          {/* Subscription Details */}
-          {verificationType === 'subscription' && subscriptionInfo && (
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CreditCard className="w-5 h-5" />
-                  Monthly Pass Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="flex items-center gap-2">
-                    <User className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Holder:</span>
-                    <span>{subscriptionInfo.user_name}</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Status:</span>
-                    <span className="capitalize">{subscriptionInfo.status}</span>
-                  </div>
-                  
-                  {subscriptionInfo.current_period_end && (
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">Valid Until:</span>
-                      <span>{new Date(subscriptionInfo.current_period_end).toLocaleDateString()}</span>
-                    </div>
-                  )}
-                  
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Started:</span>
-                    <span>{formatDistanceToNow(new Date(subscriptionInfo.created_at), { addSuffix: true })}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+          {!canMarkAsUsed && (
+            <p className="text-sm text-muted-foreground mt-2">
+              Log in as admin or moderator to check in this ticket
+            </p>
           )}
-
-          {/* Media Pass Details */}
-          {verificationType === 'media_pass' && mediaPassInfo && (
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Camera className="w-5 h-5" />
-                  Media Pass Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="flex items-center gap-2">
-                    <User className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Photographer:</span>
-                    <span>{mediaPassInfo.photographer_name}</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <Hash className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Instagram:</span>
-                    <span>@{mediaPassInfo.instagram_handle}</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Amount:</span>
-                    <span className="font-semibold">${(mediaPassInfo.amount / 100).toFixed(2)}</span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <Ticket className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Pass Type:</span>
-                    <span className="capitalize">{mediaPassInfo.pass_type}</span>
-                  </div>
-                  
-                  {mediaPassInfo.valid_until && (
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">Valid Until:</span>
-                      <span>{new Date(mediaPassInfo.valid_until).toLocaleDateString()}</span>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Moderator Actions for Tickets */}
-          {canMarkAsUsed && verificationType === 'ticket' && isTicketValid() && (
-            <Card className="border-green-200 bg-green-50">
-              <CardContent className="p-6 text-center">
-                <h3 className="text-lg font-semibold mb-4">Moderator Actions</h3>
-                <Button
-                  onClick={markTicketAsUsed}
-                  disabled={marking}
-                  size="lg"
-                  className="w-full sm:w-auto"
-                >
-                  {marking && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-                  Mark as Used ✓
-                </Button>
-                <p className="text-sm text-muted-foreground mt-2">
-                  This will mark the ticket as used and prevent future entry
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
-          {!canMarkAsUsed && user && verificationType === 'ticket' && (
-            <Card className="border-yellow-200 bg-yellow-50">
-              <CardContent className="p-4 text-center">
-                <p className="text-sm text-muted-foreground">
-                  You don't have permission to mark tickets as used. Contact an admin if you need moderator access.
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
-          <div className="text-center mt-8">
-            <p className="text-sm text-muted-foreground">This is an official SkateBurn ticket verification page</p>
-          </div>
         </div>
       </div>
     </div>
