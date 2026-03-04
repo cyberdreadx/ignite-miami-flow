@@ -31,11 +31,11 @@ serve(async (req: any) => {
 
     console.log("Validating QR code:", qr_code_token);
 
-    // Check tickets table - token stored in qr_code_data column
+    // Check tickets table - token stored in qr_code column
     const { data: ticket, error: ticketError } = await supabaseClient
       .from("tickets")
-      .select("id, user_id, created_at, event_id, used_at, used_by, status, qr_code_data")
-      .eq("qr_code_data", qr_code_token)
+      .select("id, user_id, created_at, event_id, used_at, used_by, status, qr_code")
+      .eq("qr_code", qr_code_token)
       .maybeSingle();
 
     console.log("Ticket query result:", { ticket, ticketError });
@@ -63,7 +63,7 @@ serve(async (req: any) => {
         });
       }
 
-      if (ticket.status !== "paid" && ticket.status !== "active") {
+      if (ticket.status !== "paid" && ticket.status !== "active" && ticket.status !== "used") {
         return new Response(JSON.stringify({
           valid: false,
           reason: `Ticket status: ${ticket.status || "unknown"}`,
