@@ -348,26 +348,30 @@ const Tickets = () => {
 
                   {/* Affiliate code */}
                   <div className="space-y-2 pt-2 border-t border-border/50">
-                    <Label className="text-xs text-muted-foreground">Affiliate code</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="CODE"
-                        value={affiliateCode}
-                        onChange={(e) => { setAffiliateCode(e.target.value.toUpperCase()); setAffiliateCodeValid(false); }}
-                        className="font-mono text-sm"
-                      />
-                      <Button 
-                        variant="outline" size="sm"
-                        onClick={() => validateAffiliateCode(affiliateCode)}
-                        disabled={validatingCode || !affiliateCode.trim()}
-                      >
-                        {validatingCode ? '...' : 'Apply'}
-                      </Button>
-                    </div>
-                    {affiliateCodeValid && (
-                      <div className="flex items-center gap-1 text-xs text-success">
-                        <CheckCircle className="w-3 h-3" />
-                        Code applied
+                    <Label className="text-xs text-muted-foreground">Have a referral code?</Label>
+                    {affiliateCodeValid ? (
+                      <div className="flex items-center gap-2 p-2 rounded-md bg-primary/10 border border-primary/30">
+                        <CheckCircle className="w-4 h-4 text-primary shrink-0" />
+                        <span className="text-sm font-medium font-mono text-primary">{affiliateCode}</span>
+                        <span className="text-xs text-muted-foreground ml-auto">applied ✓</span>
+                        <Button variant="ghost" size="sm" className="h-6 px-1 text-xs text-muted-foreground" onClick={() => { setAffiliateCode(''); setAffiliateCodeValid(false); }}>✕</Button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Enter code"
+                          value={affiliateCode}
+                          onChange={(e) => { setAffiliateCode(e.target.value.toUpperCase()); setAffiliateCodeValid(false); }}
+                          className="font-mono text-sm"
+                          onKeyDown={(e) => { if (e.key === 'Enter' && affiliateCode.trim()) validateAffiliateCode(affiliateCode); }}
+                        />
+                        <Button 
+                          variant="outline" size="sm"
+                          onClick={() => validateAffiliateCode(affiliateCode)}
+                          disabled={validatingCode || !affiliateCode.trim()}
+                        >
+                          {validatingCode ? '...' : 'Apply'}
+                        </Button>
                       </div>
                     )}
                   </div>

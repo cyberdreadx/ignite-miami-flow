@@ -180,6 +180,8 @@ serve(async (req) => {
 
     // Extract affiliate information from metadata
     const affiliateCode = session.metadata?.affiliate_code;
+    console.log(`Session metadata:`, JSON.stringify(session.metadata));
+    console.log(`Affiliate code from metadata: "${affiliateCode}"`);
 
     // Create the ticket
     const { data: ticket, error: ticketError } = await supabase
