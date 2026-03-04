@@ -44,9 +44,19 @@ export const ValidateTicket: React.FC = () => {
     setResult(null);
 
     try {
+      // Extract token from URL if user pasted a full verify URL
+      let token = qrToken.trim();
+      try {
+        const url = new URL(token);
+        const tokenParam = url.searchParams.get('token') || url.searchParams.get('qr');
+        if (tokenParam) token = tokenParam;
+      } catch {
+        // Not a URL, use raw value
+      }
+
       const { data, error } = await supabase.functions.invoke('validate-qr-code', {
         body: {
-          qr_code_token: qrToken.trim(),
+          qr_code_token: token,
           validator_name: validatorName || 'Door Staff'
         }
       });
@@ -90,7 +100,16 @@ export const ValidateTicket: React.FC = () => {
   };
 
   const handleScan = (data: string) => {
-    setQrToken(data);
+    // Extract token from URL if the QR encodes a full URL like /verify?token=XXX
+    let token = data.trim();
+    try {
+      const url = new URL(token);
+      const tokenParam = url.searchParams.get('token') || url.searchParams.get('qr');
+      if (tokenParam) token = tokenParam;
+    } catch {
+      // Not a URL, use raw value
+    }
+    setQrToken(token);
     setShowScanner(false);
     toast({
       title: "Success",
