@@ -37,6 +37,7 @@ const NavBar = () => {
     { label: "My Tickets", path: "/my-tickets" },
     { label: "Members", path: "/members" },
     { label: "Media Pass", path: "/photographers" },
+    { label: "Principles", path: "/principles" },
     { label: "About", path: "/about" },
   ];
 
