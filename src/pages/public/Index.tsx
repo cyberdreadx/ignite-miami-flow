@@ -12,7 +12,7 @@ import { useApprovalStatus } from "@/hooks/useApprovalStatus";
 import ApprovalStatus from "@/components/user/ApprovalStatus";
 import { WaiverBanner } from "@/components/tickets/WaiverBanner";
 import { PendingUsersCard } from "@/components/user/PendingUsersCard";
-import skateburnLogo from "/lovable-uploads/f40780ef-982b-41a4-99b9-49357cc44738.png";
+import skateburnLogo from "/lovable-uploads/skateburn-logo-new.png";
 
 const EarlyBirdBanner = () => {
   const now = new Date();
