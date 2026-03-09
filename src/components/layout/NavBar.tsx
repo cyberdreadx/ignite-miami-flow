@@ -53,8 +53,8 @@ const NavBar = () => {
       <div className="max-w-5xl mx-auto px-4">
         <div className="flex justify-between items-center h-14">
           {/* Logo */}
-          <a href="/" className="font-display text-lg font-bold text-foreground tracking-tight">
-            SkateBurn
+          <a href="/" className="flex items-center">
+            <img src="/lovable-uploads/skateburn-logo-new.png" alt="SkateBurn" className="h-8 w-auto" />
           </a>
 
           {/* Desktop Nav */}
