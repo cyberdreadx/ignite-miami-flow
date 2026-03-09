@@ -1,4 +1,5 @@
 import { Instagram, Send, Mail } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
@@ -7,7 +8,16 @@ const Footer = () => {
         <p className="font-display text-lg text-foreground/80 mb-6 font-semibold">
           SkateBurn Miami
         </p>
-        
+
+        <div className="flex justify-center gap-6 mb-6">
+          <Link to="/principles" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+            Ten Principles
+          </Link>
+          <Link to="/about" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+            About
+          </Link>
+        </div>
+
         <div className="flex justify-center gap-4 mb-8">
           <a href="https://instagram.com/skateburnmiami" target="_blank" rel="noopener noreferrer"
             className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-accent transition-colors">
