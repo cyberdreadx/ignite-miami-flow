@@ -44,13 +44,68 @@ export const ValidateTicket: React.FC = () => {
     }
   }, [phase]);
 
-  const handlePinSubmit = () => {
-    if (pin === STAFF_PIN) {
-      setPinError('');
-      setPhase('scanning');
-    } else {
-      setPinError('Incorrect PIN');
+// @ts-nocheck
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { supabase } from '@/integrations/supabase/client';
+import { Loader2, CheckCircle, XCircle, ScanLine, RotateCcw, Lock } from 'lucide-react';
+import QrScanner from 'react-qr-scanner';
+
+type Phase = 'pin' | 'pin_checking' | 'scanning' | 'validating' | 'result';
+
+interface ValidationResult {
+  valid: boolean;
+  reason?: string;
+  type?: 'ticket' | 'subscription';
+  ticket_info?: any;
+  subscription_info?: any;
+  used_at?: string;
+  used_by?: string;
+}
+
+export const ValidateTicket: React.FC = () => {
+  const [phase, setPhase] = useState<Phase>('pin');
+  const [pin, setPin] = useState('');
+  const [pinError, setPinError] = useState('');
+  const [result, setResult] = useState<ValidationResult | null>(null);
+  const [validatorName, setValidatorName] = useState('Door Staff');
+  const lastScannedRef = useRef<string>('');
+  const cooldownRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    if (phase === 'result') {
+      const timer = setTimeout(() => {
+        setResult(null);
+        setPhase('scanning');
+        lastScannedRef.current = '';
+        cooldownRef.current = false;
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [phase]);
+
+  const handlePinSubmit = async () => {
+    if (!pin.trim()) return;
+    setPhase('pin_checking');
+    setPinError('');
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-staff-pin', {
+        body: { pin: pin.trim() },
+      });
+      if (error) throw error;
+      if (data?.valid) {
+        setPhase('scanning');
+      } else {
+        setPinError('Incorrect PIN — try again');
+        setPin('');
+        setPhase('pin');
+      }
+    } catch {
+      setPinError('Could not verify PIN — check connection');
       setPin('');
+      setPhase('pin');
     }
   };
 
