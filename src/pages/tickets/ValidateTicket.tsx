@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, CheckCircle, XCircle, ScanLine, RotateCcw, Lock } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, ScanLine, RotateCcw, Lock, Eye } from 'lucide-react';
 import QrScanner from 'react-qr-scanner';
 
 type Phase = 'pin' | 'pin_checking' | 'scanning' | 'validating' | 'result';
@@ -25,6 +25,7 @@ export const ValidateTicket: React.FC = () => {
   const [pinError, setPinError] = useState('');
   const [result, setResult] = useState<ValidationResult | null>(null);
   const [validatorName, setValidatorName] = useState('Door Staff');
+  const [previewMode, setPreviewMode] = useState(false);
   const lastScannedRef = useRef<string>('');
   const cooldownRef = useRef<boolean>(false);
 
@@ -84,7 +85,7 @@ export const ValidateTicket: React.FC = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke('validate-qr-code', {
-        body: { qr_code_token: token, validator_name: validatorName }
+        body: { qr_code_token: token, validator_name: validatorName, mark_as_used: !previewMode }
       });
       if (error) throw error;
       setResult(data);
@@ -196,6 +197,12 @@ export const ValidateTicket: React.FC = () => {
               {isValid ? 'LET IN' : 'DENIED'}
             </h1>
 
+            {previewMode && (
+              <div className="inline-flex items-center gap-1.5 bg-white/30 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest backdrop-blur-sm">
+                <Eye className="w-3 h-3" /> Preview — ticket NOT marked used
+              </div>
+            )}
+
             {info && (
               <div className="bg-white/20 rounded-2xl p-4 text-left space-y-1 backdrop-blur-sm">
                 {info.user_name && <p className="font-bold text-xl">{info.user_name}</p>}
@@ -239,16 +246,35 @@ export const ValidateTicket: React.FC = () => {
         <div className="flex items-center gap-2">
           <ScanLine className="w-5 h-5 text-primary" />
           <span className="text-white font-bold text-sm">Door Scanner</span>
+          {previewMode && (
+            <span className="text-xs bg-yellow-400 text-black font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
+              Preview
+            </span>
+          )}
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-white/60 hover:text-white text-xs"
-          onClick={() => setPhase('pin')}
-        >
-          <Lock className="w-3 h-3 mr-1" />
-          Lock
-        </Button>
+        <div className="flex items-center gap-3">
+          {/* Preview mode toggle */}
+          <button
+            onClick={() => setPreviewMode(!previewMode)}
+            className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border transition-colors ${
+              previewMode
+                ? 'bg-yellow-400 border-yellow-400 text-black font-bold'
+                : 'border-white/30 text-white/60 hover:text-white'
+            }`}
+          >
+            <Eye className="w-3 h-3" />
+            {previewMode ? 'Preview ON' : 'Preview'}
+          </button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-white/60 hover:text-white text-xs"
+            onClick={() => setPhase('pin')}
+          >
+            <Lock className="w-3 h-3 mr-1" />
+            Lock
+          </Button>
+        </div>
       </div>
 
       <div className="flex-1 relative overflow-hidden">
