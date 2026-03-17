@@ -197,6 +197,12 @@ export const ValidateTicket: React.FC = () => {
               {isValid ? 'LET IN' : 'DENIED'}
             </h1>
 
+            {previewMode && (
+              <div className="inline-flex items-center gap-1.5 bg-white/30 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-widest backdrop-blur-sm">
+                <Eye className="w-3 h-3" /> Preview — ticket NOT marked used
+              </div>
+            )}
+
             {info && (
               <div className="bg-white/20 rounded-2xl p-4 text-left space-y-1 backdrop-blur-sm">
                 {info.user_name && <p className="font-bold text-xl">{info.user_name}</p>}
