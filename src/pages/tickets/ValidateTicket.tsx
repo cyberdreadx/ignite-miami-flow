@@ -1,16 +1,15 @@
 // @ts-nocheck
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, CheckCircle, XCircle, Scan, User, Calendar, DollarSign, Camera } from 'lucide-react';
-import NavBar from '@/components/layout/NavBar';
-import QRScanner from '@/components/tickets/QRScanner';
+import { Loader2, CheckCircle, XCircle, Camera, ScanLine, RotateCcw, Lock } from 'lucide-react';
+import QrScanner from 'react-qr-scanner';
+
+const STAFF_PIN = '1234'; // Change this to your desired PIN
+
+type Phase = 'pin' | 'scanning' | 'validating' | 'result';
 
 interface ValidationResult {
   valid: boolean;
@@ -23,272 +22,255 @@ interface ValidationResult {
 }
 
 export const ValidateTicket: React.FC = () => {
-  const [qrToken, setQrToken] = useState('');
-  const [validatorName, setValidatorName] = useState('');
-  const [validating, setValidating] = useState(false);
+  const [phase, setPhase] = useState<Phase>('pin');
+  const [pin, setPin] = useState('');
+  const [pinError, setPinError] = useState('');
   const [result, setResult] = useState<ValidationResult | null>(null);
-  const [showScanner, setShowScanner] = useState(false);
-  const { toast } = useToast();
+  const [validatorName, setValidatorName] = useState('Door Staff');
+  const [scannerReady, setScannerReady] = useState(false);
+  const lastScannedRef = useRef<string>('');
+  const cooldownRef = useRef<boolean>(false);
 
-  const validateQRCode = async () => {
-    if (!qrToken.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter a QR code token",
-        variant: "destructive",
-      });
-      return;
+  // Auto-reset to scanning after result
+  useEffect(() => {
+    if (phase === 'result') {
+      const timer = setTimeout(() => {
+        setResult(null);
+        setPhase('scanning');
+        lastScannedRef.current = '';
+        cooldownRef.current = false;
+      }, 4000);
+      return () => clearTimeout(timer);
     }
+  }, [phase]);
 
-    setValidating(true);
-    setResult(null);
-
-    try {
-      // Extract token from URL if user pasted a full verify URL
-      let token = qrToken.trim();
-      try {
-        const url = new URL(token);
-        const tokenParam = url.searchParams.get('token') || url.searchParams.get('qr');
-        if (tokenParam) token = tokenParam;
-      } catch {
-        // Not a URL, use raw value
-      }
-
-      const { data, error } = await supabase.functions.invoke('validate-qr-code', {
-        body: {
-          qr_code_token: token,
-          validator_name: validatorName || 'Door Staff'
-        }
-      });
-
-      if (error) throw error;
-
-      setResult(data);
-
-      if (data.valid) {
-        toast({
-          title: "✅ Valid Entry",
-          description: `${data.type === 'ticket' ? 'Ticket' : 'Monthly Pass'} is valid for entry`,
-        });
-      } else {
-        toast({
-          title: "❌ Invalid Entry",
-          description: data.reason || "QR code is not valid",
-          variant: "destructive",
-        });
-      }
-
-    } catch (error) {
-      console.error('Validation error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to validate QR code. Please try again.",
-        variant: "destructive",
-      });
-      setResult({
-        valid: false,
-        reason: "System error - please try again"
-      });
-    } finally {
-      setValidating(false);
+  const handlePinSubmit = () => {
+    if (pin === STAFF_PIN) {
+      setPinError('');
+      setPhase('scanning');
+    } else {
+      setPinError('Incorrect PIN');
+      setPin('');
     }
   };
 
-  const resetForm = () => {
-    setQrToken('');
-    setResult(null);
-  };
-
-  const handleScan = (data: string) => {
-    // Extract token from URL if the QR encodes a full URL like /verify?token=XXX
-    let token = data.trim();
+  const extractToken = (raw: string): string => {
     try {
-      const url = new URL(token);
-      const tokenParam = url.searchParams.get('token') || url.searchParams.get('qr');
-      if (tokenParam) token = tokenParam;
+      const url = new URL(raw);
+      return url.searchParams.get('token') || url.searchParams.get('qr') || raw;
     } catch {
-      // Not a URL, use raw value
+      return raw;
     }
-    setQrToken(token);
-    setShowScanner(false);
-    toast({
-      title: "Success",
-      description: "QR code scanned successfully!",
-    });
   };
 
-  return (
-    <div className="min-h-screen bg-background">
-      <NavBar />
-      <div className="pt-24 pb-8">
-        <div className="container mx-auto px-4 max-w-2xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <div className="text-center mb-8">
-              <Scan className="w-12 h-12 mx-auto mb-4 text-primary" />
-              <h1 className="text-3xl font-bold mb-2">Ticket Validation</h1>
-              <p className="text-muted-foreground">
-                Scan or enter QR codes to validate entry at the door
-              </p>
-            </div>
+  const validateToken = async (raw: string) => {
+    if (cooldownRef.current) return;
+    const token = extractToken(raw.trim());
+    if (!token || token === lastScannedRef.current) return;
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Validate Entry</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="validator">Validator Name (Optional)</Label>
-                  <Input
-                    id="validator"
-                    placeholder="Your name"
-                    value={validatorName}
-                    onChange={(e) => setValidatorName(e.target.value)}
-                  />
-                </div>
+    lastScannedRef.current = token;
+    cooldownRef.current = true;
+    setPhase('validating');
 
-                <div className="space-y-2">
-                  <Label htmlFor="qr-token">QR Code Token</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="qr-token"
-                      placeholder="Enter or scan QR code token"
-                      value={qrToken}
-                      onChange={(e) => setQrToken(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && validateQRCode()}
-                      className="flex-1"
-                    />
-                    <Button 
-                      onClick={() => setShowScanner(true)}
-                      variant="outline"
-                      size="icon"
-                    >
-                      <Camera className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
+    try {
+      const { data, error } = await supabase.functions.invoke('validate-qr-code', {
+        body: { qr_code_token: token, validator_name: validatorName }
+      });
+      if (error) throw error;
+      setResult(data);
+    } catch {
+      setResult({ valid: false, reason: 'System error — try again' });
+    } finally {
+      setPhase('result');
+    }
+  };
 
-                <div className="flex gap-4">
-                  <Button 
-                    onClick={validateQRCode}
-                    disabled={validating || !qrToken.trim()}
-                    className="flex-1"
-                  >
-                    {validating ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Validating...
-                      </>
-                    ) : (
-                      <>
-                        <Scan className="w-4 h-4 mr-2" />
-                        Validate
-                      </>
-                    )}
-                  </Button>
-                  
-                  <Button 
-                    onClick={resetForm}
-                    variant="outline"
-                  >
-                    Reset
-                  </Button>
-                </div>
+  const handleScan = (data: any) => {
+    if (data?.text) validateToken(data.text);
+  };
 
-                {/* Validation Result */}
-                {result && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="mt-6"
-                  >
-                    <Card className={`border-2 ${result.valid ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50'}`}>
-                      <CardContent className="p-6">
-                        <div className="flex items-center gap-3 mb-4">
-                          {result.valid ? (
-                            <CheckCircle className="w-8 h-8 text-green-600" />
-                          ) : (
-                            <XCircle className="w-8 h-8 text-red-600" />
-                          )}
-                          <div>
-                            <h3 className={`text-lg font-bold ${result.valid ? 'text-green-800' : 'text-red-800'}`}>
-                              {result.valid ? 'ENTRY APPROVED' : 'ENTRY DENIED'}
-                            </h3>
-                            <p className={`text-sm ${result.valid ? 'text-green-700' : 'text-red-700'}`}>
-                              {result.reason || (result.valid ? 'Valid for entry' : 'Invalid entry')}
-                            </p>
-                          </div>
-                        </div>
+  const handleError = (err: any) => {
+    console.error('Scanner error:', err);
+  };
 
-                        {result.valid && (
-                          <div className="space-y-3">
-                            <div className="flex items-center gap-2">
-                              <Badge variant="default" className="text-xs">
-                                {result.type?.toUpperCase()}
-                              </Badge>
-                            </div>
+  // ─── PIN SCREEN ───────────────────────────────────────────────
+  if (phase === 'pin') {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
+        <motion.div
+          className="w-full max-w-sm text-center space-y-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <Lock className="w-12 h-12 mx-auto text-primary" />
+          <div>
+            <h1 className="text-2xl font-bold mb-1">Staff Access</h1>
+            <p className="text-muted-foreground text-sm">Enter PIN to access door scanner</p>
+          </div>
 
-                            {result.ticket_info && (
-                              <div className="space-y-2 text-sm">
-                                <div className="flex items-center gap-2">
-                                  <User className="w-4 h-4" />
-                                  <span>Name: {result.ticket_info.user_name}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <DollarSign className="w-4 h-4" />
-                                  <span>Amount: ${(result.ticket_info.amount / 100).toFixed(2)}</span>
-                                </div>
-                                {result.ticket_info.valid_until && (
-                                  <div className="flex items-center gap-2">
-                                    <Calendar className="w-4 h-4" />
-                                    <span>Valid until: {new Date(result.ticket_info.valid_until).toLocaleDateString()}</span>
-                                  </div>
-                                )}
-                              </div>
-                            )}
+          <div className="space-y-3">
+            <Input
+              type="password"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              placeholder="Enter PIN"
+              value={pin}
+              onChange={(e) => setPin(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handlePinSubmit()}
+              className="text-center text-2xl tracking-widest h-14"
+              autoFocus
+            />
+            {pinError && <p className="text-destructive text-sm">{pinError}</p>}
+            <Button className="w-full h-12 text-base" onClick={handlePinSubmit}>
+              Enter
+            </Button>
+          </div>
 
-                            {result.subscription_info && (
-                              <div className="space-y-2 text-sm">
-                                <div className="flex items-center gap-2">
-                                  <User className="w-4 h-4" />
-                                  <span>Name: {result.subscription_info.user_name}</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Calendar className="w-4 h-4" />
-                                  <span>Valid until: {new Date(result.subscription_info.current_period_end).toLocaleDateString()}</span>
-                                </div>
-                                <Badge variant="secondary" className="text-xs">
-                                  MONTHLY PASS
-                                </Badge>
-                              </div>
-                            )}
-                          </div>
-                        )}
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground">Your name (shown in scan log)</p>
+            <Input
+              placeholder="Validator name"
+              value={validatorName}
+              onChange={(e) => setValidatorName(e.target.value)}
+              className="text-center"
+            />
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
-                        {!result.valid && result.used_at && (
-                          <div className="mt-3 text-sm text-red-700">
-                            <p>Already used on: {new Date(result.used_at).toLocaleString()}</p>
-                            {result.used_by && <p>Validated by: {result.used_by}</p>}
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
+  // ─── VALIDATING ───────────────────────────────────────────────
+  if (phase === 'validating') {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <Loader2 className="w-16 h-16 animate-spin text-primary mx-auto" />
+          <p className="text-lg font-semibold text-muted-foreground">Checking ticket…</p>
         </div>
       </div>
+    );
+  }
 
-      <QRScanner 
-        isOpen={showScanner}
-        onClose={() => setShowScanner(false)}
-        onScan={handleScan}
-      />
+  // ─── RESULT ───────────────────────────────────────────────────
+  if (phase === 'result' && result) {
+    const isValid = result.valid;
+    const info = result.ticket_info || result.subscription_info;
+    return (
+      <AnimatePresence>
+        <motion.div
+          key="result"
+          className={`min-h-screen flex flex-col items-center justify-center px-6 ${
+            isValid ? 'bg-green-500' : 'bg-red-500'
+          }`}
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+        >
+          <div className="text-center text-white space-y-4 max-w-sm w-full">
+            {isValid ? (
+              <CheckCircle className="w-32 h-32 mx-auto drop-shadow-xl" />
+            ) : (
+              <XCircle className="w-32 h-32 mx-auto drop-shadow-xl" />
+            )}
+
+            <h1 className="text-6xl font-black tracking-tight drop-shadow-lg">
+              {isValid ? 'LET IN' : 'DENIED'}
+            </h1>
+
+            {info && (
+              <div className="bg-white/20 rounded-2xl p-4 text-left space-y-1 backdrop-blur-sm">
+                {info.user_name && (
+                  <p className="font-bold text-xl">{info.user_name}</p>
+                )}
+                {result.type && (
+                  <p className="text-sm uppercase tracking-widest opacity-80">
+                    {result.type === 'subscription' ? 'Monthly Pass' : 'Event Ticket'}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {!isValid && result.reason && (
+              <p className="text-xl font-semibold opacity-90">{result.reason}</p>
+            )}
+
+            <p className="text-sm opacity-70 animate-pulse">Auto-reset in 4 seconds…</p>
+
+            <Button
+              variant="outline"
+              className="border-white text-white hover:bg-white/20 bg-transparent w-full"
+              onClick={() => {
+                setResult(null);
+                setPhase('scanning');
+                lastScannedRef.current = '';
+                cooldownRef.current = false;
+              }}
+            >
+              <RotateCcw className="w-4 h-4 mr-2" />
+              Scan Next
+            </Button>
+          </div>
+        </motion.div>
+      </AnimatePresence>
+    );
+  }
+
+  // ─── SCANNING ─────────────────────────────────────────────────
+  return (
+    <div className="min-h-screen bg-black flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 bg-black/80 backdrop-blur z-10">
+        <div className="flex items-center gap-2">
+          <ScanLine className="w-5 h-5 text-primary" />
+          <span className="text-white font-bold text-sm">Door Scanner</span>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-white/60 hover:text-white text-xs"
+          onClick={() => setPhase('pin')}
+        >
+          <Lock className="w-3 h-3 mr-1" />
+          Lock
+        </Button>
+      </div>
+
+      {/* Camera */}
+      <div className="flex-1 relative overflow-hidden">
+        <QrScanner
+          delay={300}
+          onScan={handleScan}
+          onError={handleError}
+          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          facingMode="environment"
+        />
+
+        {/* Overlay frame */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="relative w-64 h-64">
+            {/* Corner brackets */}
+            <div className="absolute top-0 left-0 w-8 h-8 border-l-4 border-t-4 border-primary rounded-tl-sm" />
+            <div className="absolute top-0 right-0 w-8 h-8 border-r-4 border-t-4 border-primary rounded-tr-sm" />
+            <div className="absolute bottom-0 left-0 w-8 h-8 border-l-4 border-b-4 border-primary rounded-bl-sm" />
+            <div className="absolute bottom-0 right-0 w-8 h-8 border-r-4 border-b-4 border-primary rounded-br-sm" />
+            {/* Scan line */}
+            <motion.div
+              className="absolute left-0 right-0 h-0.5 bg-primary shadow-[0_0_8px_hsl(var(--primary))]"
+              animate={{ top: ['10%', '90%', '10%'] }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: 'linear' }}
+            />
+          </div>
+        </div>
+
+        {/* Bottom hint */}
+        <div className="absolute bottom-6 left-0 right-0 text-center">
+          <p className="text-white/70 text-sm bg-black/50 mx-auto inline-block px-4 py-2 rounded-full">
+            Point camera at attendee's QR code
+          </p>
+        </div>
+      </div>
     </div>
   );
 };
