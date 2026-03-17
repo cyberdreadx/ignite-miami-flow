@@ -246,16 +246,35 @@ export const ValidateTicket: React.FC = () => {
         <div className="flex items-center gap-2">
           <ScanLine className="w-5 h-5 text-primary" />
           <span className="text-white font-bold text-sm">Door Scanner</span>
+          {previewMode && (
+            <span className="text-xs bg-yellow-400 text-black font-bold px-2 py-0.5 rounded-full uppercase tracking-wide">
+              Preview
+            </span>
+          )}
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-white/60 hover:text-white text-xs"
-          onClick={() => setPhase('pin')}
-        >
-          <Lock className="w-3 h-3 mr-1" />
-          Lock
-        </Button>
+        <div className="flex items-center gap-3">
+          {/* Preview mode toggle */}
+          <button
+            onClick={() => setPreviewMode(!previewMode)}
+            className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border transition-colors ${
+              previewMode
+                ? 'bg-yellow-400 border-yellow-400 text-black font-bold'
+                : 'border-white/30 text-white/60 hover:text-white'
+            }`}
+          >
+            <Eye className="w-3 h-3" />
+            {previewMode ? 'Preview ON' : 'Preview'}
+          </button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-white/60 hover:text-white text-xs"
+            onClick={() => setPhase('pin')}
+          >
+            <Lock className="w-3 h-3 mr-1" />
+            Lock
+          </Button>
+        </div>
       </div>
 
       <div className="flex-1 relative overflow-hidden">
