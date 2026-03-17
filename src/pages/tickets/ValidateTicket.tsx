@@ -19,6 +19,16 @@ interface ValidationResult {
   used_by?: string;
 }
 
+interface ScanEntry {
+  id: number;
+  name: string;
+  valid: boolean;
+  reason?: string;
+  type?: string;
+  preview: boolean;
+  time: Date;
+}
+
 export const ValidateTicket: React.FC = () => {
   const [phase, setPhase] = useState<Phase>('pin');
   const [pin, setPin] = useState('');
