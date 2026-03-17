@@ -85,7 +85,7 @@ export const ValidateTicket: React.FC = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke('validate-qr-code', {
-        body: { qr_code_token: token, validator_name: validatorName }
+        body: { qr_code_token: token, validator_name: validatorName, mark_as_used: !previewMode }
       });
       if (error) throw error;
       setResult(data);
