@@ -7,7 +7,8 @@ import {
   BarChart3,
   DollarSign,
   Receipt,
-  QrCode
+  QrCode,
+  Settings
 } from "lucide-react";
 
 import {
