@@ -102,8 +102,29 @@ export const ValidateTicket: React.FC = () => {
       });
       if (error) throw error;
       setResult(data);
+      // Append to history
+      const info = data?.ticket_info || data?.subscription_info;
+      scanCounterRef.current += 1;
+      setScanHistory(prev => [{
+        id: scanCounterRef.current,
+        name: info?.user_name || 'Unknown',
+        valid: !!data?.valid,
+        reason: data?.reason,
+        type: data?.type,
+        preview: previewMode,
+        time: new Date(),
+      }, ...prev].slice(0, 10));
     } catch {
       setResult({ valid: false, reason: 'System error — try again' });
+      scanCounterRef.current += 1;
+      setScanHistory(prev => [{
+        id: scanCounterRef.current,
+        name: 'Unknown',
+        valid: false,
+        reason: 'System error',
+        preview: previewMode,
+        time: new Date(),
+      }, ...prev].slice(0, 10));
     } finally {
       setPhase('result');
     }
