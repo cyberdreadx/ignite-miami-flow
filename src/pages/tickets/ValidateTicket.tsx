@@ -4,52 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, CheckCircle, XCircle, Camera, ScanLine, RotateCcw, Lock } from 'lucide-react';
-import QrScanner from 'react-qr-scanner';
-
-const STAFF_PIN = '1234'; // Change this to your desired PIN
-
-type Phase = 'pin' | 'scanning' | 'validating' | 'result';
-
-interface ValidationResult {
-  valid: boolean;
-  reason?: string;
-  type?: 'ticket' | 'subscription';
-  ticket_info?: any;
-  subscription_info?: any;
-  used_at?: string;
-  used_by?: string;
-}
-
-export const ValidateTicket: React.FC = () => {
-  const [phase, setPhase] = useState<Phase>('pin');
-  const [pin, setPin] = useState('');
-  const [pinError, setPinError] = useState('');
-  const [result, setResult] = useState<ValidationResult | null>(null);
-  const [validatorName, setValidatorName] = useState('Door Staff');
-  const [scannerReady, setScannerReady] = useState(false);
-  const lastScannedRef = useRef<string>('');
-  const cooldownRef = useRef<boolean>(false);
-
-  // Auto-reset to scanning after result
-  useEffect(() => {
-    if (phase === 'result') {
-      const timer = setTimeout(() => {
-        setResult(null);
-        setPhase('scanning');
-        lastScannedRef.current = '';
-        cooldownRef.current = false;
-      }, 4000);
-      return () => clearTimeout(timer);
-    }
-  }, [phase]);
-
-// @ts-nocheck
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { supabase } from '@/integrations/supabase/client';
 import { Loader2, CheckCircle, XCircle, ScanLine, RotateCcw, Lock } from 'lucide-react';
 import QrScanner from 'react-qr-scanner';
 
@@ -74,6 +28,7 @@ export const ValidateTicket: React.FC = () => {
   const lastScannedRef = useRef<string>('');
   const cooldownRef = useRef<boolean>(false);
 
+  // Auto-reset to scanning after result
   useEffect(() => {
     if (phase === 'result') {
       const timer = setTimeout(() => {
@@ -149,7 +104,7 @@ export const ValidateTicket: React.FC = () => {
   };
 
   // ─── PIN SCREEN ───────────────────────────────────────────────
-  if (phase === 'pin') {
+  if (phase === 'pin' || phase === 'pin_checking') {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
         <motion.div
@@ -174,10 +129,17 @@ export const ValidateTicket: React.FC = () => {
               onKeyDown={(e) => e.key === 'Enter' && handlePinSubmit()}
               className="text-center text-2xl tracking-widest h-14"
               autoFocus
+              disabled={phase === 'pin_checking'}
             />
             {pinError && <p className="text-destructive text-sm">{pinError}</p>}
-            <Button className="w-full h-12 text-base" onClick={handlePinSubmit}>
-              Enter
+            <Button
+              className="w-full h-12 text-base"
+              onClick={handlePinSubmit}
+              disabled={phase === 'pin_checking' || !pin.trim()}
+            >
+              {phase === 'pin_checking' ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Checking…</>
+              ) : 'Enter'}
             </Button>
           </div>
 
@@ -236,9 +198,7 @@ export const ValidateTicket: React.FC = () => {
 
             {info && (
               <div className="bg-white/20 rounded-2xl p-4 text-left space-y-1 backdrop-blur-sm">
-                {info.user_name && (
-                  <p className="font-bold text-xl">{info.user_name}</p>
-                )}
+                {info.user_name && <p className="font-bold text-xl">{info.user_name}</p>}
                 {result.type && (
                   <p className="text-sm uppercase tracking-widest opacity-80">
                     {result.type === 'subscription' ? 'Monthly Pass' : 'Event Ticket'}
@@ -275,7 +235,6 @@ export const ValidateTicket: React.FC = () => {
   // ─── SCANNING ─────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-black flex flex-col">
-      {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 bg-black/80 backdrop-blur z-10">
         <div className="flex items-center gap-2">
           <ScanLine className="w-5 h-5 text-primary" />
@@ -292,7 +251,6 @@ export const ValidateTicket: React.FC = () => {
         </Button>
       </div>
 
-      {/* Camera */}
       <div className="flex-1 relative overflow-hidden">
         <QrScanner
           delay={300}
@@ -302,15 +260,12 @@ export const ValidateTicket: React.FC = () => {
           facingMode="environment"
         />
 
-        {/* Overlay frame */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="relative w-64 h-64">
-            {/* Corner brackets */}
             <div className="absolute top-0 left-0 w-8 h-8 border-l-4 border-t-4 border-primary rounded-tl-sm" />
             <div className="absolute top-0 right-0 w-8 h-8 border-r-4 border-t-4 border-primary rounded-tr-sm" />
             <div className="absolute bottom-0 left-0 w-8 h-8 border-l-4 border-b-4 border-primary rounded-bl-sm" />
             <div className="absolute bottom-0 right-0 w-8 h-8 border-r-4 border-b-4 border-primary rounded-br-sm" />
-            {/* Scan line */}
             <motion.div
               className="absolute left-0 right-0 h-0.5 bg-primary shadow-[0_0_8px_hsl(var(--primary))]"
               animate={{ top: ['10%', '90%', '10%'] }}
@@ -319,7 +274,6 @@ export const ValidateTicket: React.FC = () => {
           </div>
         </div>
 
-        {/* Bottom hint */}
         <div className="absolute bottom-6 left-0 right-0 text-center">
           <p className="text-white/70 text-sm bg-black/50 mx-auto inline-block px-4 py-2 rounded-full">
             Point camera at attendee's QR code
