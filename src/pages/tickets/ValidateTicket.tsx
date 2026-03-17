@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, CheckCircle, XCircle, ScanLine, RotateCcw, Lock, Eye } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, ScanLine, RotateCcw, Lock, Eye, ClipboardList } from 'lucide-react';
 import QrScanner from 'react-qr-scanner';
 
 type Phase = 'pin' | 'pin_checking' | 'scanning' | 'validating' | 'result';
@@ -19,6 +19,16 @@ interface ValidationResult {
   used_by?: string;
 }
 
+interface ScanEntry {
+  id: number;
+  name: string;
+  valid: boolean;
+  reason?: string;
+  type?: string;
+  preview: boolean;
+  time: Date;
+}
+
 export const ValidateTicket: React.FC = () => {
   const [phase, setPhase] = useState<Phase>('pin');
   const [pin, setPin] = useState('');
@@ -26,6 +36,9 @@ export const ValidateTicket: React.FC = () => {
   const [result, setResult] = useState<ValidationResult | null>(null);
   const [validatorName, setValidatorName] = useState('Door Staff');
   const [previewMode, setPreviewMode] = useState(false);
+  const [scanHistory, setScanHistory] = useState<ScanEntry[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
+  const scanCounterRef = useRef(0);
   const lastScannedRef = useRef<string>('');
   const cooldownRef = useRef<boolean>(false);
 
@@ -89,8 +102,29 @@ export const ValidateTicket: React.FC = () => {
       });
       if (error) throw error;
       setResult(data);
+      // Append to history
+      const info = data?.ticket_info || data?.subscription_info;
+      scanCounterRef.current += 1;
+      setScanHistory(prev => [{
+        id: scanCounterRef.current,
+        name: info?.user_name || 'Unknown',
+        valid: !!data?.valid,
+        reason: data?.reason,
+        type: data?.type,
+        preview: previewMode,
+        time: new Date(),
+      }, ...prev].slice(0, 10));
     } catch {
       setResult({ valid: false, reason: 'System error — try again' });
+      scanCounterRef.current += 1;
+      setScanHistory(prev => [{
+        id: scanCounterRef.current,
+        name: 'Unknown',
+        valid: false,
+        reason: 'System error',
+        preview: previewMode,
+        time: new Date(),
+      }, ...prev].slice(0, 10));
     } finally {
       setPhase('result');
     }
@@ -265,6 +299,17 @@ export const ValidateTicket: React.FC = () => {
             <Eye className="w-3 h-3" />
             {previewMode ? 'Preview ON' : 'Preview'}
           </button>
+          <button
+            onClick={() => setShowHistory(!showHistory)}
+            className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border transition-colors ${
+              showHistory
+                ? 'bg-white/20 border-white/40 text-white'
+                : 'border-white/30 text-white/60 hover:text-white'
+            }`}
+          >
+            <ClipboardList className="w-3 h-3" />
+            Log {scanHistory.length > 0 && `(${scanHistory.length})`}
+          </button>
           <Button
             variant="ghost"
             size="sm"
@@ -306,6 +351,76 @@ export const ValidateTicket: React.FC = () => {
           </p>
         </div>
       </div>
+
+      {/* ─── SCAN HISTORY PANEL ─── */}
+      <AnimatePresence>
+        {showHistory && (
+          <motion.div
+            key="history"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="bg-black/95 border-t border-white/10 overflow-hidden"
+          >
+            <div className="px-4 py-3">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-white/70 text-xs font-semibold uppercase tracking-widest">
+                  Recent Scans
+                </span>
+                {scanHistory.length > 0 && (
+                  <button
+                    onClick={() => setScanHistory([])}
+                    className="text-white/30 hover:text-white/60 text-xs transition-colors"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+
+              {scanHistory.length === 0 ? (
+                <p className="text-white/30 text-xs text-center py-4">No scans yet this session</p>
+              ) : (
+                <div className="space-y-1.5 max-h-52 overflow-y-auto">
+                  {scanHistory.map((entry) => (
+                    <motion.div
+                      key={entry.id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="flex items-center gap-2.5 py-1.5 px-2 rounded-lg bg-white/5"
+                    >
+                      {entry.valid ? (
+                        <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
+                      ) : (
+                        <XCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white text-xs font-medium truncate">{entry.name}</p>
+                        {!entry.valid && entry.reason && (
+                          <p className="text-white/40 text-xs truncate">{entry.reason}</p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        {entry.preview && (
+                          <span className="text-yellow-400 text-xs">👁</span>
+                        )}
+                        {entry.type && (
+                          <span className="text-white/30 text-xs uppercase">
+                            {entry.type === 'subscription' ? 'pass' : 'tkt'}
+                          </span>
+                        )}
+                        <span className="text-white/30 text-xs tabular-nums">
+                          {entry.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                        </span>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
