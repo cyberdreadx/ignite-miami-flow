@@ -25,6 +25,7 @@ export const ValidateTicket: React.FC = () => {
   const [pinError, setPinError] = useState('');
   const [result, setResult] = useState<ValidationResult | null>(null);
   const [validatorName, setValidatorName] = useState('Door Staff');
+  const [previewMode, setPreviewMode] = useState(false);
   const lastScannedRef = useRef<string>('');
   const cooldownRef = useRef<boolean>(false);
 
