@@ -299,6 +299,17 @@ export const ValidateTicket: React.FC = () => {
             <Eye className="w-3 h-3" />
             {previewMode ? 'Preview ON' : 'Preview'}
           </button>
+          <button
+            onClick={() => setShowHistory(!showHistory)}
+            className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border transition-colors ${
+              showHistory
+                ? 'bg-white/20 border-white/40 text-white'
+                : 'border-white/30 text-white/60 hover:text-white'
+            }`}
+          >
+            <ClipboardList className="w-3 h-3" />
+            Log {scanHistory.length > 0 && `(${scanHistory.length})`}
+          </button>
           <Button
             variant="ghost"
             size="sm"
