@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, CheckCircle, XCircle, ScanLine, RotateCcw, Lock, Eye } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, ScanLine, RotateCcw, Lock, Eye, ClipboardList } from 'lucide-react';
 import QrScanner from 'react-qr-scanner';
 
 type Phase = 'pin' | 'pin_checking' | 'scanning' | 'validating' | 'result';
