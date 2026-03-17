@@ -7,7 +7,8 @@ import {
   BarChart3,
   DollarSign,
   Receipt,
-  QrCode
+  QrCode,
+  Settings
 } from "lucide-react";
 
 import {
@@ -29,6 +30,7 @@ const adminItems = [
   { title: "Expenses", url: "/admin#expenses", icon: Receipt, id: "expenses" },
   { title: "Affiliates", url: "/admin#affiliates", icon: DollarSign, id: "affiliates" },
   { title: "Check-In QR", url: "/admin/checkin-qr", icon: QrCode, id: "checkin-qr" },
+  { title: "Settings", url: "/admin/settings", icon: Settings, id: "settings" },
 ];
 
 const generalItems = [

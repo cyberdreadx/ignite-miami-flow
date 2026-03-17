@@ -11,6 +11,7 @@ import Admin from "./pages/admin/AdminRebuild";
 import AdminMembers from "./pages/admin/AdminMembers";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminDiagnosticsNew from "./pages/admin/AdminDiagnosticsNew";
+import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
 import NewAdmin from "./pages/admin/NewAdmin";
 import EnhancedMemberManagement from "./pages/admin/EnhancedMemberManagement";
 import Auth from "./pages/auth/Auth";
@@ -65,6 +66,7 @@ const App = () => (
             <Route path="/admin/members/legacy" element={<AdminMembers />} />
             <Route path="/admin/analytics" element={<AdminAnalytics />} />
             <Route path="/admin/diagnostics" element={<AdminDiagnosticsNew />} />
+            <Route path="/admin/settings" element={<AdminSettingsPage />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/about" element={<About />} />
