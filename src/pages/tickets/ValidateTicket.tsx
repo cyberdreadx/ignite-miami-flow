@@ -351,6 +351,76 @@ export const ValidateTicket: React.FC = () => {
           </p>
         </div>
       </div>
+
+      {/* ─── SCAN HISTORY PANEL ─── */}
+      <AnimatePresence>
+        {showHistory && (
+          <motion.div
+            key="history"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="bg-black/95 border-t border-white/10 overflow-hidden"
+          >
+            <div className="px-4 py-3">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-white/70 text-xs font-semibold uppercase tracking-widest">
+                  Recent Scans
+                </span>
+                {scanHistory.length > 0 && (
+                  <button
+                    onClick={() => setScanHistory([])}
+                    className="text-white/30 hover:text-white/60 text-xs transition-colors"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+
+              {scanHistory.length === 0 ? (
+                <p className="text-white/30 text-xs text-center py-4">No scans yet this session</p>
+              ) : (
+                <div className="space-y-1.5 max-h-52 overflow-y-auto">
+                  {scanHistory.map((entry) => (
+                    <motion.div
+                      key={entry.id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className="flex items-center gap-2.5 py-1.5 px-2 rounded-lg bg-white/5"
+                    >
+                      {entry.valid ? (
+                        <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
+                      ) : (
+                        <XCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white text-xs font-medium truncate">{entry.name}</p>
+                        {!entry.valid && entry.reason && (
+                          <p className="text-white/40 text-xs truncate">{entry.reason}</p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        {entry.preview && (
+                          <span className="text-yellow-400 text-xs">👁</span>
+                        )}
+                        {entry.type && (
+                          <span className="text-white/30 text-xs uppercase">
+                            {entry.type === 'subscription' ? 'pass' : 'tkt'}
+                          </span>
+                        )}
+                        <span className="text-white/30 text-xs tabular-nums">
+                          {entry.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                        </span>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
