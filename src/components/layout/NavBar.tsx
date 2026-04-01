@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/contexts/UserRoleContext";
