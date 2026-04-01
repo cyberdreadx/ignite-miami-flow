@@ -141,9 +141,14 @@ const NavBar = () => {
                     <User className="w-4 h-4 mr-2" /> Profile
                   </Button>
                   {isAdmin && (
-                    <Button variant="ghost" onClick={() => { navigate("/admin"); setIsOpen(false); }} className="w-full justify-start text-sm">
-                      <Settings className="w-4 h-4 mr-2" /> Admin
-                    </Button>
+                    <>
+                      <Button variant="ghost" onClick={() => { navigate("/admin"); setIsOpen(false); }} className="w-full justify-start text-sm">
+                        <Settings className="w-4 h-4 mr-2" /> Admin
+                      </Button>
+                      <Button variant="ghost" onClick={() => { navigate("/admin/checkin-qr"); setIsOpen(false); }} className="w-full justify-start text-sm">
+                        <QrCode className="w-4 h-4 mr-2" /> Check-In QR
+                      </Button>
+                    </>
                   )}
                   <Button variant="ghost" onClick={handleSignOut} className="w-full justify-start text-sm text-muted-foreground hover:text-destructive">
                     <LogOut className="w-4 h-4 mr-2" /> Sign Out
