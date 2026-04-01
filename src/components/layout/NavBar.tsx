@@ -88,6 +88,10 @@ const NavBar = () => {
                     <Settings className="w-4 h-4 mr-1.5" />
                     Admin
                   </Button>
+                  <Button variant="ghost" size="sm" onClick={() => navigate("/admin/checkin-qr")} className="text-sm text-muted-foreground hover:text-foreground">
+                    <QrCode className="w-4 h-4 mr-1.5" />
+                    Check-In QR
+                  </Button>
                 )}
                 <Button variant="ghost" size="sm" onClick={handleSignOut} className="text-sm text-muted-foreground hover:text-destructive">
                   <LogOut className="w-4 h-4" />
